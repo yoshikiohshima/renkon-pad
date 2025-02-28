@@ -4,6 +4,9 @@ export function pad() {
         if (typeof command === "number") {
             return [...now, `${command}`];
         }
+        if (command.type === "remove") {
+            return now.filter((e) => e != command.id);
+        }
         return now;
     });
 
@@ -60,7 +63,7 @@ export function pad() {
 
     const innerIframe = document.querySelector("#innerWindow");
 
-    const onRun = ((innerIframe, run, codeEditors) => {
+    const _onRun = ((innerIframe, run, codeEditors) => {
         const code = [...codeEditors.map.values()].map((editor) => editor.state.doc.toString());
         console.log(code);
         innerIframe.contentWindow.postMessage({code: code});
@@ -69,9 +72,9 @@ export function pad() {
     const {h, render} = import("./preact.standalone.module.js");
 
     const add = Events.listener("#addButton", "click", (evt) => evt);
-    const remove = Events.listener("#removeButton", "click", (evt) => evt);
     const run = Events.listener("#runButton", "click", (evt) => evt);
     const downOrUp = Events.receiver();
+    const remove = Events.receiver();
 
     const _padDown = Events.listener("#pad", "pointerdown", (evt) => {
         if (evt.target.id) {
@@ -130,13 +133,22 @@ export function pad() {
             }
         }, [
             h("div", {
+                id: `${id}-titleBar`,
                 "class": "titleBar",
-                style: {
-                    backgroundColor: "#eee",
-                    width: "100%",
-                    height: "24px",
-                }
-            }, []),
+            }, [
+                h("div", {
+                    id: `${id}-title`,
+                    "class": "title",
+                }),
+                h("div", {
+                    id: `${id}-close`,
+                    "class": "closeButton",
+                    onClick: (evt) => {
+                        console.log(evt);
+                        Events.send(remove, {id: `${Number.parseInt(evt.target.id)}`, type: "remove"})
+                    }
+                })
+            ]),
         ])
     };
 
@@ -146,7 +158,7 @@ export function pad() {
         }));
     })(windows, positions, codeEditors);
 
-    const myRender = ((windowElements, padElement) => {
+    const _myRender = ((windowElements, padElement) => {
         render(windowElements, padElement);
     })(windowElements, document.querySelector("#pad"));
 
