@@ -8,9 +8,26 @@
     height: 100%;
 }
 
-#addButton {
+#buttonBox {
     position: absolute;
     left: 0px;
     top: 0px;
 }
-    
+
+.titleBar {
+    pointer-events: none;
+}
+
+#iframeHolder {
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    margin: 10px;
+    border: 10px solid   #ddd;
+}
+
+#innerWindow {
+    backgroundColor: #eee;
+    width: 800px;
+    height: 400px;
+}

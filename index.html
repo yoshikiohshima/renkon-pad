@@ -11,11 +11,19 @@
                 Renkon.merge(pad);
             </script>
             <div id="pad"></div>
-            <button id="addButton">add</button>
+            <div id="buttonBox">
+                <button id="addButton">add</button>
+                <button id="runButton">run</button>
+            </div>
+            <div id="iframeHolder">
+                <iframe id="innerWindow" src="window.html"></iframe>
+            </div>
         </div>
         <script type="module">
-            import {view} from "./renkon-web.js";
-            view();
+            import {view, CodeMirror, ProgramState} from "./renkon-web.js";
+            window.CodeMirror = CodeMirror;
+            window.ProgramState = ProgramState;
+            view({hideEditor: true});
         </script>
     </body>
 </html>

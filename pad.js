@@ -8,16 +8,22 @@ export function pad() {
     });
 
     // {id, x: number, y: number, width: number, height: number}
-    const positions = Behaviors.collect({map: new Map()}, Events.or(Events.change(newId), moveOrResize), (now, command) => {
-        if (typeof command === "number") {
+    const positions = Behaviors.collect({map: new Map()}, Events.or(Events.change(windows), moveOrResize), (now, command) => {
+        if (Array.isArray(command)) {
+            const keys = [...now.map.keys()];
+            const news = command.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !command.includes(e));
+
             const newWindow = (id) => ({
                 id,
-                x: Number.parseInt(id) * 100,
-                y:  Number.parseInt(id) * 100,
-                width: 200,
+                x: Number.parseInt(id) * 30,
+                y:  Number.parseInt(id) * 30,
+                width: 300,
                 height: 200
             });
-            now.map.set(`${command}`, newWindow(command));
+
+            olds.forEach((e) => now.map.delete(`${e}`));
+            news.forEach((e) => now.map.set(`${e}`, newWindow(e)));
             return {map: now.map};
         } else if (command.type === "move") {
             const v = {...now.map.get(command.id)};
@@ -29,10 +35,42 @@ export function pad() {
         return now
     });
 
+    const codeEditors = Behaviors.collect({map: new Map()}, Events.change(windows), (now, command) => {
+        if (Array.isArray(command)) {
+            const keys = [...now.map.keys()];
+            const news = command.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !command.includes(e));
+
+            const newEditor = (id) => {
+                const mirror = window.CodeMirror;
+                const editor = new mirror.EditorView({
+                    doc: "hello",
+                    extensions: [mirror.basicSetup, mirror.EditorView.lineWrapping],
+                });
+                editor.dom.classList.add("editor");
+                editor.dom.id = `${id}-editor`;
+                return editor;
+            }
+
+            olds.forEach((e) => now.map.delete(`${e}`));
+            news.forEach((e) => now.map.set(`${e}`, newEditor(e)));
+            return {map: now.map};
+        }
+    });
+
+    const innerIframe = document.querySelector("#innerWindow");
+
+    const onRun = ((innerIframe, run, codeEditors) => {
+        const code = [...codeEditors.map.values()].map((editor) => editor.state.doc.toString());
+        console.log(code);
+        innerIframe.contentWindow.postMessage({code: code});
+    })(innerIframe, run, codeEditors);
+
     const {h, render} = import("./preact.standalone.module.js");
 
     const add = Events.listener("#addButton", "click", (evt) => evt);
     const remove = Events.listener("#removeButton", "click", (evt) => evt);
+    const run = Events.listener("#runButton", "click", (evt) => evt);
     const downOrUp = Events.receiver();
 
     const _padDown = Events.listener("#pad", "pointerdown", (evt) => {
@@ -49,8 +87,6 @@ export function pad() {
     const _padMove = Events.listener("#pad", "pointermove", moveCompute);
     const moveOrResize = Events.receiver();
 
-    console.log("down", downOrUp);
-
     const init = Events.change(Behaviors.keep(0));
 
     const newId = Behaviors.collect(0, Events.or(add, init), (now) => now + 1);
@@ -58,9 +94,8 @@ export function pad() {
     console.log("newId", newId);
 
     const moveCompute = ((downOrUp, positions) => {
-        console.log("moveCompute", downOrUp, positions);
+        //console.log("moveCompute", downOrUp, positions);
         if (downOrUp.type === "pointerdown") {
-            console.log("pointerdown", downOrUp, positions);
             const start = positions.map.get(downOrUp.id);
             const downPoint = {x: downOrUp.x, y: downOrUp.y};
             return (move) => {
@@ -76,7 +111,7 @@ export function pad() {
         return null;
     })(downOrUp, $positions);
 
-    const windowDOM = (id, position) => {
+    const windowDOM = (id, position, codeEditor) => {
         return h("div", {
             key: `${id}`,
             id: `${id}-win`,
@@ -88,16 +123,32 @@ export function pad() {
                 height: `${position.height}px`,
                 backgroundColor: "#ddd",
             },
-        },[]);
+            ref: (ref) => {
+                if (ref) {
+                    ref.appendChild(codeEditor.dom);
+                }
+            }
+        }, [
+            h("div", {
+                "class": "titleBar",
+                style: {
+                    backgroundColor: "#eee",
+                    width: "100%",
+                    height: "24px",
+                }
+            }, []),
+        ])
     };
 
-    const windowElements = ((windows, positions) => {
+    const windowElements = ((windows, positions, codeEditors) => {
         return h("div", {"class": "owner"}, windows.map((id) => {
-            return windowDOM(id, positions.map.get(id));
+            return windowDOM(id, positions.map.get(id), codeEditors.map.get(id));
         }));
-    })(windows, positions);
+    })(windows, positions, codeEditors);
 
-    render(windowElements, document.querySelector("#pad"));
+    const myRender = ((windowElements, padElement) => {
+        render(windowElements, padElement);
+    })(windowElements, document.querySelector("#pad"));
 
     return [];
 }

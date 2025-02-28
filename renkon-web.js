@@ -2079,11 +2079,11 @@ types$1.backQuote.updateContext = function() {
 };
 types$1.star.updateContext = function(prevType) {
   if (prevType === types$1._function) {
-    var index = this.context.length - 1;
-    if (this.context[index] === types$2.f_expr) {
-      this.context[index] = types$2.f_expr_gen;
+    var index2 = this.context.length - 1;
+    if (this.context[index2] === types$2.f_expr) {
+      this.context[index2] = types$2.f_expr_gen;
     } else {
-      this.context[index] = types$2.f_gen;
+      this.context[index2] = types$2.f_gen;
     }
   }
   this.exprAllowed = true;
@@ -6972,31 +6972,31 @@ class Sourcemap {
     this.input = input;
     this._edits = [];
   }
-  _bisectLeft(index) {
+  _bisectLeft(index2) {
     let lo = 0;
     let hi = this._edits.length;
     while (lo < hi) {
       const mid = lo + hi >>> 1;
-      if (this._edits[mid].start < index) lo = mid + 1;
+      if (this._edits[mid].start < index2) lo = mid + 1;
       else hi = mid;
     }
     return lo;
   }
-  _bisectRight(index) {
+  _bisectRight(index2) {
     let lo = 0;
     let hi = this._edits.length;
     while (lo < hi) {
       const mid = lo + hi >>> 1;
-      if (this._edits[mid].start > index) hi = mid;
+      if (this._edits[mid].start > index2) hi = mid;
       else lo = mid + 1;
     }
     return lo;
   }
-  insertLeft(index, value) {
-    return this.replaceLeft(index, index, value);
+  insertLeft(index2, value) {
+    return this.replaceLeft(index2, index2, value);
   }
-  insertRight(index, value) {
-    return this.replaceRight(index, index, value);
+  insertRight(index2, value) {
+    return this.replaceRight(index2, index2, value);
   }
   delete(start, end) {
     return this.replaceRight(start, end, "");
@@ -7008,12 +7008,12 @@ class Sourcemap {
     return this._edits.splice(this._bisectRight(start), 0, { start, end, value }), this;
   }
   translate(position) {
-    let index = 0;
+    let index2 = 0;
     let ci = { line: 1, column: 0 };
     let co = { line: 1, column: 0 };
     for (const { start, end, value } of this._edits) {
-      if (start > index) {
-        const l22 = positionLength(this.input, index, start);
+      if (start > index2) {
+        const l22 = positionLength(this.input, index2, start);
         const ci22 = positionAdd(ci, l22);
         const co22 = positionAdd(co, l22);
         if (positionCompare(co22, position) > 0) break;
@@ -7027,7 +7027,7 @@ class Sourcemap {
       if (positionCompare(co2, position) > 0) return ci;
       ci = ci2;
       co = co2;
-      index = end;
+      index2 = end;
     }
     const l2 = positionSubtract(position, co);
     return positionAdd(ci, l2);
@@ -7040,13 +7040,13 @@ class Sourcemap {
   }
   toString() {
     let output = "";
-    let index = 0;
+    let index2 = 0;
     for (const { start, end, value } of this._edits) {
-      if (start > index) output += this.input.slice(index, start);
+      if (start > index2) output += this.input.slice(index2, start);
       output += value;
-      index = end;
+      index2 = end;
     }
-    output += this.input.slice(index);
+    output += this.input.slice(index2);
     return output;
   }
 }
@@ -9761,8 +9761,8 @@ function topologicalSort(nodes) {
   }
   function removeEdges(src, dst) {
     let edges = [];
-    let index = dst.inputs.indexOf(src.outputs);
-    if (index >= 0) {
+    let index2 = dst.inputs.indexOf(src.outputs);
+    if (index2 >= 0) {
       edges.push(src.outputs);
     }
     dst.inputs = dst.inputs.filter((input) => !edges.includes(input));
@@ -11214,8 +11214,8 @@ class ChangeSet extends ChangeDesc {
       if (ins >= 0) {
         sections[i2] = ins;
         sections[i2 + 1] = len;
-        let index = i2 >> 1;
-        while (inserted.length < index)
+        let index2 = i2 >> 1;
+        while (inserted.length < index2)
           inserted.push(Text$1.empty);
         inserted.push(len ? doc2.slice(pos, pos + len) : Text$1.empty);
       }
@@ -11422,11 +11422,11 @@ function addSection(sections, len, ins, forceJoin = false) {
 function addInsert(values, sections, value) {
   if (value.length == 0)
     return;
-  let index = sections.length - 2 >> 1;
-  if (index < values.length) {
+  let index2 = sections.length - 2 >> 1;
+  if (index2 < values.length) {
     values[values.length - 1] = values[values.length - 1].append(value);
   } else {
-    while (values.length < index)
+    while (values.length < index2)
       values.push(Text$1.empty);
     values.push(value);
   }
@@ -11572,12 +11572,12 @@ class SectionIter {
     return this.ins < 0 ? this.len : this.ins;
   }
   get text() {
-    let { inserted } = this.set, index = this.i - 2 >> 1;
-    return index >= inserted.length ? Text$1.empty : inserted[index];
+    let { inserted } = this.set, index2 = this.i - 2 >> 1;
+    return index2 >= inserted.length ? Text$1.empty : inserted[index2];
   }
   textBit(len) {
-    let { inserted } = this.set, index = this.i - 2 >> 1;
-    return index >= inserted.length && !len ? Text$1.empty : inserted[index].slice(this.off, len == null ? void 0 : this.off + len);
+    let { inserted } = this.set, index2 = this.i - 2 >> 1;
+    return index2 >= inserted.length && !len ? Text$1.empty : inserted[index2].slice(this.off, len == null ? void 0 : this.off + len);
   }
   forward(len) {
     if (len == this.len)
@@ -13115,8 +13115,8 @@ class RangeSet {
   /**
   @internal
   */
-  chunkEnd(index) {
-    return this.chunkPos[index] + this.chunk[index].length;
+  chunkEnd(index2) {
+    return this.chunkPos[index2] + this.chunk[index2].length;
   }
   /**
   Update the range set, optionally adding new ranges or filtering
@@ -13489,8 +13489,8 @@ class LayerCursor {
       }
     }
   }
-  setRangeIndex(index) {
-    if (index == this.layer.chunk[this.chunkIndex].value.length) {
+  setRangeIndex(index2) {
+    if (index2 == this.layer.chunk[this.chunkIndex].value.length) {
       this.chunkIndex++;
       if (this.skip) {
         while (this.chunkIndex < this.layer.chunk.length && this.skip.has(this.layer.chunk[this.chunkIndex]))
@@ -13498,7 +13498,7 @@ class LayerCursor {
       }
       this.rangeIndex = 0;
     } else {
-      this.rangeIndex = index;
+      this.rangeIndex = index2;
     }
   }
   nextChunk() {
@@ -13560,9 +13560,9 @@ class HeapCursor {
     }
   }
 }
-function heapBubble(heap, index) {
-  for (let cur2 = heap[index]; ; ) {
-    let childIndex = (index << 1) + 1;
+function heapBubble(heap, index2) {
+  for (let cur2 = heap[index2]; ; ) {
+    let childIndex = (index2 << 1) + 1;
     if (childIndex >= heap.length)
       break;
     let child = heap[childIndex];
@@ -13573,8 +13573,8 @@ function heapBubble(heap, index) {
     if (cur2.compare(child) < 0)
       break;
     heap[childIndex] = cur2;
-    heap[index] = child;
-    index = childIndex;
+    heap[index2] = child;
+    index2 = childIndex;
   }
 }
 class SpanCursor {
@@ -13607,10 +13607,10 @@ class SpanCursor {
       this.removeActive(this.minActive);
     this.cursor.forward(pos, side);
   }
-  removeActive(index) {
-    remove(this.active, index);
-    remove(this.activeTo, index);
-    remove(this.activeRank, index);
+  removeActive(index2) {
+    remove(this.active, index2);
+    remove(this.activeTo, index2);
+    remove(this.activeRank, index2);
     this.minActive = findMinIndex(this.active, this.activeTo);
   }
   addActive(trackOpen) {
@@ -13726,15 +13726,15 @@ function sameValues(a2, b2) {
       return false;
   return true;
 }
-function remove(array, index) {
-  for (let i2 = index, e = array.length - 1; i2 < e; i2++)
+function remove(array, index2) {
+  for (let i2 = index2, e = array.length - 1; i2 < e; i2++)
     array[i2] = array[i2 + 1];
   array.pop();
 }
-function insert(array, index, value) {
-  for (let i2 = array.length - 1; i2 >= index; i2--)
+function insert(array, index2, value) {
+  for (let i2 = array.length - 1; i2 >= index2; i2--)
     array[i2 + 1] = array[i2];
-  array[index] = value;
+  array[index2] = value;
 }
 function findMinIndex(value, array) {
   let found = -1, foundPos = 1e9;
@@ -13864,18 +13864,18 @@ class StyleSet {
     let sheet = this.sheet;
     let pos = 0, j = 0;
     for (let i2 = 0; i2 < modules.length; i2++) {
-      let mod = modules[i2], index = this.modules.indexOf(mod);
-      if (index < j && index > -1) {
-        this.modules.splice(index, 1);
+      let mod = modules[i2], index2 = this.modules.indexOf(mod);
+      if (index2 < j && index2 > -1) {
+        this.modules.splice(index2, 1);
         j--;
-        index = -1;
+        index2 = -1;
       }
-      if (index == -1) {
+      if (index2 == -1) {
         this.modules.splice(j++, 0, mod);
         if (sheet) for (let k2 = 0; k2 < mod.rules.length; k2++)
           sheet.insertRule(mod.rules[k2], pos++);
       } else {
-        while (j < index) pos += this.modules[j++].rules.length;
+        while (j < index2) pos += this.modules[j++].rules.length;
         pos += mod.rules.length;
         j++;
       }
@@ -14031,10 +14031,10 @@ function isEquivalentPosition(node, off, targetNode, targetOff) {
   return targetNode ? scanFor(node, off, targetNode, targetOff, -1) || scanFor(node, off, targetNode, targetOff, 1) : false;
 }
 function domIndex(node) {
-  for (var index = 0; ; index++) {
+  for (var index2 = 0; ; index2++) {
     node = node.previousSibling;
     if (!node)
-      return index;
+      return index2;
   }
 }
 function isBlockElement(node) {
@@ -15739,8 +15739,8 @@ class ContentBuilder {
     if (this.openStart < 0)
       this.openStart = openStart;
   }
-  point(from, to, deco, active, openStart, index) {
-    if (this.disallowBlockEffectsFor[index] && deco instanceof PointDecoration) {
+  point(from, to, deco, active, openStart, index2) {
+    if (this.disallowBlockEffectsFor[index2] && deco instanceof PointDecoration) {
       if (deco.block)
         throw new RangeError("Block decorations may not be specified via plugins");
       if (to > this.doc.lineAt(this.pos).to)
@@ -15874,14 +15874,14 @@ class BidiSpan {
   /**
   @internal
   */
-  static find(order, index, level, assoc) {
+  static find(order, index2, level, assoc) {
     let maybe = -1;
     for (let i2 = 0; i2 < order.length; i2++) {
       let span = order[i2];
-      if (span.from <= index && span.to >= index) {
+      if (span.from <= index2 && span.to >= index2) {
         if (span.level == level)
           return i2;
-        if (maybe < 0 || (assoc != 0 ? assoc < 0 ? span.from < index : span.to > index : order[maybe].level > span.level))
+        if (maybe < 0 || (assoc != 0 ? assoc < 0 ? span.from < index2 : span.to > index2 : order[maybe].level > span.level))
           maybe = i2;
       }
     }
@@ -23231,8 +23231,8 @@ class HoverPlugin {
   }
   get tooltip() {
     let plugin = this.view.plugin(tooltipPlugin);
-    let index = plugin ? plugin.manager.tooltips.findIndex((t2) => t2.create == HoverTooltipHost.create) : -1;
-    return index > -1 ? plugin.manager.tooltipViews[index] : null;
+    let index2 = plugin ? plugin.manager.tooltips.findIndex((t2) => t2.create == HoverTooltipHost.create) : -1;
+    return index2 > -1 ? plugin.manager.tooltipViews[index2] : null;
   }
   mousemove(event) {
     var _a2, _b2;
@@ -23366,8 +23366,8 @@ const panelConfig = /* @__PURE__ */ Facet.define({
 });
 function getPanel(view2, panel) {
   let plugin = view2.plugin(panelPlugin);
-  let index = plugin ? plugin.specs.indexOf(panel) : -1;
-  return index > -1 ? plugin.panels[index] : null;
+  let index2 = plugin ? plugin.specs.indexOf(panel) : -1;
+  return index2 > -1 ? plugin.panels[index2] : null;
 }
 const panelPlugin = /* @__PURE__ */ ViewPlugin.fromClass(class {
   constructor(view2) {
@@ -24282,9 +24282,9 @@ class Tree {
 }
 Tree.empty = new Tree(NodeType.none, [], [], 0);
 class FlatBufferCursor {
-  constructor(buffer, index) {
+  constructor(buffer, index2) {
     this.buffer = buffer;
-    this.index = index;
+    this.index = index2;
   }
   get id() {
     return this.buffer[this.index - 4];
@@ -24328,27 +24328,27 @@ class TreeBuffer {
   */
   toString() {
     let result = [];
-    for (let index = 0; index < this.buffer.length; ) {
-      result.push(this.childString(index));
-      index = this.buffer[index + 3];
+    for (let index2 = 0; index2 < this.buffer.length; ) {
+      result.push(this.childString(index2));
+      index2 = this.buffer[index2 + 3];
     }
     return result.join(",");
   }
   /**
   @internal
   */
-  childString(index) {
-    let id = this.buffer[index], endIndex = this.buffer[index + 3];
+  childString(index2) {
+    let id = this.buffer[index2], endIndex = this.buffer[index2 + 3];
     let type = this.set.types[id], result = type.name;
     if (/\W/.test(result) && !type.isError)
       result = JSON.stringify(result);
-    index += 4;
-    if (endIndex == index)
+    index2 += 4;
+    if (endIndex == index2)
       return result;
     let children = [];
-    while (index < endIndex) {
-      children.push(this.childString(index));
-      index = this.buffer[index + 3];
+    while (index2 < endIndex) {
+      children.push(this.childString(index2));
+      index2 = this.buffer[index2 + 3];
     }
     return result + "(" + children.join(",") + ")";
   }
@@ -24462,11 +24462,11 @@ class BaseNode {
   }
 }
 class TreeNode extends BaseNode {
-  constructor(_tree, from, index, _parent) {
+  constructor(_tree, from, index2, _parent) {
     super();
     this._tree = _tree;
     this.from = from;
-    this.index = index;
+    this.index = index2;
     this._parent = _parent;
   }
   get type() {
@@ -24487,9 +24487,9 @@ class TreeNode extends BaseNode {
         if (next instanceof TreeBuffer) {
           if (mode & IterMode.ExcludeBuffers)
             continue;
-          let index = next.findChild(0, next.buffer.length, dir, pos - start, side);
-          if (index > -1)
-            return new BufferNode(new BufferContext(parent, next, i2, start), null, index);
+          let index2 = next.findChild(0, next.buffer.length, dir, pos - start, side);
+          if (index2 > -1)
+            return new BufferNode(new BufferContext(parent, next, i2, start), null, index2);
         } else if (mode & IterMode.IncludeAnonymous || (!next.type.isAnonymous || hasChild(next))) {
           let mounted;
           if (!(mode & IterMode.IgnoreMounts) && (mounted = MountedTree.get(next)) && !mounted.overlay)
@@ -24628,10 +24628,10 @@ function matchNodeContext(node, context, i2 = context.length - 1) {
   return true;
 }
 class BufferContext {
-  constructor(parent, buffer, index, start) {
+  constructor(parent, buffer, index2, start) {
     this.parent = parent;
     this.buffer = buffer;
-    this.index = index;
+    this.index = index2;
     this.start = start;
   }
 }
@@ -24645,17 +24645,17 @@ class BufferNode extends BaseNode {
   get to() {
     return this.context.start + this.context.buffer.buffer[this.index + 2];
   }
-  constructor(context, _parent, index) {
+  constructor(context, _parent, index2) {
     super();
     this.context = context;
     this._parent = _parent;
-    this.index = index;
-    this.type = context.buffer.set.types[context.buffer.buffer[index]];
+    this.index = index2;
+    this.type = context.buffer.set.types[context.buffer.buffer[index2]];
   }
   child(dir, pos, side) {
     let { buffer } = this.context;
-    let index = buffer.findChild(this.index + 4, buffer.buffer[this.index + 3], dir, pos - this.context.start, side);
-    return index < 0 ? null : new BufferNode(this.context, this, index);
+    let index2 = buffer.findChild(this.index + 4, buffer.buffer[this.index + 3], dir, pos - this.context.start, side);
+    return index2 < 0 ? null : new BufferNode(this.context, this, index2);
   }
   get firstChild() {
     return this.child(
@@ -24693,8 +24693,8 @@ class BufferNode extends BaseNode {
     if (mode & IterMode.ExcludeBuffers)
       return null;
     let { buffer } = this.context;
-    let index = buffer.findChild(this.index + 4, buffer.buffer[this.index + 3], side > 0 ? 1 : -1, pos - this.context.start, side);
-    return index < 0 ? null : new BufferNode(this.context, this, index);
+    let index2 = buffer.findChild(this.index + 4, buffer.buffer[this.index + 3], side > 0 ? 1 : -1, pos - this.context.start, side);
+    return index2 < 0 ? null : new BufferNode(this.context, this, index2);
   }
   get parent() {
     return this._parent || this.context.parent.nextSignificantParent();
@@ -24831,12 +24831,12 @@ class TreeCursor {
     this.to = node.to;
     return true;
   }
-  yieldBuf(index, type) {
-    this.index = index;
+  yieldBuf(index2, type) {
+    this.index = index2;
     let { start, buffer } = this.buffer;
-    this.type = type || buffer.set.types[buffer.buffer[index]];
-    this.from = start + buffer.buffer[index + 1];
-    this.to = start + buffer.buffer[index + 2];
+    this.type = type || buffer.set.types[buffer.buffer[index2]];
+    this.from = start + buffer.buffer[index2 + 1];
+    this.to = start + buffer.buffer[index2 + 2];
     return true;
   }
   /**
@@ -24865,11 +24865,11 @@ class TreeCursor {
     if (!this.buffer)
       return this.yield(this._tree.nextChild(dir < 0 ? this._tree._tree.children.length - 1 : 0, dir, pos, side, this.mode));
     let { buffer } = this.buffer;
-    let index = buffer.findChild(this.index + 4, buffer.buffer[this.index + 3], dir, pos - this.buffer.start, side);
-    if (index < 0)
+    let index2 = buffer.findChild(this.index + 4, buffer.buffer[this.index + 3], dir, pos - this.buffer.start, side);
+    if (index2 < 0)
       return false;
     this.stack.push(this.index);
-    return this.yieldBuf(index);
+    return this.yieldBuf(index2);
   }
   /**
   Move the cursor to this node's first child. When this returns
@@ -24978,7 +24978,7 @@ class TreeCursor {
     return this.sibling(-1);
   }
   atLastNode(dir) {
-    let index, parent, { buffer } = this;
+    let index2, parent, { buffer } = this;
     if (buffer) {
       if (dir > 0) {
         if (this.index < buffer.buffer.buffer.length)
@@ -24988,13 +24988,13 @@ class TreeCursor {
           if (buffer.buffer.buffer[i2 + 3] < this.index)
             return false;
       }
-      ({ index, parent } = buffer);
+      ({ index: index2, parent } = buffer);
     } else {
-      ({ index, _parent: parent } = this._tree);
+      ({ index: index2, _parent: parent } = this._tree);
     }
-    for (; parent; { index, _parent: parent } = parent) {
-      if (index > -1)
-        for (let i2 = index + dir, e = dir < 0 ? -1 : parent._tree.children.length; i2 != e; i2 += dir) {
+    for (; parent; { index: index2, _parent: parent } = parent) {
+      if (index2 > -1)
+        for (let i2 = index2 + dir, e = dir < 0 ? -1 : parent._tree.children.length; i2 != e; i2 += dir) {
           let child = parent._tree.children[i2];
           if (this.mode & IterMode.IncludeAnonymous || child instanceof TreeBuffer || !child.type.isAnonymous || hasChild(child))
             return false;
@@ -25058,16 +25058,16 @@ class TreeCursor {
       return this._tree;
     let cache = this.bufferNode, result = null, depth = 0;
     if (cache && cache.context == this.buffer) {
-      scan: for (let index = this.index, d2 = this.stack.length; d2 >= 0; ) {
+      scan: for (let index2 = this.index, d2 = this.stack.length; d2 >= 0; ) {
         for (let c2 = cache; c2; c2 = c2._parent)
-          if (c2.index == index) {
-            if (index == this.index)
+          if (c2.index == index2) {
+            if (index2 == this.index)
               return c2;
             result = c2;
             depth = d2 + 1;
             break scan;
           }
-        index = this.stack[--d2];
+        index2 = this.stack[--d2];
       }
     }
     for (let i2 = depth; i2 < this.stack.length; i2++)
@@ -25168,9 +25168,9 @@ function buildTree(data2) {
     let startPos = start - parentStart;
     if (end - start <= maxBufferLength && (buffer2 = findBufferSize(cursor.pos - minPos, inRepeat))) {
       let data3 = new Uint16Array(buffer2.size - buffer2.skip);
-      let endPos = cursor.pos - buffer2.size, index = data3.length;
+      let endPos = cursor.pos - buffer2.size, index2 = data3.length;
       while (cursor.pos > endPos)
-        index = copyToBuffer(buffer2.start, data3, index);
+        index2 = copyToBuffer(buffer2.start, data3, index2);
       node = new TreeBuffer(data3, end - buffer2.start, nodeSet);
       startPos = buffer2.start - parentStart;
     } else {
@@ -25312,26 +25312,26 @@ function buildTree(data2) {
     }
     return result.size > 4 ? result : void 0;
   }
-  function copyToBuffer(bufferStart, buffer2, index) {
+  function copyToBuffer(bufferStart, buffer2, index2) {
     let { id, start, end, size } = cursor;
     cursor.next();
     if (size >= 0 && id < minRepeatType) {
-      let startIndex = index;
+      let startIndex = index2;
       if (size > 4) {
         let endPos = cursor.pos - (size - 4);
         while (cursor.pos > endPos)
-          index = copyToBuffer(bufferStart, buffer2, index);
+          index2 = copyToBuffer(bufferStart, buffer2, index2);
       }
-      buffer2[--index] = startIndex;
-      buffer2[--index] = end - bufferStart;
-      buffer2[--index] = start - bufferStart;
-      buffer2[--index] = id;
+      buffer2[--index2] = startIndex;
+      buffer2[--index2] = end - bufferStart;
+      buffer2[--index2] = start - bufferStart;
+      buffer2[--index2] = id;
     } else if (size == -3) {
       contextHash = id;
     } else if (size == -4) {
       lookAhead = id;
     }
-    return index;
+    return index2;
   }
   let children = [], positions = [];
   while (cursor.pos > 0)
@@ -27544,9 +27544,9 @@ function matchingNodes(node, dir, brackets) {
   if (byProp)
     return byProp;
   if (node.name.length == 1) {
-    let index = brackets.indexOf(node.name);
-    if (index > -1 && index % 2 == (dir < 0 ? 1 : 0))
-      return [brackets[index + dir]];
+    let index2 = brackets.indexOf(node.name);
+    if (index2 > -1 && index2 % 2 == (dir < 0 ? 1 : 0))
+      return [brackets[index2 + dir]];
   }
   return null;
 }
@@ -28841,9 +28841,9 @@ class SearchCursor {
   match(code2, pos, end) {
     let match = null;
     for (let i2 = 0; i2 < this.matches.length; i2 += 2) {
-      let index = this.matches[i2], keep = false;
-      if (this.query.charCodeAt(index) == code2) {
-        if (index == this.query.length - 1) {
+      let index2 = this.matches[i2], keep = false;
+      if (this.query.charCodeAt(index2) == code2) {
+        if (index2 == this.query.length - 1) {
           match = { from: this.matches[i2 + 1], to: end };
         } else {
           this.matches[i2]++;
@@ -29391,11 +29391,11 @@ function regexpCursor(spec, state, from, to) {
     test: spec.wholeWord ? regexpWordTest(state.charCategorizer(state.selection.main.head)) : void 0
   }, from, to);
 }
-function charBefore(str, index) {
-  return str.slice(findClusterBreak(str, index, false), index);
+function charBefore(str, index2) {
+  return str.slice(findClusterBreak(str, index2, false), index2);
 }
-function charAfter(str, index) {
-  return str.slice(index, findClusterBreak(str, index));
+function charAfter(str, index2) {
+  return str.slice(index2, findClusterBreak(str, index2));
 }
 function regexpWordTest(categorizer) {
   return (_from, _to, match) => !match[0].length || (categorizer(charBefore(match.input, match.index)) != CharCategory.Word || categorizer(charAfter(match.input, match.index)) != CharCategory.Word) && (categorizer(charAfter(match.input, match.index + match[0].length)) != CharCategory.Word || categorizer(charBefore(match.input, match.index + match[0].length)) != CharCategory.Word);
@@ -32010,6 +32010,22 @@ const basicSetup = /* @__PURE__ */ (() => [
     ...lintKeymap
   ])
 ])();
+const minimalSetup = /* @__PURE__ */ (() => [
+  highlightSpecialChars(),
+  history(),
+  drawSelection(),
+  syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+  keymap.of([
+    ...defaultKeymap,
+    ...historyKeymap
+  ])
+])();
+const index = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  EditorView,
+  basicSetup,
+  minimalSetup
+}, Symbol.toStringTag, { value: "Module" }));
 const baseURL = "http://localhost:8000/";
 function loadFile(fileName) {
   const fetchName = fileName.startsWith("http") ? fileName : baseURL + fileName;
@@ -32053,7 +32069,7 @@ function makeHTMLFromContent(text2) {
 </html>`;
   return header + text2 + footer;
 }
-let myResizeHandler;
+let myResizeHandler = null;
 const css = `html, body, #renkon {
     height: 100%;
 }
@@ -32120,6 +32136,7 @@ function view(opt) {
   const app = opt == null ? void 0 : opt.app;
   const noTicking = opt == null ? void 0 : opt.noTicking;
   const url = new URL(window.location.toString());
+  const hideEditor = (opt == null ? void 0 : opt.hideEditor) || url.searchParams.get("hideEditor");
   let maybeDoc = url.searchParams.get("doc");
   let semi;
   if (maybeDoc) {
@@ -32128,7 +32145,6 @@ function view(opt) {
       maybeDoc = maybeDoc.slice(0, semi);
     }
   }
-  let hideEditor = url.searchParams.get("hideEditor");
   const renkon = document.body.querySelector("#renkon");
   const programState = new ProgramState(Date.now(), app, noTicking);
   window.programState = programState;
@@ -32208,10 +32224,10 @@ async function update(renkon, editorView, programState) {
   let jsxs = jsxElements.map((s) => ({ element: s, code: s.textContent })).filter((s) => s.code);
   const programs = [...text2];
   if (jsxs.length > 0) {
-    const translated = jsxs.map((jsx2, index) => {
+    const translated = jsxs.map((jsx2, index2) => {
       const str = transpileJSX(jsx2.code);
       const div = document.createElement("div");
-      div.id = `jsx-${index}`;
+      div.id = `jsx-${index2}`;
       if (jsx2.element.style.cssText !== "") {
         div.setAttribute("style", jsx2.element.style.cssText);
       }
@@ -32967,6 +32983,7 @@ function newInspector(data2, dom) {
 }
 console.log("Renkon version:" + version);
 export {
+  index as CodeMirror,
   ProgramState,
   newInspector,
   parseJSX,
