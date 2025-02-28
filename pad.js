@@ -94,7 +94,7 @@ export function pad() {
     console.log("newId", newId);
 
     const moveCompute = ((downOrUp, positions) => {
-        //console.log("moveCompute", downOrUp, positions);
+        console.log("moveCompute", downOrUp, positions);
         if (downOrUp.type === "pointerdown") {
             const start = positions.map.get(downOrUp.id);
             const downPoint = {x: downOrUp.x, y: downOrUp.y};
@@ -109,7 +109,7 @@ export function pad() {
             }
         }
         return null;
-    })(downOrUp, $positions);
+    })(downOrUp, positions);
 
     const windowDOM = (id, position, codeEditor) => {
         return h("div", {
