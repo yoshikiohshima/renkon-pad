@@ -1,0 +1,16 @@
+#pad {
+    width: 1000px;
+    height: 1000px;
+}
+
+.owner {
+    width: 100%;
+    height: 100%;
+}
+
+#addButton {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+}
+    
