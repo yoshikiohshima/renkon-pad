@@ -6966,6 +6966,7 @@ function parseJavaScript(input, initialId, flattened2 = false) {
       let newInput = decl;
       let newPart = "";
       let overridden = false;
+      let again = false;
       for (let i2 = 0; i2 < rewriteSpecs.length; i2++) {
         const spec = rewriteSpecs[i2];
         if (spec.type === "range") {
@@ -6983,17 +6984,19 @@ function parseJavaScript(input, initialId, flattened2 = false) {
           overridden = true;
           newPart += spec.definition + "\n";
         } else if (spec.type === "select") {
-          overridden = true;
+          overridden = false;
           const sub = spec.triggers.map((spec2) => newInput.slice(spec2.start, spec2.end));
           const trigger = `Events._or_index(${sub.join(", ")})`;
           const funcs = spec.funcs.map((spec2) => newInput.slice(spec2.start, spec2.end));
           const init = newInput.slice(spec.init.start, spec.init.end);
           const newNewInput = `const ${declarations[0].name} = ${spec.classType}._select(${init}, ${trigger}, [${funcs}]);`;
-          const parsed = parseJavaScript(newPart + newNewInput, initialId, false);
-          allReferences.push(...parsed);
+          newInput = newNewInput;
+          again = true;
+          id++;
+          break;
         }
       }
-      allReferences.push(...parseJavaScript(`${newPart}${overridden ? "" : "\n" + newInput}`, initialId, true));
+      allReferences.push(...parseJavaScript(`${newPart}${overridden ? "" : "\n" + newInput}`, again ? id : initialId, !again));
     }
   }
   return allReferences;
@@ -7200,7 +7203,7 @@ function rewriteRenkonCalls(output, body) {
     }
   });
 }
-const version$1 = "0.3.1";
+const version$1 = "0.3.4";
 const packageJson = {
   version: version$1
 };

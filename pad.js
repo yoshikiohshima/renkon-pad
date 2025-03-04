@@ -7,8 +7,9 @@ export function pad() {
     );
 
     // {id, x: number, y: number, width: number, height: number}
-    const positions = Behaviors.collect({map: new Map()}, Events.or(Events.change(windows), moveOrResize), (now, command) => {
-        if (Array.isArray(command)) {
+    const positions = Behaviors.select(
+        {map: new Map()},
+        Events.change(windows), (now, command) => {
             const keys = [...now.map.keys()];
             const news = command.filter((e) => !keys.includes(e));
             const olds = keys.filter((e) => !command.includes(e));
@@ -24,38 +25,44 @@ export function pad() {
             olds.forEach((e) => now.map.delete(`${e}`));
             news.forEach((e) => now.map.set(`${e}`, newWindow(e)));
             return {map: now.map};
-        } else if (command.type === "move") {
-            const v = {...now.map.get(command.id)};
-            v.x = command.x;
-            v.y = command.y;
-            now.map.set(command.id, v);
-            return {map: now.map};
-        }
-        return now
-    });
-
-    const codeEditors = Behaviors.collect({map: new Map()}, Events.change(windows), (now, command) => {
-        if (Array.isArray(command)) {
-            const keys = [...now.map.keys()];
-            const news = command.filter((e) => !keys.includes(e));
-            const olds = keys.filter((e) => !command.includes(e));
-
-            const newEditor = (id) => {
-                const mirror = window.CodeMirror;
-                const editor = new mirror.EditorView({
-                    doc: "hello",
-                    extensions: [mirror.basicSetup, mirror.EditorView.lineWrapping],
-                });
-                editor.dom.classList.add("editor");
-                editor.dom.id = `${id}-editor`;
-                return editor;
+        },
+        moveOrResize, (now, command) => {
+            if (command.type === "move") {
+                const v = {...now.map.get(command.id)};
+                v.x = command.x;
+                v.y = command.y;
+                now.map.set(command.id, v);
+                return {map: now.map};
             }
-
-            olds.forEach((e) => now.map.delete(`${e}`));
-            news.forEach((e) => now.map.set(`${e}`, newEditor(e)));
-            return {map: now.map};
+            return now
         }
-    });
+    );
+
+    const codeEditors = Behaviors.select(
+        {map: new Map()},
+        Events.change(windows), (now, command) => {
+            if (Array.isArray(command)) {
+                const keys = [...now.map.keys()];
+                const news = command.filter((e) => !keys.includes(e));
+                const olds = keys.filter((e) => !command.includes(e));
+
+                const newEditor = (id) => {
+                    const mirror = window.CodeMirror;
+                    const editor = new mirror.EditorView({
+                        doc: "hello",
+                        extensions: [mirror.basicSetup, mirror.EditorView.lineWrapping],
+                    });
+                    editor.dom.classList.add("editor");
+                    editor.dom.id = `${id}-editor`;
+                    return editor;
+                }
+
+                olds.forEach((e) => now.map.delete(`${e}`));
+                news.forEach((e) => now.map.set(`${e}`, newEditor(e)));
+                return {map: now.map};
+            }
+        }
+    );
 
     const innerIframe = document.querySelector("#innerWindow");
 
