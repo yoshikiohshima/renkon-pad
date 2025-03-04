@@ -1,14 +1,10 @@
 export function pad() {
     // [id]
-    const windows = Behaviors.collect([], Events.or(Events.change(newId), remove), (now, command) => {
-        if (typeof command === "number") {
-            return [...now, `${command}`];
-        }
-        if (command.type === "remove") {
-            return now.filter((e) => e != command.id);
-        }
-        return now;
-    });
+    const windows = Behaviors.select(
+        [],
+        Events.change(newId), (now, id) => [...now, `${id}`],
+        remove, (now, removeCommand) => now.filter((e) => e != removeCommand.id)
+    );
 
     // {id, x: number, y: number, width: number, height: number}
     const positions = Behaviors.collect({map: new Map()}, Events.or(Events.change(windows), moveOrResize), (now, command) => {
