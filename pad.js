@@ -48,17 +48,6 @@ export function pad() {
         },
     );
 
-    const newEditor = (id, doc) => {
-        const mirror = window.CodeMirror;
-        const editor = new mirror.EditorView({
-            doc: doc || "hello",
-            extensions: [mirror.basicSetup, mirror.EditorView.lineWrapping],
-        });
-        editor.dom.classList.add("editor");
-        editor.dom.id = `${id}-editor`;
-        return editor;
-    }
-
     const codeEditors = Behaviors.select(
         {map: new Map()},
         loadRequest, (now, loaded) => {
@@ -87,13 +76,23 @@ export function pad() {
         }
     );
 
-    const innerIframe = document.querySelector("#innerWindow");
+    const newEditor = (id, doc) => {
+        const mirror = window.CodeMirror;
+        const editor = new mirror.EditorView({
+            doc: doc || "hello",
+            extensions: [mirror.basicSetup, mirror.EditorView.lineWrapping],
+        });
+        editor.dom.classList.add("editor");
+        editor.dom.id = `${id}-editor`;
+        return editor;
+    }
 
-    const _onRun = ((innerIframe, run, codeEditors) => {
+    const _onRun = ((run, codeEditors) => {
+        const innerIframe = document.querySelector("#innerWindow");
         const code = [...codeEditors.map.values()].map((editor) => editor.state.doc.toString());
         console.log(code);
         innerIframe.contentWindow.postMessage({code: code});
-    })(innerIframe, run, codeEditors);
+    })(run, codeEditors);
 
     const init = Events.change(Behaviors.keep(0));
 
