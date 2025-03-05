@@ -80,9 +80,12 @@ export function pad() {
         const mirror = window.CodeMirror;
         const editor = new mirror.EditorView({
             doc: doc || "hello",
-            extensions: [mirror.basicSetup, mirror.EditorView.lineWrapping],
+            extensions: [
+                mirror.basicSetup,
+                mirror.EditorView.lineWrapping,
+                mirror.EditorView.editorAttributes.of({"class": "editor"})
+            ],
         });
-        editor.dom.classList.add("editor");
         editor.dom.id = `${id}-editor`;
         return editor;
     }
@@ -126,11 +129,13 @@ export function pad() {
             type = "windowResizeDown";
         }
         if (type) {
+            evt.target.setPointerCapture(evt.pointerId);
             return {id, target: evt.target, type, x: evt.clientX, y: evt.clientY};
         }
     });
 
     const padUp = Events.listener("#pad", "pointerup", (evt) => {
+        evt.target.releasePointerCapture(evt.pointerId);
         return {type: "pointerup", x: evt.clientX, y: evt.clientY};
     });
 
@@ -144,7 +149,7 @@ export function pad() {
     console.log("newId", newId);
 
     const moveCompute = ((downOrUpOrResize, positions) => {
-        console.log("moveCompute", downOrUpOrResize, positions);
+        // console.log("moveCompute", downOrUpOrResize, positions);
         if (downOrUpOrResize.type === "moveDown" || downOrUpOrResize.type === "windowResizeDown") {
             const start = positions.map.get(downOrUpOrResize.id);
             const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
@@ -178,7 +183,7 @@ export function pad() {
                 top: `${position.y}px`,
                 width: `${position.width}px`,
                 height: `${position.height}px`,
-                backgroundColor: "#ddd",
+                backgroundColor: "#eee",
             },
             ref: (ref) => {
                 if (ref) {

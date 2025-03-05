@@ -13,11 +13,7 @@ const {stringify, parse} = import ("./stable-stringify.js");
     <div id="iframeHolder">
       <iframe id="innerWindow" src="window.html"></iframe>
     </div>
-    <script id="codemirror-loader" type="module">
-      import {CodeMirror} from "./renkon-web.js";
-debugger;
-      window.CodeMirror = CodeMirror;
-    </script>
+    <link id="pad-css" rel="stylesheet" href="./pad.css" />
 `;
     console.log(div.childNodes);
 
@@ -26,9 +22,20 @@ debugger;
     renkon.querySelector("#buttonBox")?.remove();
     renkon.querySelector("#iframeHolder")?.remove();
     renkon.querySelector("#codemirror-loader")?.remove();
+    renkon.querySelector("#pad-css")?.remove();
 
     renkon.appendChild(div.querySelector("#pad"));
     renkon.appendChild(div.querySelector("#buttonBox"));
-    renkon.appendChild(div.querySelector("#codemirror-loader"));
-//    renkon.appendChild(div.querySelector("#iframeHolder"));
+    renkon.appendChild(div.querySelector("#pad-css"));
+    //    renkon.appendChild(div.querySelector("#iframeHolder"));
+
+    const script = document.createElement("script");
+    script.id = "codemirror-loader"
+    script.type = "module";
+    script.innerText = `import {CodeMirror} from "./renkon-web.js";
+      window.CodeMirror = CodeMirror;
+    `;
+
+    renkon.appendChild(script);
+
 })();
