@@ -6996,7 +6996,8 @@ function parseJavaScript(input, initialId, flattened2 = false) {
           break;
         }
       }
-      allReferences.push(...parseJavaScript(`${newPart}${overridden ? "" : "\n" + newInput}`, again ? id : initialId, !again));
+      const parsed = parseJavaScript(`${newPart}${overridden ? "" : "\n" + newInput}`, again ? id - 1 : initialId, !again);
+      allReferences.push(...parsed);
     }
   }
   return allReferences;
@@ -7203,7 +7204,7 @@ function rewriteRenkonCalls(output, body) {
     }
   });
 }
-const version$1 = "0.3.4";
+const version$1 = "0.3.5";
 const packageJson = {
   version: version$1
 };
@@ -9864,9 +9865,11 @@ class Events {
   collect(init, varName, updater) {
     return new CollectStream(init, varName, updater, false);
   }
-  /*map<S, T>(varName:VarName, updater: (arg:S) => T) {
-      return new CollectStream(undefined, varName, (_a, b) => updater(b), false);
-  },*/
+  select(_init, ..._pairs) {
+  }
+  _select(init, varName, updaters) {
+    return new SelectStream(init, varName, updaters, false);
+  }
   send(receiver, value) {
     this.programState.registerEvent(receiver, value);
     return new SendEvent();
