@@ -10,11 +10,13 @@
         <script type="module">
             import {ProgramState} from "./renkon-web.js";
             window.thisProgramState = new ProgramState(0);
-            window.thisProgramState.evaluator();
 
             window.onmessage = (evt) => {
                 if (evt.data && Array.isArray(evt.data.code)) {
                     window.thisProgramState.updateProgram(evt.data.code);
+                    if (window.thisProgramState.evaluatorRunning === 0) {
+                        window.thisProgramState.evaluator();
+                    }
                 }
             };
         </script>

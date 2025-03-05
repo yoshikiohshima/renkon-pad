@@ -48,3 +48,18 @@
     margin: 2px;
     pointer-events: all;
 }
+
+.resizeHandler {
+    position: absolute;
+    background-color: rgba(0.1, 0.1, 0.1, 0.1);
+    width: 20px;
+    height: 20px;
+    bottom: -10px;
+    right: -10px;
+}
+
+.resizeHandler:hover {
+    background-color: rgba(0.1, 0.4, 0.1, 0.3);
+}
+
+	      

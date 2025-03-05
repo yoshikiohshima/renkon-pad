@@ -2,13 +2,21 @@ export function pad() {
     // [id]
     const windows = Behaviors.select(
         [],
+        loadRequest, (now, data) => {
+            console.log("windows loaded");
+            return data.windows
+        },
         Events.change(newId), (now, id) => [...now, `${id}`],
-        remove, (now, removeCommand) => now.filter((e) => e != removeCommand.id)
+        remove, (now, removeCommand) => now.filter((e) => e != removeCommand.id),
     );
 
     // {id, x: number, y: number, width: number, height: number}
     const positions = Behaviors.select(
         {map: new Map()},
+        loadRequest, (now, data) => {
+            console.log("positions loaded");
+            return data.positions
+        },
         Events.change(windows), (now, command) => {
             const keys = [...now.map.keys()];
             const news = command.filter((e) => !keys.includes(e));
@@ -27,40 +35,55 @@ export function pad() {
             return {map: now.map};
         },
         moveOrResize, (now, command) => {
-            if (command.type === "move") {
+            if (command.type === "move" || command.type === "resize") {
                 const v = {...now.map.get(command.id)};
-                v.x = command.x;
-                v.y = command.y;
+                if (command.x !== undefined) v.x = command.x;
+                if (command.y !== undefined) v.y = command.y;
+                if (command.width !== undefined) v.width = command.width;
+                if (command.height !== undefined) v.height = command.height;
                 now.map.set(command.id, v);
                 return {map: now.map};
             }
             return now
-        }
+        },
     );
+
+    const newEditor = (id, doc) => {
+        const mirror = window.CodeMirror;
+        const editor = new mirror.EditorView({
+            doc: doc || "hello",
+            extensions: [mirror.basicSetup, mirror.EditorView.lineWrapping],
+        });
+        editor.dom.classList.add("editor");
+        editor.dom.id = `${id}-editor`;
+        return editor;
+    }
 
     const codeEditors = Behaviors.select(
         {map: new Map()},
-        Events.change(windows), (now, command) => {
-            if (Array.isArray(command)) {
-                const keys = [...now.map.keys()];
-                const news = command.filter((e) => !keys.includes(e));
-                const olds = keys.filter((e) => !command.includes(e));
-
-                const newEditor = (id) => {
-                    const mirror = window.CodeMirror;
-                    const editor = new mirror.EditorView({
-                        doc: "hello",
-                        extensions: [mirror.basicSetup, mirror.EditorView.lineWrapping],
-                    });
-                    editor.dom.classList.add("editor");
-                    editor.dom.id = `${id}-editor`;
-                    return editor;
-                }
-
-                olds.forEach((e) => now.map.delete(`${e}`));
-                news.forEach((e) => now.map.set(`${e}`, newEditor(e)));
-                return {map: now.map};
+        loadRequest, (now, loaded) => {
+            debugger;
+            for (let editor of now.map.values()) {
+                editor.dom.remove();
             }
+            now.map.clear();
+
+            for (let [id, code] of loaded.code) {
+                now.map.set(id, newEditor(id, code));
+            }
+            return {map: now.map};
+        },
+        Events.change(windows), (now, command) => {
+            const keys = [...now.map.keys()];
+            const news = command.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !command.includes(e));
+            olds.forEach((e) => {
+                const editor = now.map.get(`${e}`);
+                editor.dom.remove();
+                now.map.delete(`${e}`)
+            });
+            news.forEach((e) => now.map.set(`${e}`, newEditor(e)));
+            return {map: now.map};
         }
     );
 
@@ -72,50 +95,79 @@ export function pad() {
         innerIframe.contentWindow.postMessage({code: code});
     })(innerIframe, run, codeEditors);
 
-    const {h, render} = import("./preact.standalone.module.js");
+    const init = Events.change(Behaviors.keep(0));
 
-    const add = Events.listener("#addButton", "click", (evt) => evt);
+    const newId = Behaviors.select(
+        0,
+        loadRequest, (now, request) => {
+            return request.windows.length + 1;
+        },
+        Events.or(add, init), (now) => now + 1
+    );
+
+    const {h, render} = import("./preact.standalone.module.js");
+    const {stringify, parse} = import ("./stable-stringify.js");
+
     const run = Events.listener("#runButton", "click", (evt) => evt);
-    const downOrUp = Events.receiver();
+    const add = Events.listener("#addButton", "click", (evt) => evt);
+    const save = Events.listener("#saveButton", "click", (evt) => evt);
+    const load = Events.listener("#loadButton", "click", (evt) => evt);
+
+    const loadRequest = Events.receiver();
     const remove = Events.receiver();
 
-    const _padDown = Events.listener("#pad", "pointerdown", (evt) => {
-        if (evt.target.id) {
-            const id = `${Number.parseInt(evt.target.id)}`;
-            Events.send(downOrUp, {id, target: evt.target, type: "pointerdown", x: evt.clientX, y: evt.clientY});
+    const padDown = Events.listener("#pad", "pointerdown", (evt) => {
+        const strId = evt.target.id;
+        if (!strId) {return;}
+        const id = `${Number.parseInt(strId)}`;
+        let type;
+        if (strId.endsWith("-win")) {
+            type = "moveDown";
+        } else if (strId.endsWith("-resize")) {
+            type = "windowResizeDown";
+        }
+        if (type) {
+            return {id, target: evt.target, type, x: evt.clientX, y: evt.clientY};
         }
     });
 
-    const _padUp = Events.listener("#pad", "pointerup", (evt) => {
-        Events.send(downOrUp, {type: "pointerup", x: evt.clientX, y: evt.clientY});
+    const padUp = Events.listener("#pad", "pointerup", (evt) => {
+        return {type: "pointerup", x: evt.clientX, y: evt.clientY};
     });
 
+    const downOrUpOrResize = Events.or(padDown, padUp, windowResize);
+
     const _padMove = Events.listener("#pad", "pointermove", moveCompute);
+
+    const windowResize = Events.receiver();
     const moveOrResize = Events.receiver();
-
-    const init = Events.change(Behaviors.keep(0));
-
-    const newId = Behaviors.collect(0, Events.or(add, init), (now) => now + 1);
 
     console.log("newId", newId);
 
-    const moveCompute = ((downOrUp, positions) => {
-        console.log("moveCompute", downOrUp, positions);
-        if (downOrUp.type === "pointerdown") {
-            const start = positions.map.get(downOrUp.id);
-            const downPoint = {x: downOrUp.x, y: downOrUp.y};
+    const moveCompute = ((downOrUpOrResize, positions) => {
+        console.log("moveCompute", downOrUpOrResize, positions);
+        if (downOrUpOrResize.type === "moveDown" || downOrUpOrResize.type === "windowResizeDown") {
+            const start = positions.map.get(downOrUpOrResize.id);
+            const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
+            const type = downOrUpOrResize.type === "moveDown" ? "move" : "resize";
             return (move) => {
-                // console.log("pointermove", downOrUp, start);
-                Events.send(moveOrResize, {
-                    id: downOrUp.id,
-                    type: "move",
-                    x: start.x + (move.clientX - downPoint.x),
-                    y: start.y + (move.clientY - downPoint.y),
-                });
+                // console.log("pointermove", downOrUpOrResize, start);
+                const diffX = move.clientX - downPoint.x;
+                const diffY = move.clientY - downPoint.y;
+                const result = {id: downOrUpOrResize.id, type};
+                if (type === "move") {
+                    result.x = start.x + diffX;
+                    result.y = start.y + diffY;
+                } else {
+                    result.width = start.width + diffX;
+                    result.height = start.height + diffY;
+                }
+                Events.send(moveOrResize, result);
             }
+        } else if (downOrUpOrResize.type === "pointerup") {
+            return null;
         }
-        return null;
-    })(downOrUp, positions);
+    })(downOrUpOrResize, positions);
 
     const windowDOM = (id, position, codeEditor) => {
         return h("div", {
@@ -150,8 +202,12 @@ export function pad() {
                         console.log(evt);
                         Events.send(remove, {id: `${Number.parseInt(evt.target.id)}`, type: "remove"})
                     }
-                })
+                }),
             ]),
+            h("div", {
+                id: `${id}-resize`,
+                "class": "resizeHandler",
+            }, [])
         ])
     };
 
@@ -164,6 +220,48 @@ export function pad() {
     const _myRender = ((windowElements, padElement) => {
         render(windowElements, padElement);
     })(windowElements, document.querySelector("#pad"));
+
+
+    const _saver = ((windows, positions, codeEditors) => {
+        const code = new Map([...codeEditors.map].map(([id, editor]) => ([id, editor.state.doc.toString()])));
+        const data = stringify({
+            version: 1,
+            windows,
+            positions,
+            code
+        });
+
+        const div = document.createElement("a");
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
+        div.setAttribute("href", dataStr);
+        div.setAttribute("download", `renkon-pad.json`);
+        div.click();
+    })(windows, positions, codeEditors, save);
+
+    const _loader = (() => {
+        const input = document.createElement("div");
+        input.innerHTML = `<input id="imageinput" type="file" accept="application/json">`;
+        const imageInput = input.firstChild;
+
+        imageInput.onchange = () => {
+            const file = imageInput.files[0];
+            if (!file) {return;}
+            new Promise(resolve => {
+                let reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsArrayBuffer(file);
+            }).then((data) => {
+                const result = new TextDecoder("utf-8").decode(data);
+                const loaded = parse(result);
+                if (loaded.version === 1) {
+                    Events.send(loadRequest, loaded);
+                }
+            })
+            imageInput.value = "";
+        };
+        document.body.appendChild(imageInput);
+        imageInput.click();
+    })(load);
 
     return [];
 }
