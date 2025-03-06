@@ -1,4 +1,48 @@
 export function pad() {
+    const {h, render} = import("./preact.standalone.module.js");
+    const {stringify, parse} = import ("./stable-stringify.js");
+
+    /*
+      (() => {
+    const div = document.createElement("div");
+    div.innerHTML = `<div id="pad"></div>
+    <div id="buttonBox">
+      <button id="runButton">run</button>
+      <button id="addButton">add</button>
+      <button id="saveButton">save</button>
+      <button id="loadButton">load</button>
+    </div>
+    <div id="iframeHolder">
+      <iframe id="innerWindow" src="window.html"></iframe>
+    </div>
+    <link id="pad-css" rel="stylesheet" href="./pad.css" />
+`;
+    console.log(div.childNodes);
+
+    const renkon = document.querySelector("#renkon");
+    renkon.querySelector("#pad")?.remove();
+    renkon.querySelector("#buttonBox")?.remove();
+    renkon.querySelector("#iframeHolder")?.remove();
+    renkon.querySelector("#codemirror-loader")?.remove();
+    renkon.querySelector("#pad-css")?.remove();
+
+    renkon.appendChild(div.querySelector("#pad"));
+    renkon.appendChild(div.querySelector("#buttonBox"));
+    renkon.appendChild(div.querySelector("#pad-css"));
+    //    renkon.appendChild(div.querySelector("#iframeHolder"));
+
+    const script = document.createElement("script");
+    script.id = "codemirror-loader"
+    script.type = "module";
+    script.innerText = `import {CodeMirror} from "./renkon-web.js";
+      window.CodeMirror = CodeMirror;
+    `;
+
+    renkon.appendChild(script);
+
+})();
+    */
+
     // [id]
     const windows = Behaviors.select(
         [],
@@ -48,6 +92,31 @@ export function pad() {
         },
     );
 
+    const titles = Behaviors.select(
+        {map: new Map()},
+        loadRequest, (now, loaded) => {
+            console.log("titles loaded");
+            return loaded.titles || {map: new Map()};
+        },
+        Events.change(windows), (now, command) => {
+            const keys = [...now.map.keys()];
+            const news = command.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !command.includes(e));
+
+            olds.forEach((e) => now.map.delete(`${e}`));
+            news.forEach((e) => now.map.set(`${e}`, {id: `${e}`, state: false, title: "untitled"}));
+            return {map: now.map};
+        },
+        titleEditChange, (now, change) => {
+            const {id, state, title} = change;
+            const v = {...now.map.get(id)};
+            if (title) v.title = title;
+            if (state !== undefined) v.state = state;
+            now.map.set(id, v);
+            return {map: now.map};
+        }
+    );
+
     const codeEditors = Behaviors.select(
         {map: new Map()},
         loadRequest, (now, loaded) => {
@@ -75,29 +144,14 @@ export function pad() {
         }
     );
 
-    const titles = Behaviors.select(
-        {map: new Map()},
-        loadRequest, (now, loaded) => {
-            console.log("titles loaded");
-            return loaded.titles || {map: new Map()};
-        },
-        Events.change(windows), (now, command) => {
-            const keys = [...now.map.keys()];
-            const news = command.filter((e) => !keys.includes(e));
-            const olds = keys.filter((e) => !command.includes(e));
+    const init = Events.change(Behaviors.keep(0));
 
-            olds.forEach((e) => now.map.delete(`${e}`));
-            news.forEach((e) => now.map.set(`${e}`, {id: `${e}`, state: false, title: "untitled"}));
-            return {map: now.map};
+    const newId = Behaviors.select(
+        0,
+        loadRequest, (now, request) => {
+            return request.windows.length + 1;
         },
-        titleEditChange, (now, change) => {
-            const {id, state, title} = change;
-            const v = {...now.map.get(id)};
-            if (title) v.title = title;
-            if (state !== undefined) v.state = state;
-            now.map.set(id, v);
-            return {map: now.map};
-        }
+        Events.or(add, init), (now) => now + 1
     );
 
     const newEditor = (id, doc) => {
@@ -114,6 +168,13 @@ export function pad() {
         return editor;
     }
 
+    // buttonActions.js
+
+    const run = Events.listener("#runButton", "click", (evt) => evt);
+    const add = Events.listener("#addButton", "click", (evt) => evt);
+    const save = Events.listener("#saveButton", "click", (evt) => evt);
+    const load = Events.listener("#loadButton", "click", (evt) => evt);
+
     const _onRun = ((run, codeEditors) => {
         const innerIframe = document.querySelector("#innerWindow");
         const code = [...codeEditors.map.values()].map((editor) => editor.state.doc.toString());
@@ -121,27 +182,9 @@ export function pad() {
         innerIframe.contentWindow.postMessage({code: code});
     })(run, codeEditors);
 
-    const init = Events.change(Behaviors.keep(0));
+    // userActions.js
 
-    const newId = Behaviors.select(
-        0,
-        loadRequest, (now, request) => {
-            return request.windows.length + 1;
-        },
-        Events.or(add, init), (now) => now + 1
-    );
-
-    const {h, render} = import("./preact.standalone.module.js");
-    const {stringify, parse} = import ("./stable-stringify.js");
-
-    const run = Events.listener("#runButton", "click", (evt) => evt);
-    const add = Events.listener("#addButton", "click", (evt) => evt);
-    const save = Events.listener("#saveButton", "click", (evt) => evt);
-    const load = Events.listener("#loadButton", "click", (evt) => evt);
-
-    const loadRequest = Events.receiver();
     const remove = Events.receiver();
-
     const titleEditChange = Events.receiver();
 
     const padDown = Events.listener("#pad", "pointerdown", (evt) => {
@@ -211,6 +254,8 @@ export function pad() {
         }
     }
 
+    // render.js
+
     const windowDOM = (id, position, title, codeEditor) => {
         return h("div", {
             key: `${id}`,
@@ -272,6 +317,8 @@ export function pad() {
         render(windowElements, padElement);
     })(windowElements, document.querySelector("#pad"));
 
+    /// saver.js
+    const loadRequest = Events.receiver();
 
     const _saver = ((windows, positions, titles, codeEditors) => {
         const code = new Map([...codeEditors.map].map(([id, editor]) => ([id, editor.state.doc.toString()])));
