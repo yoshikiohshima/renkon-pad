@@ -1,12 +1,37 @@
-    // [id]
+    // [id:string]
     const windows = Behaviors.select(
         [],
         loadRequest, (now, data) => {
             console.log("windows loaded");
             return data.windows
         },
-        Events.change(newId), (now, id) => [...now, `${id}`],
+        newId, (now, id) => [...now, `${Number.parseInt(id)}`],
         remove, (now, removeCommand) => now.filter((e) => e != removeCommand.id),
+    );
+
+    // {map: Map<id, type:"code"|"runner">
+    const windowTypes = Behaviors.select(
+        {map: new Map()},
+        loadRequest, (now, data) => {
+            console.log("windowTypes loaded");
+            return data.windowTypes;
+        },
+        newId, (now, spec) => {
+            const index = spec.indexOf("-");
+            const id = Number.parseInt(spec);
+            const type = spec.slice(index + 1);
+            now.map.set(`${id}`, type);
+            return {map: now.map};
+        },
+        Events.change(windows), (now, windows) => {
+            const keys = [...now.map.keys()];
+            const news = windows.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !windows.includes(e));
+
+            olds.forEach((e) => now.map.delete(`${e}`));
+            news.forEach((e) => now.map.set(`${e}`, "code"));
+            return {map: now.map};
+        }
     );
 
     // {id, x: number, y: number, width: number, height: number}
@@ -16,21 +41,24 @@
             console.log("positions loaded");
             return data.positions
         },
-        Events.change(windows), (now, command) => {
+        Events.change(windowTypes), (now, types) => {
             const keys = [...now.map.keys()];
-            const news = command.filter((e) => !keys.includes(e));
-            const olds = keys.filter((e) => !command.includes(e));
+            const typeKeys = [...types.map.keys()];
+            const news = typeKeys.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !typeKeys.includes(e));
 
-            const newWindow = (id) => ({
-                id,
-                x: Number.parseInt(id) * 30,
-                y:  Number.parseInt(id) * 30,
-                width: 300,
-                height: 200
-            });
+            const newWindow = (id, type) => {
+                return {
+                    id,
+                    x: typeKeys.length * 30,
+                    y: typeKeys.length * 30 + 30,
+                    width: type === "code" ? 300 : 800,
+                    height: type === "code" ? 200 : 400
+                }
+            };
 
             olds.forEach((e) => now.map.delete(`${e}`));
-            news.forEach((e) => now.map.set(`${e}`, newWindow(e)));
+            news.forEach((e) => now.map.set(`${e}`, newWindow(e, types.map.get(e))));
             return {map: now.map};
         },
         moveOrResize, (now, command) => {
@@ -80,34 +108,49 @@
             }
             now.map.clear();
 
-            for (let [id, code] of loaded.code) {
-                now.map.set(id, newEditor(id, code));
+            for (let [id, type] of loaded.windowTypes.map) {
+                let elem;
+                if (type === "code") {
+                    elem = newEditor(id, loaded.code.get(id));
+                } else {
+                    elem = newRunner(id);
+                }
+                now.map.set(id, elem);
             }
             return {map: now.map};
         },
-        Events.change(windows), (now, command) => {
+        Events.change(windowTypes), (now, types) => {
             const keys = [...now.map.keys()];
-            const news = command.filter((e) => !keys.includes(e));
-            const olds = keys.filter((e) => !command.includes(e));
+            const typeKeys = [...types.map.keys()];
+            const news = typeKeys.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !typeKeys.includes(e));
             olds.forEach((e) => {
-                const editor = now.map.get(`${e}`);
+                const editor = now.map.get(e);
                 editor.dom.remove();
-                now.map.delete(`${e}`)
+                now.map.delete(e)
             });
-            news.forEach((e) => now.map.set(`${e}`, newEditor(e)));
+            news.forEach((id) => {
+                const type = types.map.get(id);
+                now.map.set(id, type === "code" ? newEditor(id) : newRunner(id));
+            });
             return {map: now.map};
         }
     );
 
-    const init = Events.change(Behaviors.keep(0));
+    const init = Events.change(Behaviors.keep("code"));
 
-    const newId = Behaviors.select(
-        0,
+    const newId = Events.select(
+        "0-code",
         loadRequest, (now, request) => {
-            return request.windows.length + 1;
+            return `${request.windows.length + 1}-`;
         },
-        Events.or(add, init), (now) => now + 1
+        Events.or(addCode, addRunner, init), (now, type) => {
+            const id = Number.parseInt(now) + 1;
+            return `${id}-${type}`;
+        }
     );
+
+    console.log("newId", newId);
 
     const newEditor = (id, doc) => {
         const mirror = window.CodeMirror;
@@ -121,4 +164,12 @@
         });
         editor.dom.id = `${id}-editor`;
         return editor;
+    };
+
+    const newRunner = (id) => {
+        const runnerIframe = document.createElement("iframe");
+        runnerIframe.src = "window.html";
+        runnerIframe.classList = "runnerIframe";
+        runnerIframe.id = `runner-${id}`;
+        return {dom: runnerIframe};
     }

@@ -43,7 +43,9 @@ export function pad() {
 })();
     */
 
-    // [id]
+    // data.js
+
+    // [id:string]
     const windows = Behaviors.select(
         [],
         loadRequest, (now, data) => {
@@ -54,6 +56,7 @@ export function pad() {
         remove, (now, removeCommand) => now.filter((e) => e != removeCommand.id),
     );
 
+    // {map: Map<id, type:"code"|"runner">
     const windowTypes = Behaviors.select(
         {map: new Map()},
         loadRequest, (now, data) => {
@@ -383,7 +386,7 @@ export function pad() {
     const loadRequest = Events.receiver();
 
     const _saver = ((windows, positions, titles, codeEditors, windowTypes) => {
-        const code = new Map([...codeEditors.map].filter(([id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
+        const code = new Map([...codeEditors.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
         const data = stringify({
             version: 1,
             windows,

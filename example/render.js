@@ -1,18 +1,20 @@
-    const windowDOM = (id, position, title, codeEditor) => {
+    const windowDOM = (id, position, title, codeEditor, type) => {
+        // console.log("windowDOM");
         return h("div", {
             key: `${id}`,
             id: `${id}-win`,
+            "class": "window",
             style: {
-                position: "absolute",
                 left: `${position.x}px`,
                 top: `${position.y}px`,
                 width: `${position.width}px`,
                 height: `${position.height}px`,
-                backgroundColor: "#eee",
             },
             ref: (ref) => {
                 if (ref) {
-                    ref.appendChild(codeEditor.dom);
+                    if (ref !== codeEditor.dom.parentNode) {
+                        ref.appendChild(codeEditor.dom);
+                    }
                 }
             }
         }, [
@@ -20,6 +22,15 @@
                 id: `${id}-titleBar`,
                 "class": "titleBar",
             }, [
+                h("button", {
+                    id: `${id}-runButton`,
+                    "class": "runButton",
+                    type,
+                    onClick: (evt) => {
+                        //console.log(evt);
+                        Events.send(runRequest, {id: `${Number.parseInt(evt.target.id)}`});
+                    },
+                }),
                 h("div", {
                     id: `${id}-title`,
                     "class": "title",
@@ -30,7 +41,7 @@
                     id: `${id}-edit`,
                     "class": `editButton`,
                     onClick: (evt) => {
-                        console.log(evt);
+                        // console.log(evt);
                         Events.send(titleEditChange, {id: `${Number.parseInt(evt.target.id)}`, state: !title.state});
                     },
                 }, []),
@@ -49,11 +60,11 @@
         ])
     };
 
-    const windowElements = ((windows, positions, titles, codeEditors) => {
+    const windowElements = ((windows, positions, titles, codeEditors, windowTypes) => {
         return h("div", {"class": "owner"}, windows.map((id) => {
-            return windowDOM(id, positions.map.get(id), titles.map.get(id), codeEditors.map.get(id));
+            return windowDOM(id, positions.map.get(id), titles.map.get(id), codeEditors.map.get(id), windowTypes.map.get(id));
         }));
-    })(windows, positions, titles, codeEditors);
+    })(windows, positions, titles, codeEditors, windowTypes);
 
     const _myRender = ((windowElements, padElement) => {
         render(windowElements, padElement);

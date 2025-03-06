@@ -1,5 +1,6 @@
     const remove = Events.receiver();
     const titleEditChange = Events.receiver();
+    const runRequest = Events.receiver();
 
     const padDown = Events.listener("#pad", "pointerdown", (evt) => {
         const strId = evt.target.id;
@@ -28,8 +29,6 @@
 
     const windowResize = Events.receiver();
     const moveOrResize = Events.receiver();
-
-    console.log("newId", newId);
 
     const moveCompute = ((downOrUpOrResize, positions) => {
         // console.log("moveCompute", downOrUpOrResize, positions);
@@ -67,4 +66,3 @@
             });
         }
     }
-
