@@ -51,7 +51,6 @@ export function pad() {
     const codeEditors = Behaviors.select(
         {map: new Map()},
         loadRequest, (now, loaded) => {
-            debugger;
             for (let editor of now.map.values()) {
                 editor.dom.remove();
             }
@@ -72,6 +71,31 @@ export function pad() {
                 now.map.delete(`${e}`)
             });
             news.forEach((e) => now.map.set(`${e}`, newEditor(e)));
+            return {map: now.map};
+        }
+    );
+
+    const titles = Behaviors.select(
+        {map: new Map()},
+        loadRequest, (now, loaded) => {
+            console.log("titles loaded");
+            return loaded.titles || {map: new Map()};
+        },
+        Events.change(windows), (now, command) => {
+            const keys = [...now.map.keys()];
+            const news = command.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !command.includes(e));
+
+            olds.forEach((e) => now.map.delete(`${e}`));
+            news.forEach((e) => now.map.set(`${e}`, {id: `${e}`, state: false, title: "untitled"}));
+            return {map: now.map};
+        },
+        titleEditChange, (now, change) => {
+            const {id, state, title} = change;
+            const v = {...now.map.get(id)};
+            if (title) v.title = title;
+            if (state !== undefined) v.state = state;
+            now.map.set(id, v);
             return {map: now.map};
         }
     );
@@ -117,6 +141,8 @@ export function pad() {
 
     const loadRequest = Events.receiver();
     const remove = Events.receiver();
+
+    const titleEditChange = Events.receiver();
 
     const padDown = Events.listener("#pad", "pointerdown", (evt) => {
         const strId = evt.target.id;
@@ -173,7 +199,19 @@ export function pad() {
         }
     })(downOrUpOrResize, positions);
 
-    const windowDOM = (id, position, codeEditor) => {
+    const inputHandler = (evt) => {
+        if (evt.key === "Enter") {
+            evt.preventDefault();
+            evt.stopPropagation();
+            Events.send(titleEditChange, {
+                id: `${Number.parseInt(evt.target.id)}`,
+                title: evt.target.textContent,
+                state: false
+            });
+        }
+    }
+
+    const windowDOM = (id, position, title, codeEditor) => {
         return h("div", {
             key: `${id}`,
             id: `${id}-win`,
@@ -198,12 +236,21 @@ export function pad() {
                 h("div", {
                     id: `${id}-title`,
                     "class": "title",
-                }),
+                    contentEditable: `${title.state}`,
+                    onKeydown: inputHandler,
+                }, title.title),
+                h("div", {
+                    id: `${id}-edit`,
+                    "class": `editButton`,
+                    onClick: (evt) => {
+                        console.log(evt);
+                        Events.send(titleEditChange, {id: `${Number.parseInt(evt.target.id)}`, state: !title.state});
+                    },
+                }, []),
                 h("div", {
                     id: `${id}-close`,
                     "class": "closeButton",
                     onClick: (evt) => {
-                        console.log(evt);
                         Events.send(remove, {id: `${Number.parseInt(evt.target.id)}`, type: "remove"})
                     }
                 }),
@@ -215,23 +262,24 @@ export function pad() {
         ])
     };
 
-    const windowElements = ((windows, positions, codeEditors) => {
+    const windowElements = ((windows, positions, titles, codeEditors) => {
         return h("div", {"class": "owner"}, windows.map((id) => {
-            return windowDOM(id, positions.map.get(id), codeEditors.map.get(id));
+            return windowDOM(id, positions.map.get(id), titles.map.get(id), codeEditors.map.get(id));
         }));
-    })(windows, positions, codeEditors);
+    })(windows, positions, titles, codeEditors);
 
     const _myRender = ((windowElements, padElement) => {
         render(windowElements, padElement);
     })(windowElements, document.querySelector("#pad"));
 
 
-    const _saver = ((windows, positions, codeEditors) => {
+    const _saver = ((windows, positions, titles, codeEditors) => {
         const code = new Map([...codeEditors.map].map(([id, editor]) => ([id, editor.state.doc.toString()])));
         const data = stringify({
             version: 1,
             windows,
             positions,
+            titles,
             code
         });
 
@@ -240,7 +288,7 @@ export function pad() {
         div.setAttribute("href", dataStr);
         div.setAttribute("download", `renkon-pad.json`);
         div.click();
-    })(windows, positions, codeEditors, save);
+    })(windows, positions, titles, codeEditors, save);
 
     const _loader = (() => {
         const input = document.createElement("div");
