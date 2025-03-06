@@ -7,8 +7,9 @@
         <div id="renkon">
         </div>
         <script type="module">
-            import {ProgramState} from "./renkon-web.js";
+            import {ProgramState, CodeMirror} from "./renkon-web.js";
             window.thisProgramState = new ProgramState(0);
+            window.CodeMirror = CodeMirror;
 
             window.onmessage = (evt) => {
                 if (evt.data && Array.isArray(evt.data.code)) {
