@@ -50,8 +50,32 @@ export function pad() {
             console.log("windows loaded");
             return data.windows
         },
-        Events.change(newId), (now, id) => [...now, `${id}`],
+        newId, (now, id) => [...now, `${Number.parseInt(id)}`],
         remove, (now, removeCommand) => now.filter((e) => e != removeCommand.id),
+    );
+
+    const windowTypes = Behaviors.select(
+        {map: new Map()},
+        loadRequest, (now, data) => {
+            console.log("windowTypes loaded");
+            return data.windowTypes;
+        },
+        newId, (now, spec) => {
+            const index = spec.indexOf("-");
+            const id = Number.parseInt(spec);
+            const type = spec.slice(index + 1);
+            now.map.set(`${id}`, type);
+            return {map: now.map};
+        },
+        Events.change(windows), (now, windows) => {
+            const keys = [...now.map.keys()];
+            const news = windows.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !windows.includes(e));
+
+            olds.forEach((e) => now.map.delete(`${e}`));
+            news.forEach((e) => now.map.set(`${e}`, "code"));
+            return {map: now.map};
+        }
     );
 
     // {id, x: number, y: number, width: number, height: number}
@@ -61,21 +85,24 @@ export function pad() {
             console.log("positions loaded");
             return data.positions
         },
-        Events.change(windows), (now, command) => {
+        Events.change(windowTypes), (now, types) => {
             const keys = [...now.map.keys()];
-            const news = command.filter((e) => !keys.includes(e));
-            const olds = keys.filter((e) => !command.includes(e));
+            const typeKeys = [...types.map.keys()];
+            const news = typeKeys.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !typeKeys.includes(e));
 
-            const newWindow = (id) => ({
-                id,
-                x: Number.parseInt(id) * 30,
-                y:  Number.parseInt(id) * 30,
-                width: 300,
-                height: 200
-            });
+            const newWindow = (id, type) => {
+                return {
+                    id,
+                    x: typeKeys.length * 30,
+                    y: typeKeys.length * 30 + 30,
+                    width: type === "code" ? 300 : 800,
+                    height: type === "code" ? 200 : 400
+                }
+            };
 
             olds.forEach((e) => now.map.delete(`${e}`));
-            news.forEach((e) => now.map.set(`${e}`, newWindow(e)));
+            news.forEach((e) => now.map.set(`${e}`, newWindow(e, types.map.get(e))));
             return {map: now.map};
         },
         moveOrResize, (now, command) => {
@@ -125,34 +152,49 @@ export function pad() {
             }
             now.map.clear();
 
-            for (let [id, code] of loaded.code) {
-                now.map.set(id, newEditor(id, code));
+            for (let [id, type] of loaded.windowTypes.map) {
+                let elem;
+                if (type === "code") {
+                    elem = newEditor(id, loaded.code.get(id));
+                } else {
+                    elem = newRunner(id);
+                }
+                now.map.set(id, elem);
             }
             return {map: now.map};
         },
-        Events.change(windows), (now, command) => {
+        Events.change(windowTypes), (now, types) => {
             const keys = [...now.map.keys()];
-            const news = command.filter((e) => !keys.includes(e));
-            const olds = keys.filter((e) => !command.includes(e));
+            const typeKeys = [...types.map.keys()];
+            const news = typeKeys.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !typeKeys.includes(e));
             olds.forEach((e) => {
-                const editor = now.map.get(`${e}`);
+                const editor = now.map.get(e);
                 editor.dom.remove();
-                now.map.delete(`${e}`)
+                now.map.delete(e)
             });
-            news.forEach((e) => now.map.set(`${e}`, newEditor(e)));
+            news.forEach((id) => {
+                const type = types.map.get(id);
+                now.map.set(id, type === "code" ? newEditor(id) : newRunner(id));
+            });
             return {map: now.map};
         }
     );
 
-    const init = Events.change(Behaviors.keep(0));
+    const init = Events.change(Behaviors.keep("code"));
 
-    const newId = Behaviors.select(
-        0,
+    const newId = Events.select(
+        "0-code",
         loadRequest, (now, request) => {
-            return request.windows.length + 1;
+            return `${request.windows.length + 1}-`;
         },
-        Events.or(add, init), (now) => now + 1
+        Events.or(addCode, addRunner, init), (now, type) => {
+            const id = Number.parseInt(now) + 1;
+            return `${id}-${type}`;
+        }
     );
+
+    console.log("newId", newId);
 
     const newEditor = (id, doc) => {
         const mirror = window.CodeMirror;
@@ -166,26 +208,37 @@ export function pad() {
         });
         editor.dom.id = `${id}-editor`;
         return editor;
+    };
+
+    const newRunner = (id) => {
+        const runnerIframe = document.createElement("iframe");
+        runnerIframe.src = "window.html";
+        runnerIframe.classList = "runnerIframe";
+        runnerIframe.id = `runner-${id}`;
+        return {dom: runnerIframe};
     }
 
     // buttonActions.js
 
-    const run = Events.listener("#runButton", "click", (evt) => evt);
-    const add = Events.listener("#addButton", "click", (evt) => evt);
+    const addCode = Events.listener("#addCodeButton", "click", () => "code");
+    const addRunner = Events.listener("#addRunnerButton", "click", () => "runner");
     const save = Events.listener("#saveButton", "click", (evt) => evt);
     const load = Events.listener("#loadButton", "click", (evt) => evt);
 
-    const _onRun = ((run, codeEditors) => {
-        const innerIframe = document.querySelector("#innerWindow");
-        const code = [...codeEditors.map.values()].map((editor) => editor.state.doc.toString());
-        console.log(code);
-        innerIframe.contentWindow.postMessage({code: code});
-    })(run, codeEditors);
+    const _onRun = ((runRequest, codeEditors) => {
+        const id = runRequest.id;
+        const iframe = codeEditors.map.get(id);
+        const code = [...codeEditors.map.values()]
+            .filter((obj) => obj.state)
+            .map((editor) => editor.state.doc.toString());
+        iframe.dom.contentWindow.postMessage({code: code});
+    })(runRequest, codeEditors);
 
     // userActions.js
 
     const remove = Events.receiver();
     const titleEditChange = Events.receiver();
+    const runRequest = Events.receiver();
 
     const padDown = Events.listener("#pad", "pointerdown", (evt) => {
         const strId = evt.target.id;
@@ -214,8 +267,6 @@ export function pad() {
 
     const windowResize = Events.receiver();
     const moveOrResize = Events.receiver();
-
-    console.log("newId", newId);
 
     const moveCompute = ((downOrUpOrResize, positions) => {
         // console.log("moveCompute", downOrUpOrResize, positions);
@@ -256,21 +307,23 @@ export function pad() {
 
     // render.js
 
-    const windowDOM = (id, position, title, codeEditor) => {
+    const windowDOM = (id, position, title, codeEditor, type) => {
+        // console.log("windowDOM");
         return h("div", {
             key: `${id}`,
             id: `${id}-win`,
+            "class": "window",
             style: {
-                position: "absolute",
                 left: `${position.x}px`,
                 top: `${position.y}px`,
                 width: `${position.width}px`,
                 height: `${position.height}px`,
-                backgroundColor: "#eee",
             },
             ref: (ref) => {
                 if (ref) {
-                    ref.appendChild(codeEditor.dom);
+                    if (ref !== codeEditor.dom.parentNode) {
+                        ref.appendChild(codeEditor.dom);
+                    }
                 }
             }
         }, [
@@ -278,6 +331,15 @@ export function pad() {
                 id: `${id}-titleBar`,
                 "class": "titleBar",
             }, [
+                h("button", {
+                    id: `${id}-runButton`,
+                    "class": "runButton",
+                    type,
+                    onClick: (evt) => {
+                        //console.log(evt);
+                        Events.send(runRequest, {id: `${Number.parseInt(evt.target.id)}`});
+                    },
+                }),
                 h("div", {
                     id: `${id}-title`,
                     "class": "title",
@@ -288,7 +350,7 @@ export function pad() {
                     id: `${id}-edit`,
                     "class": `editButton`,
                     onClick: (evt) => {
-                        console.log(evt);
+                        // console.log(evt);
                         Events.send(titleEditChange, {id: `${Number.parseInt(evt.target.id)}`, state: !title.state});
                     },
                 }, []),
@@ -307,11 +369,11 @@ export function pad() {
         ])
     };
 
-    const windowElements = ((windows, positions, titles, codeEditors) => {
+    const windowElements = ((windows, positions, titles, codeEditors, windowTypes) => {
         return h("div", {"class": "owner"}, windows.map((id) => {
-            return windowDOM(id, positions.map.get(id), titles.map.get(id), codeEditors.map.get(id));
+            return windowDOM(id, positions.map.get(id), titles.map.get(id), codeEditors.map.get(id), windowTypes.map.get(id));
         }));
-    })(windows, positions, titles, codeEditors);
+    })(windows, positions, titles, codeEditors, windowTypes);
 
     const _myRender = ((windowElements, padElement) => {
         render(windowElements, padElement);
@@ -320,14 +382,15 @@ export function pad() {
     /// saver.js
     const loadRequest = Events.receiver();
 
-    const _saver = ((windows, positions, titles, codeEditors) => {
-        const code = new Map([...codeEditors.map].map(([id, editor]) => ([id, editor.state.doc.toString()])));
+    const _saver = ((windows, positions, titles, codeEditors, windowTypes) => {
+        const code = new Map([...codeEditors.map].filter(([id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
         const data = stringify({
             version: 1,
             windows,
             positions,
             titles,
-            code
+            code,
+            windowTypes
         });
 
         const div = document.createElement("a");
@@ -335,7 +398,7 @@ export function pad() {
         div.setAttribute("href", dataStr);
         div.setAttribute("download", `renkon-pad.json`);
         div.click();
-    })(windows, positions, titles, codeEditors, save);
+    })(windows, positions, titles, codeEditors, windowTypes, save);
 
     const _loader = (() => {
         const input = document.createElement("div");

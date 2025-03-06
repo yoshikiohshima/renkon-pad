@@ -10,16 +10,14 @@
                 const {pad} = import("./pad.js");
                 Renkon.merge(pad);
             </script>
-            <div id="pad"></div>
             <div id="buttonBox">
-                <button id="runButton">run</button>
-                <button id="addButton">add</button>
-                <button id="saveButton">save</button>
-                <button id="loadButton">load</button>
+                <button class="menuButton" id="addCodeButton">code</button>
+                <button class="menuButton" id="addRunnerButton">runner</button>
+                <div class="spacer"></div>
+                <button class="menuButton" id="saveButton">save</button>
+                <button class="menuButotn" id="loadButton">load</button>
             </div>
-            <div id="iframeHolder">
-                <iframe id="innerWindow" src="window.html"></iframe>
-            </div>
+            <div id="pad"></div>
         </div>
         <script type="module">
             import {view, CodeMirror, ProgramState} from "./renkon-web.js";
