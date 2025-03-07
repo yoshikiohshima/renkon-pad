@@ -14,12 +14,13 @@
                 <button class="menuButton" id="addCodeButton">code</button>
                 <button class="menuButton" id="addRunnerButton">runner</button>
                 <div class="spacer"></div>
+                <button class="menuButton" id="showGraph">Show Graph</button>
                 <button class="menuButton" id="saveButton">save</button>
-                <button class="menuButotn" id="loadButton">load</button>
+                <button class="menuButton" id="loadButton">load</button>
             </div>
             <div id="pad"></div>
-            <div style="pointer-events: none; position: absolute; height: 1000px; width: 1000px; top:0px; left: 0px" id="overlay"></div>
         </div>
+        <div id="overlay"></div>
         <script type="module">
             import {view, CodeMirror, ProgramState} from "./renkon-web.js";
             window.CodeMirror = CodeMirror;

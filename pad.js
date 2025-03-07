@@ -186,6 +186,9 @@ export function pad() {
 
     const init = Events.change(Behaviors.keep("code"));
 
+    // it has <number>-(code|runner) structure.
+    // You might consider having newId for number and newType separate events but make it packed
+    // makes the windows and windowTypes access them from one function
     const newId = Events.select(
         "0-code",
         loadRequest, (now, request) => {
@@ -225,8 +228,17 @@ export function pad() {
 
     const addCode = Events.listener("#addCodeButton", "click", () => "code");
     const addRunner = Events.listener("#addRunnerButton", "click", () => "runner");
+
+    const showGraph = Behaviors.collect(
+        true,
+        Events.listener("#showGraph", "click", (evt) => evt),
+        (now, _click) => !now
+    );
+
     const save = Events.listener("#saveButton", "click", (evt) => evt);
     const load = Events.listener("#loadButton", "click", (evt) => evt);
+
+    document.querySelector("#showGraph").textContent = showGraph ? "Show Graph" : "Hide Graph";
 
     const _onRun = ((runRequest, codeEditors) => {
         const id = runRequest.id;
@@ -336,9 +348,9 @@ export function pad() {
                 id: `${id}-titleBar`,
                 "class": "titleBar",
             }, [
-                h("button", {
+                h("div", {
                     id: `${id}-runButton`,
-                    "class": "runButton",
+                    "class": "titlebarButton runButton",
                     type,
                     onClick: (evt) => {
                         //console.log(evt);
@@ -353,7 +365,7 @@ export function pad() {
                 }, title.title),
                 h("div", {
                     id: `${id}-edit`,
-                    "class": `editButton`,
+                    "class": `titlebarButton editButton`,
                     onClick: (evt) => {
                         // console.log(evt);
                         Events.send(titleEditChange, {id: `${Number.parseInt(evt.target.id)}`, state: !title.state});
@@ -361,7 +373,7 @@ export function pad() {
                 }, []),
                 h("div", {
                     id: `${id}-close`,
-                    "class": "closeButton",
+                    "class": "titlebarButton closeButton",
                     onClick: (evt) => {
                         Events.send(remove, {id: `${Number.parseInt(evt.target.id)}`, type: "remove"})
                     }
@@ -374,10 +386,10 @@ export function pad() {
         ])
     };
 
-    const windowElements = ((windows, positions, titles, codeEditors, windowTypes, graph) => {
+    const windowElements = ((windows, positions, titles, codeEditors, windowTypes) => {
         return h("div", {"class": "owner"}, windows.map((id) => {
             return windowDOM(id, positions.map.get(id), titles.map.get(id), codeEditors.map.get(id), windowTypes.map.get(id));
-        }).concat([graph]));
+        }));
     })(windows, positions, titles, codeEditors, windowTypes);
 
     const _myRender = ((windowElements, padElement) => {
@@ -423,6 +435,7 @@ export function pad() {
                 if (loaded.version === 1) {
                     Events.send(loadRequest, loaded);
                 }
+                imageInput.remove();
             })
             imageInput.value = "";
         };
@@ -499,41 +512,59 @@ export function pad() {
 
         return edges;
 
-    })(codeEditors);
+    })(codeEditors, hovered);
 
-    console.log(analyzed);
-
-    const line = (p1, p2, color) => {
-        return html`<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="${color}" stroke-width="${2}" stroke-linecap="round"></line>`;
+    const line = (p1, p2, color, label) => {
+        let pl;
+        let pr;
+        if (p1.x < p2.x) {
+            pl = p1;
+            pr = p2;
+        } else {
+            pl = p2;
+            pr = p1;
+        }
+        const c0 = `${pl.x} ${pl.y}`;
+        const c1 = `${pl.x + (pr.x - pl.x) * 0.5} ${pl.y + (pr.y - pl.y) * 0.2}`;
+        const c2 = `${pr.x - (pr.x - pl.x) * 0.2} ${pl.y + (pr.y - pl.y) * 0.6}`;
+        const c3 = `${pr.x} ${pr.y}`;
+        return html`<path d="M ${c0} C ${c1} ${c2} ${c3}" stroke="${color}" fill="transparent" stroke-width="2" stroke-linecap="round"></path><text x="${p1.x}" y="${p1.y}">${label}</text>`;
     };
 
-    const graph = ((positions, analyzed, hovered) => {
-        if (hovered === null) {
+    const hovered = Events.receiver();
+    const hoveredB = Behaviors.keep(hovered);
+
+    const graph = ((positions, analyzed, hoveredB, showGraph) => {
+        if (hoveredB === null || !showGraph) {
             return [];
         }
 
-        const edges = analyzed.get(hovered);
+        const edges = analyzed.get(hoveredB);
 
-        if (!edges) {return [];} // a runner
+        if (!edges) {return [];} // runner does not have edges
 
-        const outEdges = edges.edgesOut.map((edge) => {
-            const p1 = positions.map.get(hovered);
-            return line(p1, positions.map.get(edge.dest), "#f00");
+        const outEdges = edges.edgesOut.map((edge, i) => {
+            let p1 = positions.map.get(hoveredB);
+            p1 = {x: p1.x + p1.width, y: p1.y};
+            p1 = {x: p1.x, y: p1.y + i * 20 + 10};
+            let p2 = positions.map.get(edge.dest);
+            p2 = {x: p2.x, y: p2.y + 10};
+            return line(p1, p2, "#d88", edge.id);
         });
 
-        const inEdges = edges.edgesIn.map((edge) => {
-            const p1 = positions.map.get(hovered);
-            return line(p1, positions.map.get(edge.origin), "#00f");
+        const inEdges = edges.edgesIn.map((edge, i) => {
+            let p1 = positions.map.get(edge.origin);
+            p1 = {x: p1.x + p1.width, y: p1.y};
+            p1 = {x: p1.x, y: p1.y + i * 20 + 10};
+            let p2 = positions.map.get(hoveredB);
+            p2 = {x: p2.x, y: p2.y + 10};
+            return line(p1, p2, "#88d", edge.id);
         });
 
-        return html`<svg viewBox="0 0 ${1000} ${1000}" xmlns="http://www.w3.org/2000/svg">${outEdges}${inEdges}</svg>`;
-    })(positions, analyzed, hovered);
+        return html`<svg viewBox="0 0 ${window.innerWidth} ${window.innerHeight}" xmlns="http://www.w3.org/2000/svg">${outEdges}${inEdges}</svg>`;
+    })(positions, analyzed, hoveredB, showGraph);
 
     render(graph, document.querySelector("#overlay"));
-
-    const hovered = Events.receiver();
-
-    console.log("hovered", hovered);
 
     return [];
 }
