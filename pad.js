@@ -434,14 +434,17 @@ export function pad() {
     const analyzed = ((codeEditors) => {
         const programState = new Renkon.constructor(0);
 
-        const code = new Map([...codeEditors.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
+        const code = [...codeEditors.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
+        programState.setupProgram(code);
 
         const nodes = new Map();
-
-        for (let [id, text] of code) {
-            programState.setupProgram([text]);
-            nodes.set(id, [...programState.nodes.values()].map((jsNode) => (
-                {inputs: jsNode.inputs, outputs: jsNode.outputs})));
+        for (let jsNode of programState.nodes.values()) {
+            let ary = nodes.get(jsNode.blockId);
+            if (!ary) {
+                ary = [];
+                nodes.set(jsNode.blockId, ary);
+            }
+            ary.push({inputs: jsNode.inputs, outputs: jsNode.outputs});
         }
 
         const exportedNames = new Map();
@@ -501,7 +504,7 @@ export function pad() {
     console.log(analyzed);
 
     const line = (p1, p2, color) => {
-        return html`<line x1="${p1.x * 2}" y1="${p1.y * 2}" x2="${p2.x * 2}" y2="${p2.y * 2}" stroke="${color}" stroke-width="${2}" stroke-linecap="round"></line>`;
+        return html`<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="${color}" stroke-width="${2}" stroke-linecap="round"></line>`;
     };
 
     const graph = ((positions, analyzed, hovered) => {
@@ -523,7 +526,7 @@ export function pad() {
             return line(p1, positions.map.get(edge.origin), "#00f");
         });
 
-        return html`<svg viewBox="0 0 ${window.innerWidth} ${window.innerHeight}" xmlns="http://www.w3.org/2000/svg">${outEdges}${inEdges}</svg>`;
+        return html`<svg viewBox="0 0 ${1000} ${1000}" xmlns="http://www.w3.org/2000/svg">${outEdges}${inEdges}</svg>`;
     })(positions, analyzed, hovered);
 
     render(graph, document.querySelector("#overlay"));

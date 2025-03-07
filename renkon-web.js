@@ -7132,6 +7132,7 @@ function transpileJavaScript(node) {
   output.insertLeft(0, `, outputs: ${JSON.stringify(only)}`);
   output.insertLeft(0, `, inputs: ${JSON.stringify(inputs)}`);
   output.insertLeft(0, `, forceVars: ${JSON.stringify(forceVars)}`);
+  output.insertLeft(0, `, blockId: "${node.blockId}"`);
   output.insertLeft(0, `{id: "${node.id}"`);
   output.insertRight(node.input.length, `
 return ${only};`);
@@ -10046,8 +10047,20 @@ class ProgramState {
       }
     }, 0);
   }
-  setupProgram(scripts) {
+  setupProgram(scriptsArg) {
     const invalidatedStreamNames = /* @__PURE__ */ new Set();
+    const scripts = scriptsArg.map((s) => {
+      if (typeof s === "string") {
+        return s;
+      }
+      return s.code;
+    });
+    const blockIds = scriptsArg.map((s, i2) => {
+      if (typeof s === "string") {
+        return `${i2}`;
+      }
+      return s.blockId;
+    });
     for (const [varName, stream] of this.streams) {
       if (!stream[isBehaviorKey]) {
         const scratch = this.scratch.get(varName);
@@ -10068,7 +10081,9 @@ class ProgramState {
     }
     const jsNodes = /* @__PURE__ */ new Map();
     let id = 0;
-    for (const script of scripts) {
+    for (let scriptIndex = 0; scriptIndex < scripts.length; scriptIndex++) {
+      const blockId = blockIds[scriptIndex];
+      const script = scripts[scriptIndex];
       if (!script) {
         continue;
       }
@@ -10077,6 +10092,7 @@ class ProgramState {
         if (jsNodes.get(n2.id)) {
           console.log(`node "${n2.id}" is defined multiple times`);
         }
+        n2.blockId = blockId;
         jsNodes.set(n2.id, n2);
         id++;
       }
