@@ -36,6 +36,7 @@
                 if (loaded.version === 1) {
                     Events.send(loadRequest, loaded);
                 }
+                imageInput.remove();
             })
             imageInput.value = "";
         };

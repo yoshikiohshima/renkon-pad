@@ -16,15 +16,17 @@
                         ref.appendChild(codeEditor.dom);
                     }
                 }
-            }
+            },
+            onPointerEnter: (evt) => Events.send(hovered, `${Number.parseInt(evt.target.id)}`),
+            onPointerLeave: (_evt) => Events.send(hovered, null)
         }, [
             h("div", {
                 id: `${id}-titleBar`,
                 "class": "titleBar",
             }, [
-                h("button", {
+                h("div", {
                     id: `${id}-runButton`,
-                    "class": "runButton",
+                    "class": "titlebarButton runButton",
                     type,
                     onClick: (evt) => {
                         //console.log(evt);
@@ -39,7 +41,7 @@
                 }, title.title),
                 h("div", {
                     id: `${id}-edit`,
-                    "class": `editButton`,
+                    "class": `titlebarButton editButton`,
                     onClick: (evt) => {
                         // console.log(evt);
                         Events.send(titleEditChange, {id: `${Number.parseInt(evt.target.id)}`, state: !title.state});
@@ -47,7 +49,7 @@
                 }, []),
                 h("div", {
                     id: `${id}-close`,
-                    "class": "closeButton",
+                    "class": "titlebarButton closeButton",
                     onClick: (evt) => {
                         Events.send(remove, {id: `${Number.parseInt(evt.target.id)}`, type: "remove"})
                     }

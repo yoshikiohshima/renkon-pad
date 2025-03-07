@@ -139,6 +139,9 @@
 
     const init = Events.change(Behaviors.keep("code"));
 
+    // it has <number>-(code|runner) structure.
+    // You might consider having newId for number and newType separate events but make it packed
+    // makes the windows and windowTypes access them from one function
     const newId = Events.select(
         "0-code",
         loadRequest, (now, request) => {

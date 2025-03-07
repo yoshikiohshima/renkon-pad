@@ -224,10 +224,12 @@ export function pad() {
         return {dom: runnerIframe};
     }
 
-    // buttonActions.js
+    // userActions.js
 
     const addCode = Events.listener("#addCodeButton", "click", () => "code");
     const addRunner = Events.listener("#addRunnerButton", "click", () => "runner");
+    const save = Events.listener("#saveButton", "click", (evt) => evt);
+    const load = Events.listener("#loadButton", "click", (evt) => evt);
 
     const showGraph = Behaviors.collect(
         true,
@@ -235,10 +237,7 @@ export function pad() {
         (now, _click) => !now
     );
 
-    const save = Events.listener("#saveButton", "click", (evt) => evt);
-    const load = Events.listener("#loadButton", "click", (evt) => evt);
-
-    document.querySelector("#showGraph").textContent = showGraph ? "Show Graph" : "Hide Graph";
+    document.querySelector("#showGraph").textContent = showGraph ? "show graph" : "hide graph";
 
     const _onRun = ((runRequest, codeEditors) => {
         const id = runRequest.id;
@@ -248,8 +247,6 @@ export function pad() {
             .map((editor) => editor.state.doc.toString());
         iframe.dom.contentWindow.postMessage({code: code});
     })(runRequest, codeEditors);
-
-    // userActions.js
 
     const remove = Events.receiver();
     const titleEditChange = Events.receiver();

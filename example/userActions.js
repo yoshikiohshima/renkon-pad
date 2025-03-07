@@ -1,3 +1,25 @@
+    const addCode = Events.listener("#addCodeButton", "click", () => "code");
+    const addRunner = Events.listener("#addRunnerButton", "click", () => "runner");
+    const save = Events.listener("#saveButton", "click", (evt) => evt);
+    const load = Events.listener("#loadButton", "click", (evt) => evt);
+
+    const showGraph = Behaviors.collect(
+        true,
+        Events.listener("#showGraph", "click", (evt) => evt),
+        (now, _click) => !now
+    );
+
+    document.querySelector("#showGraph").textContent = showGraph ? "show graph" : "hide graph";
+
+    const _onRun = ((runRequest, codeEditors) => {
+        const id = runRequest.id;
+        const iframe = codeEditors.map.get(id);
+        const code = [...codeEditors.map.values()]
+            .filter((obj) => obj.state)
+            .map((editor) => editor.state.doc.toString());
+        iframe.dom.contentWindow.postMessage({code: code});
+    })(runRequest, codeEditors);
+
     const remove = Events.receiver();
     const titleEditChange = Events.receiver();
     const runRequest = Events.receiver();

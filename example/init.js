@@ -5,11 +5,13 @@
    <button class="menuButton" id="addCodeButton">code</button>
    <button class="menuButton" id="addRunnerButton">runner</button>
    <div class="spacer"></div>
+   <button class="menuButton" id="showGraph">show graph</button>
    <button class="menuButton" id="saveButton">save</button>
    <button class="menuButotn" id="loadButton">load</button>
 </div>
 <div id="pad"></div>
 <link id="pad-css" rel="stylesheet" href="./pad.css" />
+<div id="overlay"></div>
 `.trim();
     console.log(div.childNodes);
 
@@ -33,4 +35,7 @@
 
     renkon.appendChild(script);
 
+    const renkonParent = renkon.parentNode;
+    renkonParent.querySelector("#overlay")?.remove();
+    renkonParent.appendChild(div.querySelector("#overlay"));
 })();
