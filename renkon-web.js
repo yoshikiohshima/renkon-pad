@@ -7205,7 +7205,7 @@ function rewriteRenkonCalls(output, body) {
     }
   });
 }
-const version$1 = "0.3.5";
+const version$1 = "0.3.6";
 const packageJson = {
   version: version$1
 };
