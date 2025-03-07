@@ -1,5 +1,5 @@
 export function pad() {
-    const {h, render} = import("./preact.standalone.module.js");
+    const {h, html, render} = import("./preact.standalone.module.js");
     const {stringify, parse} = import ("./stable-stringify.js");
 
     /*
@@ -328,7 +328,9 @@ export function pad() {
                         ref.appendChild(codeEditor.dom);
                     }
                 }
-            }
+            },
+            onPointerEnter: (evt) => Events.send(hovered, `${Number.parseInt(evt.target.id)}`),
+            onPointerLeave: (_evt) => Events.send(hovered, null)
         }, [
             h("div", {
                 id: `${id}-titleBar`,
@@ -372,10 +374,10 @@ export function pad() {
         ])
     };
 
-    const windowElements = ((windows, positions, titles, codeEditors, windowTypes) => {
+    const windowElements = ((windows, positions, titles, codeEditors, windowTypes, graph) => {
         return h("div", {"class": "owner"}, windows.map((id) => {
             return windowDOM(id, positions.map.get(id), titles.map.get(id), codeEditors.map.get(id), windowTypes.map.get(id));
-        }));
+        }).concat([graph]));
     })(windows, positions, titles, codeEditors, windowTypes);
 
     const _myRender = ((windowElements, padElement) => {
@@ -428,7 +430,109 @@ export function pad() {
         imageInput.click();
     })(load);
 
+    // analyzer;
+    const analyzed = ((codeEditors) => {
+        const programState = new Renkon.constructor(0);
+
+        const code = new Map([...codeEditors.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
+
+        const nodes = new Map();
+
+        for (let [id, text] of code) {
+            programState.setupProgram([text]);
+            nodes.set(id, [...programState.nodes.values()].map((jsNode) => (
+                {inputs: jsNode.inputs, outputs: jsNode.outputs})));
+        }
+
+        const exportedNames = new Map();
+        const importedNames = new Map();
+        for (let [id, subNodes] of nodes) {
+            const exSet = new Set();
+            exportedNames.set(id, exSet);
+
+            const inSet = new Set();
+            importedNames.set(id, inSet);
+
+            for (let subNode of subNodes) {
+                let outputs = subNode.outputs;
+                if (outputs.length > 0 && !/^_[0-9]/.exec(outputs)) {
+                    exSet.add(outputs);
+                }
+                for (let inString of subNode.inputs) {
+                    if (!/^_[0-9]/.exec(inString)) {
+                        inSet.add(inString);
+                    }
+                }
+            }
+        }
+
+        // {edgesOut: [{id: "defined name", dest: '2'}, ...],
+        //  edgesIn: [{id: "defined name", origin: '2'}, ...]}
+        const edges = new Map();
+
+        for (let [id, _] of nodes) {
+            const exporteds = exportedNames.get(id);
+            const importeds = importedNames.get(id);
+
+            const edgesOut = [];
+            const edgesIn = [];
+
+            for (let exported of exporteds) {
+                for (let [destId, destSet] of importedNames) {
+                    if (destSet.has(exported)) {
+                        edgesOut.push({id: exported, dest: destId});
+                    }
+                }
+            }
+            for (let imported of importeds) {
+                for (let [sourceId, sourceSet] of exportedNames) {
+                    if (sourceSet.has(imported)) {
+                        edgesIn.push({id: imported, origin: sourceId});
+                    }
+                }
+            }
+            edges.set(id, {edgesOut, edgesIn});
+        }
+
+        return edges;
+
+    })(codeEditors);
+
+    console.log(analyzed);
+
+    const line = (p1, p2, color) => {
+        return html`<line x1="${p1.x * 2}" y1="${p1.y * 2}" x2="${p2.x * 2}" y2="${p2.y * 2}" stroke="${color}" stroke-width="${2}" stroke-linecap="round"></line>`;
+    };
+
+    const graph = ((positions, analyzed, hovered) => {
+        if (hovered === null) {
+            return [];
+        }
+
+        const edges = analyzed.get(hovered);
+
+        if (!edges) {return [];} // a runner
+
+        const outEdges = edges.edgesOut.map((edge) => {
+            const p1 = positions.map.get(hovered);
+            return line(p1, positions.map.get(edge.dest), "#f00");
+        });
+
+        const inEdges = edges.edgesIn.map((edge) => {
+            const p1 = positions.map.get(hovered);
+            return line(p1, positions.map.get(edge.origin), "#00f");
+        });
+
+        return html`<svg viewBox="0 0 ${window.innerWidth} ${window.innerHeight}" xmlns="http://www.w3.org/2000/svg">${outEdges}${inEdges}</svg>`;
+    })(positions, analyzed, hovered);
+
+    render(graph, document.querySelector("#overlay"));
+
+    const hovered = Events.receiver();
+
+    console.log("hovered", hovered);
+
     return [];
 }
 
-/* globals Events Behaviors */
+/* globals Events Behaviors Renkon */
