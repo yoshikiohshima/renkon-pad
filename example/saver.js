@@ -25,7 +25,7 @@
 
         imageInput.onchange = () => {
             const file = imageInput.files[0];
-            if (!file) {return;}
+            if (!file) {imageInput.remove(); return;}
             new Promise(resolve => {
                 let reader = new FileReader();
                 reader.onload = () => resolve(reader.result);
@@ -37,9 +37,10 @@
                     Events.send(loadRequest, loaded);
                 }
                 imageInput.remove();
-            })
+            });
             imageInput.value = "";
         };
+        imageInput.oncancel = () => imageInput.remove();
         document.body.appendChild(imageInput);
         imageInput.click();
     })(load);

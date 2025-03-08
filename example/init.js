@@ -7,7 +7,7 @@
    <div class="spacer"></div>
    <button class="menuButton" id="showGraph">show graph</button>
    <button class="menuButton" id="saveButton">save</button>
-   <button class="menuButotn" id="loadButton">load</button>
+   <button class="menuButton" id="loadButton">load</button>
 </div>
 <div id="pad"></div>
 <link id="pad-css" rel="stylesheet" href="./pad.css" />
