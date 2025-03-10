@@ -230,8 +230,6 @@ export function pad() {
 
     const newWindowRequest = Events.change({id: newId, type: Events.or(addCode, addRunner, init)});
 
-    console.log("newId", newWindowRequest);
-
     const newEditor = (id, doc) => {
         const mirror = window.CodeMirror;
         const editor = new mirror.EditorView({
