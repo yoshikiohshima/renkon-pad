@@ -71,6 +71,51 @@
         },
     );
 
+    const findMax = (map)  => {
+        let maxId = -1;
+        let max = -1;
+        for (let [id, value] of map) {
+            if (value > max) {
+                maxId = id;
+                max = value;
+            }
+        }
+        return {maxId, max};
+    };
+
+    const zIndex = Behaviors.select(
+        {map: new Map()},
+        loadRequest, (now, data) => {
+            console.log("zIndex loaded");
+            if (data.zIndex) return data.zIndex;
+            return {map: new Map(data.windows.map((w, i) => [w, i + 100]))};
+        },
+        Events.change(windows), (now, command) => {
+            const keys = [...now.map.keys()];
+            const news = command.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !command.includes(e));
+
+            const {maxId:_maxId, max} = findMax(now.map);
+            let z = max < 0 ? 100 : max + 1;
+            olds.forEach((id) => now.map.delete(id));
+            news.forEach((id) => now.map.set(id, z++));
+            return {map: now.map};
+        },
+        moveOrResize, (now, command) => {
+            if (command.type === "move") {
+                const z = now.map.get(command.id);
+
+                const {maxId, max} = findMax(now.map);
+                if (maxId !== command.id) {
+                    now.map.set(maxId, z);
+                    now.map.set(command.id, max);
+                }
+                return {map: now.map};
+            }
+            return now
+        },
+    );
+
     const titles = Behaviors.select(
         {map: new Map()},
         loadRequest, (now, loaded) => {

@@ -7205,7 +7205,7 @@ function rewriteRenkonCalls(output, body) {
     }
   });
 }
-const version$1 = "0.3.6";
+const version$1 = "0.3.7";
 const packageJson = {
   version: version$1
 };
@@ -10031,6 +10031,7 @@ class ProgramState {
     __publicField(this, "updated");
     __publicField(this, "app");
     __publicField(this, "noTicking");
+    __publicField(this, "log");
     __publicField(this, "programStates");
     __publicField(this, "lastReturned");
     __publicField(this, "futureScripts");
@@ -10047,6 +10048,9 @@ class ProgramState {
     this.evaluatorRunning = 0;
     this.updated = false;
     this.app = app;
+    this.log = (...values) => {
+      console.log(...values);
+    };
     this.noTicking = noTicking !== void 0 ? noTicking : false;
     this.programStates = /* @__PURE__ */ new Map();
     this.breakpoints = /* @__PURE__ */ new Set();
@@ -10060,7 +10064,7 @@ class ProgramState {
       this.evaluate(Date.now());
     } catch (e) {
       console.error(e);
-      console.log("stopping animation");
+      this.log("stopping animation");
       window.cancelAnimationFrame(this.evaluatorRunning);
       this.evaluatorRunning = 0;
     }
@@ -10121,7 +10125,7 @@ class ProgramState {
       const nodes = parseJavaScript(script, id, false);
       for (const n2 of nodes) {
         if (jsNodes.get(n2.id)) {
-          console.log(`node "${n2.id}" is defined multiple times`);
+          this.log(`node "${n2.id}" is defined multiple times`);
         }
         n2.blockId = blockId;
         jsNodes.set(n2.id, n2);
@@ -10148,7 +10152,7 @@ class ProgramState {
     }
     const unsortedVarnames = difference(new Set(evaluated.map((e) => e.id)), new Set(sorted));
     for (const u2 of unsortedVarnames) {
-      console.log(`Node ${u2} is not going to be evaluated because it is in a cycle or depends on a undefined variable.`);
+      this.log(`Node ${u2} is not going to be evaluated because it is in a cycle or depends on a undefined variable.`);
     }
     const oldVariableNames = new Set(this.order);
     const newVariableNames = new Set(sorted);
@@ -10186,7 +10190,7 @@ class ProgramState {
       const nodeNames = [...this.nodes].map(([id2, _body]) => id2);
       for (const input of node.inputs) {
         if (!nodeNames.includes(this.baseVarName(input))) {
-          console.log(`Node ${varName} won't be evaluated as it depends on an undefined variable ${input}.`);
+          this.log(`Node ${varName} won't be evaluated as it depends on an undefined variable ${input}.`);
         }
       }
     }
@@ -10259,7 +10263,7 @@ class ProgramState {
       if (trace) {
         trace.push({ id, inputArray, inputs: node.inputs, value: outputs });
         if (this.breakpoints.has(id)) {
-          console.log(trace);
+          this.log(trace);
         }
       }
       const evStream = outputs;
@@ -10519,6 +10523,9 @@ class ProgramState {
   }
   resetBreakpoint() {
     this.breakpoints = /* @__PURE__ */ new Set();
+  }
+  setLog(func) {
+    this.log = func;
   }
 }
 function transpileJSX(code2) {

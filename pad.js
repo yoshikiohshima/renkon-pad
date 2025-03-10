@@ -110,6 +110,51 @@ export function pad() {
         },
     );
 
+    const findMax = (map)  => {
+        let maxId = -1;
+        let max = -1;
+        for (let [id, value] of map) {
+            if (value > max) {
+                maxId = id;
+                max = value;
+            }
+        }
+        return {maxId, max};
+    };
+
+    const zIndex = Behaviors.select(
+        {map: new Map()},
+        loadRequest, (now, data) => {
+            console.log("zIndex loaded");
+            if (data.zIndex) return data.zIndex;
+            return {map: new Map(data.windows.map((w, i) => [w, i + 100]))};
+        },
+        Events.change(windows), (now, command) => {
+            const keys = [...now.map.keys()];
+            const news = command.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !command.includes(e));
+
+            const {maxId:_maxId, max} = findMax(now.map);
+            let z = max < 0 ? 100 : max + 1;
+            olds.forEach((id) => now.map.delete(id));
+            news.forEach((id) => now.map.set(id, z++));
+            return {map: now.map};
+        },
+        moveOrResize, (now, command) => {
+            if (command.type === "move") {
+                const z = now.map.get(command.id);
+
+                const {maxId, max} = findMax(now.map);
+                if (maxId !== command.id) {
+                    now.map.set(maxId, z);
+                    now.map.set(command.id, max);
+                }
+                return {map: now.map};
+            }
+            return now
+        },
+    );
+
     const titles = Behaviors.select(
         {map: new Map()},
         loadRequest, (now, loaded) => {
@@ -300,11 +345,11 @@ export function pad() {
                 state: false
             });
         }
-    }
+    };
 
     // render.js
 
-    const windowDOM = (id, position, title, codeEditor, type) => {
+    const windowDOM = (id, position, zIndex, title, codeEditor, type) => {
         // console.log("windowDOM");
         return h("div", {
             key: `${id}`,
@@ -315,6 +360,7 @@ export function pad() {
                 top: `${position.y}px`,
                 width: `${position.width}px`,
                 height: `${position.height}px`,
+                zIndex: `${zIndex}`,
             },
             ref: (ref) => {
                 if (ref) {
@@ -368,11 +414,11 @@ export function pad() {
         ])
     };
 
-    const windowElements = ((windows, positions, titles, codeEditors, windowTypes) => {
+    const windowElements = ((windows, positions, zIndex, titles, codeEditors, windowTypes) => {
         return h("div", {"class": "owner"}, windows.map((id) => {
-            return windowDOM(id, positions.map.get(id), titles.map.get(id), codeEditors.map.get(id), windowTypes.map.get(id));
+            return windowDOM(id, positions.map.get(id), zIndex.map.get(id), titles.map.get(id), codeEditors.map.get(id), windowTypes.map.get(id));
         }));
-    })(windows, positions, titles, codeEditors, windowTypes);
+    })(windows, positions, zIndex, titles, codeEditors, windowTypes);
 
     const _windowRender = render(windowElements, document.querySelector("#pad"));
 
@@ -380,12 +426,13 @@ export function pad() {
 
     const loadRequest = Events.receiver();
 
-    const _saver = ((windows, positions, titles, codeEditors, windowTypes) => {
+    const _saver = ((windows, positions, zIndex, titles, codeEditors, windowTypes) => {
         const code = new Map([...codeEditors.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
         const data = stringify({
             version: 1,
             windows,
             positions,
+            zIndex,
             titles,
             code,
             windowTypes
@@ -396,7 +443,7 @@ export function pad() {
         div.setAttribute("href", dataStr);
         div.setAttribute("download", `renkon-pad.json`);
         div.click();
-    })(windows, positions, titles, codeEditors, windowTypes, save);
+    })(windows, positions, zIndex, titles, codeEditors, windowTypes, save);
 
     const _loader = (() => {
         const input = document.createElement("div");
@@ -428,6 +475,7 @@ export function pad() {
     // analyzer;
     const analyzed = ((codeEditors) => {
         const programState = new Renkon.constructor(0);
+        programState.setLog(() => {});
 
         const code = [...codeEditors.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
         programState.setupProgram(code);
@@ -495,7 +543,6 @@ export function pad() {
         }
 
         return edges;
-
     })(codeEditors, hovered);
 
     const line = (p1, p2, color, label) => {
