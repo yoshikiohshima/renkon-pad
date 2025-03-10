@@ -10,21 +10,15 @@
    <button class="menuButton" id="loadButton">load</button>
 </div>
 <div id="pad"></div>
-<link id="pad-css" rel="stylesheet" href="./pad.css" />
 <div id="overlay"></div>
 `.trim();
-    console.log(div.childNodes);
-
     const renkon = document.querySelector("#renkon");
     renkon.querySelector("#pad")?.remove();
     renkon.querySelector("#buttonBox")?.remove();
     renkon.querySelector("#codemirror-loader")?.remove();
-    renkon.querySelector("#pad-css")?.remove();
 
     renkon.appendChild(div.querySelector("#buttonBox"));
     renkon.appendChild(div.querySelector("#pad"));
-    renkon.appendChild(div.querySelector("#pad-css"));
-    //    renkon.appendChild(div.querySelector("#iframeHolder"));
 
     const script = document.createElement("script");
     script.id = "codemirror-loader"

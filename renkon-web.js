@@ -7218,6 +7218,7 @@ const collectType = "CollectType";
 const selectType = "SelectType";
 const promiseType = "PromiseType";
 const behaviorType = "BehaviorType";
+const onceType = "OnceType";
 const orType = "OrType";
 const sendType = "SendType";
 const receiverType = "ReceiverType";
@@ -7505,6 +7506,33 @@ class ChangeEvent extends Stream {
   conclude(state, varName) {
     var _a2;
     super.conclude(state, varName);
+    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
+      state.resolved.delete(varName);
+      return varName;
+    }
+    return;
+  }
+}
+class OnceEvent extends Stream {
+  constructor(value) {
+    super(onceType, false);
+    __publicField(this, "value");
+    this.value = value;
+  }
+  created(state, id) {
+    state.scratch.set(id, this.value);
+    return this;
+  }
+  ready(node, state) {
+    return state.scratch.get(node.id) !== void 0;
+  }
+  evaluate(state, node, _inputArray, _lastInputArray) {
+    state.setResolved(node.id, { value: this.value, time: state.time });
+  }
+  conclude(state, varName) {
+    var _a2;
+    super.conclude(state, varName);
+    state.scratch.delete(varName);
     if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
       state.resolved.delete(varName);
       return varName;
@@ -9853,6 +9881,9 @@ class Events {
   }
   change(value) {
     return new ChangeEvent(value);
+  }
+  once(value) {
+    return new OnceEvent(value);
   }
   next(generator) {
     return new GeneratorNextEvent(generator);

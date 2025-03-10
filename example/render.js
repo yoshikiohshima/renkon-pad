@@ -68,6 +68,4 @@
         }));
     })(windows, positions, titles, codeEditors, windowTypes);
 
-    const _myRender = ((windowElements, padElement) => {
-        render(windowElements, padElement);
-    })(windowElements, document.querySelector("#pad"));
+    const _windowRender = render(windowElements, document.querySelector("#pad"));

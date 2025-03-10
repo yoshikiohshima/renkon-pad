@@ -1,3 +1,4 @@
+    const css = `
 html, body, #renkon {
     overflow: hidden;
 }
@@ -140,3 +141,13 @@ html, body, #renkon {
 .resizeHandler:hover {
     background-color: rgba(0.1, 0.4, 0.1, 0.3);
 }
+`;
+
+    ((css) => {
+        const renkon = document.querySelector("#renkon");
+        const style = document.createElement("style");
+        style.id = "pad-css";
+        style.textContent = css;
+        renkon.querySelector("#pad-css")?.remove();
+        renkon.appendChild(style);
+    })(css);

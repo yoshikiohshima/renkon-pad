@@ -5,7 +5,7 @@
             console.log("windows loaded");
             return data.windows
         },
-        newId, (now, id) => [...now, `${Number.parseInt(id)}`],
+        newWindowRequest, (now, spec) => [...now, `${spec.id}`],
         remove, (now, removeCommand) => now.filter((e) => e != removeCommand.id),
     );
 
@@ -16,11 +16,8 @@
             console.log("windowTypes loaded");
             return data.windowTypes;
         },
-        newId, (now, spec) => {
-            const index = spec.indexOf("-");
-            const id = Number.parseInt(spec);
-            const type = spec.slice(index + 1);
-            now.map.set(`${id}`, type);
+        newWindowRequest, (now, spec) => {
+            now.map.set(`${spec.id}`, spec.type);
             return {map: now.map};
         },
         Events.change(windows), (now, windows) => {
@@ -28,8 +25,8 @@
             const news = windows.filter((e) => !keys.includes(e));
             const olds = keys.filter((e) => !windows.includes(e));
 
-            olds.forEach((e) => now.map.delete(`${e}`));
-            news.forEach((e) => now.map.set(`${e}`, "code"));
+            olds.forEach((id) => now.map.delete(`${id}`));
+            news.forEach((id) => now.map.set(`${id}`, "code"));
             return {map: now.map};
         }
     );
@@ -56,9 +53,8 @@
                     height: type === "code" ? 200 : 400
                 }
             };
-
-            olds.forEach((e) => now.map.delete(`${e}`));
-            news.forEach((e) => now.map.set(`${e}`, newWindow(e, types.map.get(e))));
+            olds.forEach((id) => now.map.delete(`${id}`));
+            news.forEach((id) => now.map.set(`${id}`, newWindow(id, types.map.get(id))));
             return {map: now.map};
         },
         moveOrResize, (now, command) => {
@@ -86,8 +82,8 @@
             const news = command.filter((e) => !keys.includes(e));
             const olds = keys.filter((e) => !command.includes(e));
 
-            olds.forEach((e) => now.map.delete(`${e}`));
-            news.forEach((e) => now.map.set(`${e}`, {id: `${e}`, state: false, title: "untitled"}));
+            olds.forEach((id) => now.map.delete(id));
+            news.forEach((id) => now.map.set(id, {id, state: false, title: "untitled"}));
             return {map: now.map};
         },
         titleEditChange, (now, change) => {
@@ -124,10 +120,10 @@
             const typeKeys = [...types.map.keys()];
             const news = typeKeys.filter((e) => !keys.includes(e));
             const olds = keys.filter((e) => !typeKeys.includes(e));
-            olds.forEach((e) => {
-                const editor = now.map.get(e);
+            olds.forEach((id) => {
+                const editor = now.map.get(id);
                 editor.dom.remove();
-                now.map.delete(e)
+                now.map.delete(id)
             });
             news.forEach((id) => {
                 const type = types.map.get(id);
@@ -137,23 +133,20 @@
         }
     );
 
-    const init = Events.change(Behaviors.keep("code"));
+    const init = Events.once("code");
 
-    // it has <number>-(code|runner) structure.
-    // You might consider having newId for number and newType separate events but make it packed
-    // makes the windows and windowTypes access them from one function
     const newId = Events.select(
-        "0-code",
+        0,
         loadRequest, (now, request) => {
-            return `${request.windows.length + 1}-`;
+            const max = Math.max(...request.windows.map((w) => Number.parseInt(w)));
+            return max;
         },
-        Events.or(addCode, addRunner, init), (now, type) => {
-            const id = Number.parseInt(now) + 1;
-            return `${id}-${type}`;
-        }
+        Events.or(addCode, addRunner, init), (now, _type) => now + 1
     );
 
-    console.log("newId", newId);
+    const newWindowRequest = Events.change({id: newId, type: Events.or(addCode, addRunner, init)});
+
+    console.log("newId", newWindowRequest);
 
     const newEditor = (id, doc) => {
         const mirror = window.CodeMirror;
