@@ -620,6 +620,7 @@ export function pad() {
     const css = `
 html, body, #renkon {
     overflow: hidden;
+    height: 100%;
 }
 
 #renkon {
