@@ -716,12 +716,13 @@ html, body, #renkon {
 }
 
 .titlebarButton {
-    height: 20px;
-    width: 20px;
+    height: 17px;
+    width: 17px;
     margin: 2px;
-    margin-top: 1px;
+    margin-top: 2px;
     pointer-events: all;
     border-radius: 8px;
+    background-position: center;
 }
 
 .titlebarButton:hover {
