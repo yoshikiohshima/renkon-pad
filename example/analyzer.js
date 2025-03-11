@@ -1,5 +1,6 @@
     const analyzed = ((codeEditors) => {
         const programState = new Renkon.constructor(0);
+        programState.setLog(() => {});
 
         const code = [...codeEditors.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
         programState.setupProgram(code);
