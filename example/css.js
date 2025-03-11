@@ -28,6 +28,7 @@ html, body, #renkon {
     position: absolute;
     top: 30px;
     left: 0px;
+    z-index: 10000;
 }
 
 .window {
