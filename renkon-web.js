@@ -6817,7 +6817,7 @@ function findReferences(node, {
     Identifier: identifier
   });
   const forceVars = [];
-  let hasGather = void 0;
+  const extraType = {};
   simple(node, {
     CallExpression(node2) {
       const callee = node2.callee;
@@ -6836,14 +6836,22 @@ function findReferences(node, {
             if (arg.type === "Identifier") {
               forceVars.push(arg);
             }
+          } else if (callee.property.type === "Identifier" && callee.property.name === "_select") {
+            if (node2.arguments[1].type === "Identifier") {
+              const name2 = node2.arguments[1].name;
+              if (/^_[0-9]/.exec(name2)) {
+                forceVars.push(node2.arguments[1]);
+              }
+              extraType["isSelect"] = true;
+            }
           } else if (callee.property.type === "Identifier" && callee.property.name === "gather") {
-            hasGather = node2.arguments[0].value;
+            extraType["gather"] = node2.arguments[0].value;
           }
         }
       }
     }
   });
-  return [references, forceVars, sendTarget, hasGather];
+  return [references, forceVars, sendTarget, extraType];
 }
 function checkNested(node, baseId) {
   return rewriteNestedCalls(node, baseId);
@@ -6944,7 +6952,7 @@ function parseJavaScript(input, initialId, flattened2 = false) {
   for (const decl of decls) {
     id++;
     const b2 = parseProgram(decl);
-    const [references, forceVars, sendTargets, hasGather] = findReferences(b2);
+    const [references, forceVars, sendTargets, extraType] = findReferences(b2);
     checkAssignments(b2, references, input);
     const declarations = findDeclarations(b2, input);
     const rewriteSpecs = flattened2 ? [] : checkNested(b2, id);
@@ -6958,7 +6966,7 @@ function parseJavaScript(input, initialId, flattened2 = false) {
         forceVars,
         sendTargets,
         imports: [],
-        extraType: hasGather ? { "gather": hasGather } : {},
+        extraType,
         // expression: false,
         input: decl
       });
@@ -7205,7 +7213,7 @@ function rewriteRenkonCalls(output, body) {
     }
   });
 }
-const version$1 = "0.3.7";
+const version$1 = "0.3.8";
 const packageJson = {
   version: version$1
 };
@@ -10135,14 +10143,13 @@ class ProgramState {
     const translated = [...jsNodes].map(([_id, jsNode]) => ({ id: jsNode.id, code: transpileJavaScript(jsNode) }));
     const evaluated = translated.map((tr) => this.evalCode(tr));
     for (let [id2, node] of jsNodes) {
-      if (!node.extraType["gather"]) {
-        continue;
-      }
-      const r = node.extraType["gather"];
-      const ev = evaluated.find((evaled) => evaled.id === id2);
-      if (ev) {
-        const ins = evaluated.filter((evaled) => new RegExp(r).test(evaled.id)).map((e) => e.id);
-        ev.inputs = ins;
+      if (node.extraType["gather"]) {
+        const r = node.extraType["gather"];
+        const ev = evaluated.find((evaled) => evaled.id === id2);
+        if (ev) {
+          const ins = evaluated.filter((evaled) => new RegExp(r).test(evaled.id)).map((e) => e.id);
+          ev.inputs = ins;
+        }
       }
     }
     const sorted = topologicalSort(evaluated);
