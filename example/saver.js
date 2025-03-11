@@ -45,3 +45,16 @@
         document.body.appendChild(imageInput);
         imageInput.click();
     })(load);
+
+    const nameFromUrl = (() => {
+        const maybeUrl = new URL(window.location).searchParams.get("file");
+        if (maybeUrl) {
+            return maybeUrl;
+        }
+        return undefined;
+    })();
+
+    const _loadFromUrl = fetch(nameFromUrl).then((resp) => resp.text()).then((text) => {
+        const data = parse(text);
+        Events.send(loadRequest, data);
+    });
