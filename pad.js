@@ -98,15 +98,11 @@ export function pad() {
         },
         moveOrResize, (now, command) => {
             if (command.type === "move" || command.type === "resize") {
-                const v = {...now.map.get(command.id)};
-                if (command.x !== undefined) v.x = command.x;
-                if (command.y !== undefined) v.y = command.y;
-                if (command.width !== undefined) v.width = command.width;
-                if (command.height !== undefined) v.height = command.height;
+                const v = {...now.map.get(command.id), ...command};
                 now.map.set(command.id, v);
                 return {map: now.map};
             }
-            return now
+            return now;
         },
     );
 
@@ -171,10 +167,8 @@ export function pad() {
             return {map: now.map};
         },
         titleEditChange, (now, change) => {
-            const {id, state, title} = change;
-            const v = {...now.map.get(id)};
-            if (title) v.title = title;
-            if (state !== undefined) v.state = state;
+            const id = change.id;
+            const v = {...now.map.get(id), ...change};
             now.map.set(id, v);
             return {map: now.map};
         }
