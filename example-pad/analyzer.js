@@ -1,4 +1,6 @@
-    const analyzed = ((codeEditors) => {
+    const analyzed = ((codeEditors, trigger) => {
+        if (trigger === null) {return new Map();}
+        if (typeof trigger === "object" && trigger.id) {return new Map();}
         const programState = new Renkon.constructor(0);
         programState.setLog(() => {});
 
@@ -68,8 +70,7 @@
         }
 
         return edges;
-
-    })(codeEditors, hovered);
+    })(codeEditors, Events.or(remove, hovered));
 
     const line = (p1, p2, color, label) => {
         let pl;
@@ -85,16 +86,15 @@
         const c1 = `${pl.x + (pr.x - pl.x) * 0.5} ${pl.y + (pr.y - pl.y) * 0.2}`;
         const c2 = `${pr.x - (pr.x - pl.x) * 0.2} ${pl.y + (pr.y - pl.y) * 0.6}`;
         const c3 = `${pr.x} ${pr.y}`;
-        return html`<path d="M ${c0} C ${c1} ${c2} ${c3}" stroke="${color}" fill="transparent" stroke-width="2" stroke-linecap="round"></path><text x="${p1.x}" y="${p1.y}">${label}</text>`;
+        return html`<path d="M ${c0} C ${c1} ${c2} ${c3}" stroke="${color}" fill="transparent" stroke-width="2" stroke-linecap="round"></path><text x="${p1.x + 5}" y="${p1.y}">${label}</text>`;
     };
 
     const hovered = Events.receiver();
     const hoveredB = Behaviors.keep(hovered);
 
     const graph = ((positions, analyzed, hoveredB, showGraph) => {
-        if (hoveredB === null || !showGraph) {
-            return [];
-        }
+        if (hoveredB === null || !showGraph) {return [];}
+        if (analyzed.size === 0) {return [];}
 
         const edges = analyzed.get(hoveredB);
 
@@ -103,11 +103,9 @@
         const outEdges = edges.edgesOut.map((edge) => {
             const ind = edges.exports.indexOf(edge.id);
             let p1 = positions.map.get(hoveredB);
-            if (ind < -1 || !p1) {return};
             p1 = {x: p1.x + p1.width, y: p1.y};
             p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
             let p2 = positions.map.get(edge.dest);
-            if (!p2) {return};
             p2 = {x: p2.x, y: p2.y + 10};
             return line(p1, p2, "#d88", edge.id);
         });
@@ -116,11 +114,9 @@
             const exporter = analyzed.get(edge.origin);
             const ind = exporter.exports.indexOf(edge.id);
             let p1 = positions.map.get(edge.origin);
-            if (ind < -1 || !p1) {return};
             p1 = {x: p1.x + p1.width, y: p1.y};
             p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
             let p2 = positions.map.get(hoveredB);
-            if (!p2) {return};
             p2 = {x: p2.x, y: p2.y + 10};
             return line(p1, p2, "#88d", edge.id);
         });
