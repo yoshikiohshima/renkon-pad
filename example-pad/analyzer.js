@@ -5,7 +5,14 @@
         programState.setLog(() => {});
 
         const code = [...codeEditors.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
-        programState.setupProgram(code);
+
+        try {
+            programState.setupProgram(code);
+        } catch(e) {
+            console.log("Graph analyzer encountered an error in source code:");
+            console.log(e)
+            return new Map();
+        }
 
         const nodes = new Map();
         for (let jsNode of programState.nodes.values()) {
