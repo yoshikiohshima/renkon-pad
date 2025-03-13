@@ -60,6 +60,8 @@
         moveOrResize, (now, command) => {
             if (command.type === "move" || command.type === "resize") {
                 const v = {...now.map.get(command.id), ...command};
+                v.width = Math.max(120, v.width);
+                v.height = Math.max(120, v.height);
                 now.map.set(command.id, v);
                 return {map: now.map};
             }
