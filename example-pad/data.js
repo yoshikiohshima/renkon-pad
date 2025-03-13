@@ -188,7 +188,7 @@
     const newEditor = (id, doc) => {
         const mirror = window.CodeMirror;
         const editor = new mirror.EditorView({
-            doc: doc || "hello",
+            doc: doc || `console.log("hello")`,
             extensions: [
                 mirror.basicSetup,
                 mirror.EditorView.lineWrapping,
