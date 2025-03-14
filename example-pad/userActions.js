@@ -11,14 +11,14 @@
 
     document.querySelector("#showGraph").textContent = showGraph ? "show graph" : "hide graph";
 
-    const _onRun = ((runRequest, codeEditors) => {
+    const _onRun = ((runRequest, windowContents) => {
         const id = runRequest.id;
-        const iframe = codeEditors.map.get(id);
-        const code = [...codeEditors.map.values()]
+        const iframe = windowContents.map.get(id);
+        const code = [...windowContents.map.values()]
             .filter((obj) => obj.state)
             .map((editor) => editor.state.doc.toString());
         iframe.dom.contentWindow.postMessage({code: code});
-    })(runRequest, codeEditors);
+    })(runRequest, windowContents);
 
     const remove = Events.receiver();
     const titleEditChange = Events.receiver();

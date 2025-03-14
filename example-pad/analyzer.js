@@ -1,11 +1,10 @@
-    const analyzed = ((codeEditors, trigger) => {
+    const analyzed = ((windowContents, trigger) => {
         if (trigger === null) {return new Map();}
         if (typeof trigger === "object" && trigger.id) {return new Map();}
         const programState = new Renkon.constructor(0);
         programState.setLog(() => {});
 
-        const code = [...codeEditors.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
-
+        const code = [...windowContents.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
         try {
             programState.setupProgram(code);
         } catch(e) {
@@ -77,7 +76,7 @@
         }
 
         return edges;
-    })(codeEditors, Events.or(remove, hovered));
+    })(windowContents, Events.or(remove, hovered));
 
     const line = (p1, p2, color, label) => {
         let pl;

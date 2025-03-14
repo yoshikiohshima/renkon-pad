@@ -176,7 +176,7 @@ export function pad() {
         }
     );
 
-    const codeEditors = Behaviors.select(
+    const windowContents = Behaviors.select(
         {map: new Map()},
         loadRequest, (now, loaded) => {
             for (let editor of now.map.values()) {
@@ -263,14 +263,14 @@ export function pad() {
 
     document.querySelector("#showGraph").textContent = showGraph ? "show graph" : "hide graph";
 
-    const _onRun = ((runRequest, codeEditors) => {
+    const _onRun = ((runRequest, windowContents) => {
         const id = runRequest.id;
-        const iframe = codeEditors.map.get(id);
-        const code = [...codeEditors.map.values()]
+        const iframe = windowContents.map.get(id);
+        const code = [...windowContents.map.values()]
             .filter((obj) => obj.state)
             .map((editor) => editor.state.doc.toString());
         iframe.dom.contentWindow.postMessage({code: code});
-    })(runRequest, codeEditors);
+    })(runRequest, windowContents);
 
     const remove = Events.receiver();
     const titleEditChange = Events.receiver();
@@ -343,7 +343,7 @@ export function pad() {
 
     // render.js
 
-    const windowDOM = (id, position, zIndex, title, codeEditor, type) => {
+    const windowDOM = (id, position, zIndex, title, windowContent, type) => {
         // console.log("windowDOM");
         return h("div", {
             key: `${id}`,
@@ -358,8 +358,8 @@ export function pad() {
             },
             ref: (ref) => {
                 if (ref) {
-                    if (ref !== codeEditor.dom.parentNode) {
-                        ref.appendChild(codeEditor.dom);
+                    if (ref !== windowContent.dom.parentNode) {
+                        ref.appendChild(windowContent.dom);
                     }
                 }
             },
@@ -408,11 +408,11 @@ export function pad() {
         ])
     };
 
-    const windowElements = ((windows, positions, zIndex, titles, codeEditors, windowTypes) => {
+    const windowElements = ((windows, positions, zIndex, titles, windowContents, windowTypes) => {
         return h("div", {"class": "owner"}, windows.map((id) => {
-            return windowDOM(id, positions.map.get(id), zIndex.map.get(id), titles.map.get(id), codeEditors.map.get(id), windowTypes.map.get(id));
+            return windowDOM(id, positions.map.get(id), zIndex.map.get(id), titles.map.get(id), windowContents.map.get(id), windowTypes.map.get(id));
         }));
-    })(windows, positions, zIndex, titles, codeEditors, windowTypes);
+    })(windows, positions, zIndex, titles, windowContents, windowTypes);
 
     const _windowRender = render(windowElements, document.querySelector("#pad"));
 
@@ -420,8 +420,8 @@ export function pad() {
 
     const loadRequest = Events.receiver();
 
-    const _saver = ((windows, positions, zIndex, titles, codeEditors, windowTypes) => {
-        const code = new Map([...codeEditors.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
+    const _saver = ((windows, positions, zIndex, titles, windowContents, windowTypes) => {
+        const code = new Map([...windowContents.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
         const data = stringify({
             version: 1,
             windows,
@@ -437,7 +437,7 @@ export function pad() {
         div.setAttribute("href", dataStr);
         div.setAttribute("download", `renkon-pad.json`);
         div.click();
-    })(windows, positions, zIndex, titles, codeEditors, windowTypes, save);
+    })(windows, positions, zIndex, titles, windowContents, windowTypes, save);
 
     const _loader = (() => {
         const input = document.createElement("div");
@@ -480,13 +480,13 @@ export function pad() {
     });
 
     // analyzer;
-    const analyzed = ((codeEditors, trigger) => {
+    const analyzed = ((windowContents, trigger) => {
         if (trigger === null) {return new Map();}
         if (typeof trigger === "object" && trigger.id) {return new Map();}
         const programState = new Renkon.constructor(0);
         programState.setLog(() => {});
 
-        const code = [...codeEditors.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
+        const code = [...windowContents.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
         try {
             programState.setupProgram(code);
         } catch(e) {
@@ -558,7 +558,7 @@ export function pad() {
         }
 
         return edges;
-    })(codeEditors, Events.or(remove, hovered));
+    })(windowContents, Events.or(remove, hovered));
 
     const line = (p1, p2, color, label) => {
         let pl;

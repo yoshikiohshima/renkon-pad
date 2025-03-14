@@ -6960,936 +6960,6 @@ function isTopObjectDeclaration(node, ancestors) {
 function isTopArrayDeclaration(node, ancestors) {
   return node.type === "VariableDeclarator" && node.id.type === "ArrayPattern" && ancestors.length === 3;
 }
-const acornOptions = {
-  ecmaVersion: 13,
-  sourceType: "module"
-};
-function findDecls(input) {
-  try {
-    const body = parseProgram(input);
-    const list2 = body.body;
-    return list2.map((decl) => input.slice(decl.start, decl.end));
-  } catch (error) {
-    const e = error;
-    console.log(e.message, ": error around -> ", `"${input.slice(e.pos - 30, e.pos + 30)}"`);
-    return [];
-  }
-}
-function parseJavaScript(input, initialId, flattened2 = false) {
-  var _a2;
-  const decls = findDecls(input);
-  const allReferences = [];
-  let id = initialId;
-  for (const decl of decls) {
-    id++;
-    const b2 = parseProgram(decl);
-    const [references, forceVars, sendTargets, extraType] = findReferences(b2);
-    checkAssignments(b2, references, input);
-    const declarations = findDeclarations(b2, input);
-    const rewriteSpecs = flattened2 ? [] : checkNested(b2, id);
-    if (rewriteSpecs.length === 0) {
-      const myId = ((_a2 = declarations[0]) == null ? void 0 : _a2.name) || `${id}`;
-      allReferences.push({
-        id: myId,
-        body: b2,
-        declarations,
-        references,
-        forceVars,
-        sendTargets,
-        imports: [],
-        extraType,
-        // expression: false,
-        input: decl
-      });
-    } else {
-      let newInput = decl;
-      let newPart = "";
-      let overridden = false;
-      let again = false;
-      for (let i2 = 0; i2 < rewriteSpecs.length; i2++) {
-        const spec = rewriteSpecs[i2];
-        if (spec.type === "range") {
-          const sub = newInput.slice(spec.start, spec.end);
-          const varName = spec.name;
-          newPart += `const ${varName} = ${sub};
-`;
-          let length = spec.end - spec.start;
-          const newNewInput = `${newInput.slice(0, spec.start)}${spec.name.padEnd(length, " ")}${newInput.slice(spec.end)}`;
-          if (newNewInput.length !== decl.length) {
-            debugger;
-          }
-          newInput = newNewInput;
-        } else if (spec.type === "override") {
-          overridden = true;
-          newPart += spec.definition + "\n";
-        } else if (spec.type === "select") {
-          overridden = false;
-          const sub = spec.triggers.map((spec2) => newInput.slice(spec2.start, spec2.end));
-          const trigger = `Events._or_index(${sub.join(", ")})`;
-          const funcs = spec.funcs.map((spec2) => newInput.slice(spec2.start, spec2.end));
-          const init = newInput.slice(spec.init.start, spec.init.end);
-          const newNewInput = `const ${declarations[0].name} = ${spec.classType}._select(${init}, ${trigger}, [${funcs}]);`;
-          newInput = newNewInput;
-          again = true;
-          id++;
-          break;
-        }
-      }
-      const parsed = parseJavaScript(`${newPart}${overridden ? "" : "\n" + newInput}`, again ? id - 1 : initialId, !again);
-      allReferences.push(...parsed);
-    }
-  }
-  return allReferences;
-}
-function parseProgram(input) {
-  return Parser$1.parse(input, acornOptions);
-}
-function parseJSX(input) {
-  return Parser$1.extend(jsx()).parse(input, { ecmaVersion: 13 });
-}
-class Sourcemap {
-  constructor(input) {
-    __publicField(this, "input");
-    __publicField(this, "_edits");
-    this.input = input;
-    this._edits = [];
-  }
-  _bisectLeft(index2) {
-    let lo = 0;
-    let hi = this._edits.length;
-    while (lo < hi) {
-      const mid = lo + hi >>> 1;
-      if (this._edits[mid].start < index2) lo = mid + 1;
-      else hi = mid;
-    }
-    return lo;
-  }
-  _bisectRight(index2) {
-    let lo = 0;
-    let hi = this._edits.length;
-    while (lo < hi) {
-      const mid = lo + hi >>> 1;
-      if (this._edits[mid].start > index2) hi = mid;
-      else lo = mid + 1;
-    }
-    return lo;
-  }
-  insertLeft(index2, value) {
-    return this.replaceLeft(index2, index2, value);
-  }
-  insertRight(index2, value) {
-    return this.replaceRight(index2, index2, value);
-  }
-  delete(start, end) {
-    return this.replaceRight(start, end, "");
-  }
-  replaceLeft(start, end, value) {
-    return this._edits.splice(this._bisectLeft(start), 0, { start, end, value }), this;
-  }
-  replaceRight(start, end, value) {
-    return this._edits.splice(this._bisectRight(start), 0, { start, end, value }), this;
-  }
-  translate(position) {
-    let index2 = 0;
-    let ci = { line: 1, column: 0 };
-    let co = { line: 1, column: 0 };
-    for (const { start, end, value } of this._edits) {
-      if (start > index2) {
-        const l22 = positionLength(this.input, index2, start);
-        const ci22 = positionAdd(ci, l22);
-        const co22 = positionAdd(co, l22);
-        if (positionCompare(co22, position) > 0) break;
-        ci = ci22;
-        co = co22;
-      }
-      const il = positionLength(this.input, start, end);
-      const ol = positionLength(value);
-      const ci2 = positionAdd(ci, il);
-      const co2 = positionAdd(co, ol);
-      if (positionCompare(co2, position) > 0) return ci;
-      ci = ci2;
-      co = co2;
-      index2 = end;
-    }
-    const l2 = positionSubtract(position, co);
-    return positionAdd(ci, l2);
-  }
-  trim() {
-    const input = this.input;
-    if (input.startsWith("\n")) this.delete(0, 1);
-    if (input.endsWith("\n")) this.delete(input.length - 1, input.length);
-    return this;
-  }
-  toString() {
-    let output = "";
-    let index2 = 0;
-    for (const { start, end, value } of this._edits) {
-      if (start > index2) output += this.input.slice(index2, start);
-      output += value;
-      index2 = end;
-    }
-    output += this.input.slice(index2);
-    return output;
-  }
-}
-function positionCompare(a2, b2) {
-  return a2.line - b2.line || a2.column - b2.column;
-}
-function positionLength(input, start = 0, end = input.length) {
-  let match;
-  let line = 0;
-  lineBreakG.lastIndex = start;
-  while ((match = lineBreakG.exec(input)) && match.index < end) {
-    ++line;
-    start = match.index + match[0].length;
-  }
-  return { line, column: end - start };
-}
-function positionSubtract(b2, a2) {
-  return b2.line === a2.line ? { line: 0, column: b2.column - a2.column } : { line: b2.line - a2.line, column: b2.column };
-}
-function positionAdd(p2, l2) {
-  return l2.line === 0 ? { line: p2.line, column: p2.column + l2.column } : { line: p2.line + l2.line, column: l2.column };
-}
-const renkonGlobals = /* @__PURE__ */ new Set([
-  "Events",
-  "Behaviors",
-  "Renkon"
-]);
-function transpileJavaScript(node) {
-  var _a2;
-  const outputs = Array.from(new Set((_a2 = node.declarations) == null ? void 0 : _a2.map((r) => r.name)));
-  const only = outputs.length === 0 ? "" : outputs[0];
-  const inputs = Array.from(new Set(node.references.map((r) => r.name))).filter((n2) => {
-    return !defaultGlobals.has(n2) && !renkonGlobals.has(n2) && !(node.sendTargets.findIndex((s) => s.name === n2) >= 0);
-  });
-  const forceVars = Array.from(new Set(node.forceVars.map((r) => r.name))).filter((n2) => !defaultGlobals.has(n2) && !renkonGlobals.has(n2));
-  const output = new Sourcemap(node.input).trim();
-  rewriteRenkonCalls(output, node.body);
-  output.insertLeft(0, `, body: (${inputs}) => {
-`);
-  output.insertLeft(0, `, outputs: ${JSON.stringify(only)}`);
-  output.insertLeft(0, `, inputs: ${JSON.stringify(inputs)}`);
-  output.insertLeft(0, `, forceVars: ${JSON.stringify(forceVars)}`);
-  output.insertLeft(0, `, blockId: "${node.blockId}"`);
-  output.insertLeft(0, `{id: "${node.id}"`);
-  output.insertRight(node.input.length, `
-return ${only};`);
-  output.insertRight(node.input.length, "\n}};\n");
-  return String(output);
-}
-function getFunctionBody(input, forMerge) {
-  const compiled = parseJavaScript(input, 0, true);
-  const node = compiled[0].body.body[0];
-  const params = node.params.map((p2) => p2.name);
-  const body = node.body.body;
-  const last = body[body.length - 1];
-  const returnArray = forMerge ? [] : getArray(last);
-  const output = new Sourcemap(input).trim();
-  output.delete(0, body[0].start);
-  output.delete(last.start, input.length);
-  return { params, returnArray, output: String(output) };
-}
-function getArray(returnNode) {
-  if (returnNode.type !== "ReturnStatement") {
-    console.error("cannot convert");
-    return null;
-  }
-  const array = returnNode.argument;
-  if (!array || array.type !== "ArrayExpression") {
-    console.error("cannot convert");
-    return null;
-  }
-  for (const elem of array.elements) {
-    if (!elem || elem.type !== "Identifier") {
-      console.error("cannot convert");
-      return null;
-    }
-  }
-  return array.elements.map((e) => e.name);
-}
-function quote(node, output) {
-  output.insertLeft(node.start, '"');
-  output.insertRight(node.end, '"');
-}
-function rewriteRenkonCalls(output, body) {
-  simple(body, {
-    CallExpression(node) {
-      const callee = node.callee;
-      if (callee.type === "MemberExpression" && callee.object.type === "Identifier") {
-        if (callee.object.name === "Events") {
-          output.insertRight(callee.object.end, ".create(Renkon)");
-          if (callee.property.type === "Identifier") {
-            if (callee.property.name === "delay") {
-              quote(node.arguments[0], output);
-            } else if (callee.property.name === "or" || callee.property.name === "_or_index") {
-              for (const arg of node.arguments) {
-                quote(arg, output);
-              }
-            } else if (callee.property.name === "send") {
-              quote(node.arguments[0], output);
-            } else if (callee.property.name === "collect" || callee.property.name === "_select") {
-              quote(node.arguments[1], output);
-            }
-          }
-        } else if (callee.object.name === "Behaviors") {
-          output.insertRight(callee.object.end, ".create(Renkon)");
-          if (callee.property.type === "Identifier") {
-            if (callee.property.name === "collect" || callee.property.name === "_select") {
-              quote(node.arguments[1], output);
-            } else if (callee.property.name === "or" || callee.property.name === "_or_index") {
-              for (const arg of node.arguments) {
-                quote(arg, output);
-              }
-            }
-          }
-        }
-      }
-    }
-  });
-}
-const version$1 = "0.4.0";
-const packageJson = {
-  version: version$1
-};
-const typeKey = Symbol("typeKey");
-const isBehaviorKey = Symbol("isBehavior");
-const eventType = "EventType";
-const delayType = "DelayType";
-const timerType = "TimerType";
-const collectType = "CollectType";
-const selectType = "SelectType";
-const promiseType = "PromiseType";
-const behaviorType = "BehaviorType";
-const onceType = "OnceType";
-const orType = "OrType";
-const sendType = "SendType";
-const receiverType = "ReceiverType";
-const changeType = "ChangeType";
-const gatherType = "GatherType";
-const generatorNextType = "GeneratorNextType";
-const resolvePartType = "ResolvePart";
-_b = typeKey, _a$1 = isBehaviorKey;
-class Stream {
-  constructor(type, isBehavior) {
-    __publicField(this, _b);
-    __publicField(this, _a$1);
-    this[typeKey] = type;
-    this[isBehaviorKey] = isBehavior;
-  }
-  created(_state, _id) {
-    return this;
-  }
-  ready(node, state) {
-    var _a2;
-    for (const inputName of node.inputs) {
-      const varName = state.baseVarName(inputName);
-      const resolved = (_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value;
-      if (resolved === void 0 && !node.forceVars.includes(inputName)) {
-        return false;
-      }
-    }
-    return true;
-  }
-  evaluate(_state, _node, _inputArray, _lastInputArray) {
-    return;
-  }
-  conclude(state, varName) {
-    const inputArray = state.inputArray.get(varName);
-    const inputs = state.nodes.get(varName).inputs;
-    if (!inputArray || !inputs) {
-      return;
-    }
-    for (let i2 = 0; i2 < inputs.length; i2++) {
-      const resolved = state.resolved.get(inputs[i2]);
-      if (resolved === void 0) {
-        inputArray[i2] = void 0;
-      }
-    }
-    return;
-  }
-}
-class DelayedEvent extends Stream {
-  constructor(delay, varName, isBehavior) {
-    super(delayType, isBehavior);
-    __publicField(this, "delay");
-    __publicField(this, "varName");
-    this.delay = delay;
-    this.varName = varName;
-  }
-  ready(node, state) {
-    const output = node.outputs;
-    const scratch = state.scratch.get(output);
-    if ((scratch == null ? void 0 : scratch.queue.length) > 0) {
-      return true;
-    }
-    return state.defaultReady(node);
-  }
-  created(state, id) {
-    if (!state.scratch.get(id)) {
-      state.scratch.set(id, { queue: [] });
-    }
-    return this;
-  }
-  evaluate(state, node, inputArray, lastInputArray) {
-    const value = state.spliceDelayedQueued(state.scratch.get(node.id), state.time);
-    if (value !== void 0) {
-      state.setResolved(node.id, { value, time: state.time });
-    }
-    const inputIndex = 0;
-    const myInput = inputArray[inputIndex];
-    const doIt = this[isBehaviorKey] && myInput !== void 0 && myInput !== (lastInputArray == null ? void 0 : lastInputArray[inputIndex]) || !this[isBehaviorKey] && myInput !== void 0;
-    if (doIt) {
-      const scratch = state.scratch.get(node.id);
-      scratch.queue.push({ time: state.time + this.delay, value: myInput });
-    }
-  }
-  conclude(state, varName) {
-    var _a2;
-    super.conclude(state, varName);
-    if (this[isBehaviorKey]) {
-      return;
-    }
-    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
-      state.resolved.delete(varName);
-      return varName;
-    }
-    return;
-  }
-}
-class TimerEvent extends Stream {
-  constructor(interval, isBehavior) {
-    super(timerType, isBehavior);
-    __publicField(this, "interval");
-    this.interval = interval;
-  }
-  created(_state, _id) {
-    return this;
-  }
-  ready(node, state) {
-    const output = node.outputs;
-    const last = state.scratch.get(output);
-    const interval = this.interval;
-    return last === void 0 || last + interval <= state.time;
-  }
-  evaluate(state, node, _inputArray, _lastInputArray) {
-    const interval = this.interval;
-    const logicalTrigger = interval * Math.floor(state.time / interval);
-    state.setResolved(node.id, { value: logicalTrigger, time: state.time });
-    state.scratch.set(node.id, logicalTrigger);
-  }
-  conclude(state, varName) {
-    var _a2;
-    super.conclude(state, varName);
-    if (this[isBehaviorKey]) {
-      return;
-    }
-    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
-      state.resolved.delete(varName);
-      return varName;
-    }
-    return;
-  }
-}
-class PromiseEvent extends Stream {
-  constructor(promise) {
-    super(promiseType, true);
-    __publicField(this, "promise");
-    this.promise = promise;
-  }
-  created(state, id) {
-    var _a2;
-    const oldPromise = (_a2 = state.scratch.get(id)) == null ? void 0 : _a2.promise;
-    const promise = this.promise;
-    if (oldPromise && promise !== oldPromise) {
-      state.resolved.delete(id);
-    }
-    promise.then((value) => {
-      var _a3;
-      const wasResolved = (_a3 = state.resolved.get(id)) == null ? void 0 : _a3.value;
-      if (!wasResolved) {
-        state.scratch.set(id, { promise });
-        state.setResolved(id, { value, time: state.time });
-      }
-    });
-    return this;
-  }
-}
-class OrStream extends Stream {
-  constructor(varNames, useIndex, isBehavior = false) {
-    super(orType, isBehavior);
-    __publicField(this, "varNames");
-    __publicField(this, "useIndex");
-    this.varNames = varNames;
-    this.useIndex = useIndex;
-  }
-  evaluate(state, node, inputArray, _lastInputArray) {
-    for (let i2 = 0; i2 < node.inputs.length; i2++) {
-      const myInput = inputArray[i2];
-      if (myInput !== void 0) {
-        if (this.useIndex) {
-          state.setResolved(node.id, { value: { index: i2, value: myInput }, time: state.time });
-        } else {
-          state.setResolved(node.id, { value: myInput, time: state.time });
-        }
-        return;
-      }
-    }
-  }
-  conclude(state, varName) {
-    var _a2;
-    super.conclude(state, varName);
-    if (this[isBehaviorKey]) {
-      return;
-    }
-    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
-      state.resolved.delete(varName);
-      return varName;
-    }
-    return;
-  }
-}
-class UserEvent extends Stream {
-  constructor(record, queued) {
-    super(eventType, false);
-    __publicField(this, "record");
-    __publicField(this, "queued");
-    this.record = record;
-    this.queued = !!queued;
-  }
-  created(state, id) {
-    let oldRecord = state.scratch.get(id);
-    if (oldRecord && oldRecord.cleanup && typeof oldRecord.cleanup === "function") {
-      oldRecord.cleanup();
-      oldRecord.cleanup = void 0;
-    }
-    state.scratch.set(id, this.record);
-    return this;
-  }
-  evaluate(state, node, _inputArray, _lastInputArray) {
-    let newValue;
-    if (this.queued) {
-      newValue = state.getEventValues(state.scratch.get(node.id), state.time);
-    } else {
-      newValue = state.getEventValue(state.scratch.get(node.id), state.time);
-    }
-    if (newValue !== void 0) {
-      if (newValue !== null && newValue.then) {
-        newValue.then((value) => {
-          state.setResolved(node.id, { value, time: state.time });
-        });
-      } else {
-        state.setResolved(node.id, { value: newValue, time: state.time });
-      }
-    }
-  }
-  conclude(state, varName) {
-    var _a2;
-    super.conclude(state, varName);
-    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
-      state.resolved.delete(varName);
-      return varName;
-    }
-    return;
-  }
-}
-class SendEvent extends Stream {
-  constructor() {
-    super(sendType, false);
-  }
-}
-class ReceiverEvent extends Stream {
-  constructor(value) {
-    super(receiverType, false);
-    __publicField(this, "value");
-    this.value = value;
-  }
-  created(state, id) {
-    if (this.value !== void 0) {
-      state.scratch.set(id, this.value);
-    }
-    return this;
-  }
-  evaluate(state, node, _inputArray, _lastInputArray) {
-    const value = state.scratch.get(node.id);
-    if (value !== void 0) {
-      state.setResolved(node.id, { value, time: state.time });
-    }
-  }
-  conclude(state, varName) {
-    var _a2;
-    super.conclude(state, varName);
-    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
-      state.resolved.delete(varName);
-      state.scratch.delete(varName);
-      return varName;
-    }
-    return;
-  }
-}
-class ChangeEvent extends Stream {
-  constructor(value) {
-    super(changeType, false);
-    __publicField(this, "value");
-    this.value = value;
-  }
-  created(state, id) {
-    state.scratch.set(id, this.value);
-    return this;
-  }
-  ready(node, state) {
-    var _a2;
-    const resolved = (_a2 = state.resolved.get(state.baseVarName(node.inputs[0]))) == null ? void 0 : _a2.value;
-    if (resolved !== void 0 && resolved === state.scratch.get(node.id)) {
-      return false;
-    }
-    return state.defaultReady(node);
-  }
-  evaluate(state, node, inputArray, _lastInputArray) {
-    state.setResolved(node.id, { value: this.value, time: state.time });
-    state.scratch.set(node.id, inputArray[0]);
-  }
-  conclude(state, varName) {
-    var _a2;
-    super.conclude(state, varName);
-    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
-      state.resolved.delete(varName);
-      return varName;
-    }
-    return;
-  }
-}
-class OnceEvent extends Stream {
-  constructor(value) {
-    super(onceType, false);
-    __publicField(this, "value");
-    this.value = value;
-  }
-  created(state, id) {
-    state.scratch.set(id, this.value);
-    return this;
-  }
-  ready(node, state) {
-    return state.scratch.get(node.id) !== void 0;
-  }
-  evaluate(state, node, _inputArray, _lastInputArray) {
-    state.setResolved(node.id, { value: this.value, time: state.time });
-  }
-  conclude(state, varName) {
-    var _a2;
-    super.conclude(state, varName);
-    state.scratch.delete(varName);
-    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
-      state.resolved.delete(varName);
-      return varName;
-    }
-    return;
-  }
-}
-class Behavior extends Stream {
-  constructor() {
-    super(behaviorType, true);
-  }
-}
-class CollectStream extends Stream {
-  constructor(init, varName, updater, isBehavior) {
-    super(collectType, isBehavior);
-    __publicField(this, "init");
-    __publicField(this, "varName");
-    __publicField(this, "updater");
-    this.init = init;
-    this.varName = varName;
-    this.updater = updater;
-  }
-  created(state, id) {
-    if (this.init && typeof this.init === "object" && this.init.then) {
-      this.init.then((value) => {
-        state.streams.set(id, this);
-        this.init = value;
-        state.setResolved(id, { value, time: state.time });
-        state.scratch.set(id, { current: this.init });
-      });
-      return this;
-    }
-    if (!state.scratch.get(id)) {
-      state.streams.set(id, this);
-      state.setResolved(id, { value: this.init, time: state.time });
-      state.scratch.set(id, { current: this.init });
-    }
-    return this;
-  }
-  evaluate(state, node, inputArray, lastInputArray) {
-    const scratch = state.scratch.get(node.id);
-    if (!scratch) {
-      return;
-    }
-    const inputIndex = node.inputs.indexOf(this.varName);
-    const inputValue = inputArray[inputIndex];
-    if (inputValue !== void 0 && (!lastInputArray || inputValue !== lastInputArray[inputIndex])) {
-      const newValue = this.updater(scratch.current, inputValue);
-      if (newValue !== void 0) {
-        if (newValue !== null && newValue.then) {
-          newValue.then((value) => {
-            state.setResolved(node.id, { value, time: state.time });
-            state.scratch.set(node.id, { current: value });
-          });
-        } else {
-          state.setResolved(node.id, { value: newValue, time: state.time });
-          state.scratch.set(node.id, { current: newValue });
-        }
-      }
-    }
-  }
-  conclude(state, varName) {
-    var _a2;
-    super.conclude(state, varName);
-    if (this[isBehaviorKey]) {
-      return;
-    }
-    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
-      state.resolved.delete(varName);
-      return varName;
-    }
-    return;
-  }
-}
-class SelectStream extends Stream {
-  constructor(init, varName, updaters, isBehavior) {
-    super(selectType, isBehavior);
-    __publicField(this, "init");
-    __publicField(this, "varName");
-    __publicField(this, "updaters");
-    this.init = init;
-    this.varName = varName;
-    this.updaters = updaters;
-  }
-  created(state, id) {
-    if (this.init && typeof this.init === "object" && this.init.then) {
-      this.init.then((value) => {
-        state.streams.set(id, this);
-        this.init = value;
-        state.setResolved(id, { value, time: state.time });
-        state.scratch.set(id, { current: this.init });
-      });
-      return this;
-    }
-    if (!state.scratch.get(id)) {
-      state.streams.set(id, this);
-      state.setResolved(id, { value: this.init, time: state.time });
-      state.scratch.set(id, { current: this.init });
-    }
-    return this;
-  }
-  evaluate(state, node, inputArray, _lastInputArray) {
-    const scratch = state.scratch.get(node.id);
-    if (scratch === void 0) {
-      return;
-    }
-    const inputIndex = node.inputs.indexOf(this.varName);
-    const orRecord = inputArray[inputIndex];
-    if (orRecord !== void 0) {
-      const newValue = this.updaters[orRecord.index](scratch.current, orRecord.value);
-      if (newValue !== void 0) {
-        if (newValue !== null && newValue.then) {
-          newValue.then((value) => {
-            state.setResolved(node.id, { value, time: state.time });
-            state.scratch.set(node.id, { current: value });
-          });
-        } else {
-          state.setResolved(node.id, { value: newValue, time: state.time });
-          state.scratch.set(node.id, { current: newValue });
-        }
-      }
-    }
-  }
-  conclude(state, varName) {
-    var _a2;
-    super.conclude(state, varName);
-    if (this[isBehaviorKey]) {
-      return;
-    }
-    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
-      state.resolved.delete(varName);
-      return varName;
-    }
-    return;
-  }
-}
-class GatherStream extends Stream {
-  constructor(regexp, isBehavior) {
-    super(gatherType, isBehavior);
-    __publicField(this, "regexp");
-    this.regexp = new RegExp(regexp);
-  }
-  created(_state, _id) {
-    return this;
-  }
-  evaluate(state, node, inputArray, lastInputArray) {
-    if (state.equals(inputArray, lastInputArray)) {
-      return;
-    }
-    const inputs = node.inputs;
-    const validInputNames = [];
-    const validInputs = [];
-    let hasPromise = false;
-    for (let i2 = 0; i2 < inputs.length; i2++) {
-      const v2 = inputArray[i2];
-      if (v2 !== void 0) {
-        validInputNames.push(inputs[i2]);
-        validInputs.push(v2);
-        if (v2 !== null && v2.then) {
-          hasPromise = true;
-        }
-      }
-    }
-    if (hasPromise) {
-      Promise.all(validInputs).then((values) => {
-        const result = {};
-        for (let i2 = 0; i2 < validInputNames.length; i2++) {
-          result[validInputNames[i2]] = values[i2];
-        }
-        state.setResolved(node.id, { value: result, time: state.time });
-      });
-    } else {
-      const result = {};
-      for (let i2 = 0; i2 < validInputNames.length; i2++) {
-        result[validInputNames[i2]] = validInputs[i2];
-      }
-      state.setResolved(node.id, { value: result, time: state.time });
-    }
-  }
-  conclude(state, varName) {
-    var _a2;
-    super.conclude(state, varName);
-    if (this[isBehaviorKey]) {
-      return;
-    }
-    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
-      state.resolved.delete(varName);
-      return varName;
-    }
-    return;
-  }
-}
-class ResolvePart extends Stream {
-  constructor(object, isBehavior) {
-    super(resolvePartType, isBehavior);
-    __publicField(this, "promise");
-    __publicField(this, "indices");
-    __publicField(this, "resolved");
-    __publicField(this, "object");
-    this.object = object;
-    if (Array.isArray(this.object)) {
-      const array = this.object;
-      const indices = [...Array(array.length).keys()].filter((i2) => {
-        const elem = this.object[i2];
-        return typeof elem === "object" && elem !== null && elem.then;
-      });
-      const promises = indices.map((i2) => array[i2]);
-      this.promise = Promise.all(promises);
-      this.indices = indices;
-    } else {
-      const keys2 = Object.keys(this.object).filter((k2) => {
-        const elem = this.object[k2];
-        return typeof elem === "object" && elem !== null && elem.then;
-      });
-      const promises = keys2.map((k2) => this.object[k2]);
-      this.promise = Promise.all(promises);
-      this.indices = keys2;
-    }
-    this.resolved = false;
-  }
-  created(state, id) {
-    if (!this.resolved) {
-      this.promise.then((values) => {
-        var _a2;
-        const wasResolved = (_a2 = state.resolved.get(id)) == null ? void 0 : _a2.value;
-        if (!wasResolved) {
-          this.resolved = true;
-          if (Array.isArray(this.object)) {
-            const result = [...this.object];
-            const indices = this.indices;
-            for (let i2 of indices) {
-              result[indices[i2]] = values[i2];
-            }
-            state.setResolved(id, { value: result, time: state.time });
-            return result;
-          } else {
-            const result = { ...this.object };
-            const indices = this.indices;
-            for (let i2 = 0; i2 < indices.length; i2++) {
-              result[indices[i2]] = values[i2];
-            }
-            state.setResolved(id, { value: result, time: state.time });
-            return result;
-          }
-        }
-      });
-    }
-    return this;
-  }
-  conclude(state, varName) {
-    var _a2;
-    super.conclude(state, varName);
-    if (this[isBehaviorKey]) {
-      return;
-    }
-    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
-      state.resolved.delete(varName);
-      return varName;
-    }
-    return;
-  }
-}
-class GeneratorNextEvent extends Stream {
-  constructor(generator) {
-    super(generatorNextType, false);
-    __publicField(this, "promise");
-    __publicField(this, "generator");
-    const promise = generator.next();
-    this.promise = promise;
-    this.generator = generator;
-  }
-  created(state, id) {
-    if (this.generator.done) {
-      return this;
-    }
-    const promise = this.promise;
-    promise.then((value) => {
-      var _a2;
-      const wasResolved = (_a2 = state.resolved.get(id)) == null ? void 0 : _a2.value;
-      if (!wasResolved) {
-        state.setResolved(id, { value, time: state.time });
-      }
-    });
-    return this;
-  }
-  conclude(state, varName) {
-    var _a2;
-    super.conclude(state, varName);
-    const value = (_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value;
-    if (value !== void 0) {
-      if (!value.done) {
-        if (!this.generator.done) {
-          const promise = this.generator.next();
-          promise.then((value2) => {
-            var _a3;
-            const wasResolved = (_a3 = state.resolved.get(varName)) == null ? void 0 : _a3.value;
-            if (!wasResolved) {
-              state.setResolved(varName, { value: value2, time: state.time });
-            }
-          });
-          this.promise = promise;
-        }
-      } else {
-        this.generator.done = true;
-      }
-      state.resolved.delete(varName);
-      return varName;
-    }
-    return;
-  }
-}
 function a(t2, e) {
   for (var s = 0; s < e.length; s++) {
     var i2 = e[s];
@@ -9807,6 +8877,110 @@ function D(e) {
     return z;
   };
 }
+class Sourcemap {
+  constructor(input) {
+    __publicField(this, "input");
+    __publicField(this, "_edits");
+    this.input = input;
+    this._edits = [];
+  }
+  _bisectLeft(index2) {
+    let lo = 0;
+    let hi = this._edits.length;
+    while (lo < hi) {
+      const mid = lo + hi >>> 1;
+      if (this._edits[mid].start < index2) lo = mid + 1;
+      else hi = mid;
+    }
+    return lo;
+  }
+  _bisectRight(index2) {
+    let lo = 0;
+    let hi = this._edits.length;
+    while (lo < hi) {
+      const mid = lo + hi >>> 1;
+      if (this._edits[mid].start > index2) hi = mid;
+      else lo = mid + 1;
+    }
+    return lo;
+  }
+  insertLeft(index2, value) {
+    return this.replaceLeft(index2, index2, value);
+  }
+  insertRight(index2, value) {
+    return this.replaceRight(index2, index2, value);
+  }
+  delete(start, end) {
+    return this.replaceRight(start, end, "");
+  }
+  replaceLeft(start, end, value) {
+    return this._edits.splice(this._bisectLeft(start), 0, { start, end, value }), this;
+  }
+  replaceRight(start, end, value) {
+    return this._edits.splice(this._bisectRight(start), 0, { start, end, value }), this;
+  }
+  translate(position) {
+    let index2 = 0;
+    let ci = { line: 1, column: 0 };
+    let co = { line: 1, column: 0 };
+    for (const { start, end, value } of this._edits) {
+      if (start > index2) {
+        const l22 = positionLength(this.input, index2, start);
+        const ci22 = positionAdd(ci, l22);
+        const co22 = positionAdd(co, l22);
+        if (positionCompare(co22, position) > 0) break;
+        ci = ci22;
+        co = co22;
+      }
+      const il = positionLength(this.input, start, end);
+      const ol = positionLength(value);
+      const ci2 = positionAdd(ci, il);
+      const co2 = positionAdd(co, ol);
+      if (positionCompare(co2, position) > 0) return ci;
+      ci = ci2;
+      co = co2;
+      index2 = end;
+    }
+    const l2 = positionSubtract(position, co);
+    return positionAdd(ci, l2);
+  }
+  trim() {
+    const input = this.input;
+    if (input.startsWith("\n")) this.delete(0, 1);
+    if (input.endsWith("\n")) this.delete(input.length - 1, input.length);
+    return this;
+  }
+  toString() {
+    let output = "";
+    let index2 = 0;
+    for (const { start, end, value } of this._edits) {
+      if (start > index2) output += this.input.slice(index2, start);
+      output += value;
+      index2 = end;
+    }
+    output += this.input.slice(index2);
+    return output;
+  }
+}
+function positionCompare(a2, b2) {
+  return a2.line - b2.line || a2.column - b2.column;
+}
+function positionLength(input, start = 0, end = input.length) {
+  let match;
+  let line = 0;
+  lineBreakG.lastIndex = start;
+  while ((match = lineBreakG.exec(input)) && match.index < end) {
+    ++line;
+    start = match.index + match[0].length;
+  }
+  return { line, column: end - start };
+}
+function positionSubtract(b2, a2) {
+  return b2.line === a2.line ? { line: 0, column: b2.column - a2.column } : { line: b2.line - a2.line, column: b2.column };
+}
+function positionAdd(p2, l2) {
+  return l2.line === 0 ? { line: p2.line, column: p2.column + l2.column } : { line: p2.line + l2.line, column: l2.column };
+}
 function detype(input) {
   const ts = D();
   const node = Parser$1.extend(ts).parse(input, {
@@ -9833,6 +9007,834 @@ function removeTypeNode(output, node) {
       removeTypeNode(output, v2);
       continue;
     }
+  }
+}
+const acornOptions = {
+  ecmaVersion: 13,
+  sourceType: "module"
+};
+function findDecls(input) {
+  try {
+    const body = parseProgram(input);
+    const list2 = body.body;
+    return list2.map((decl) => input.slice(decl.start, decl.end));
+  } catch (error) {
+    const e = error;
+    console.log(e.message, ": error around -> ", `"${input.slice(e.pos - 30, e.pos + 30)}"`);
+    return [];
+  }
+}
+function parseJavaScript(input, initialId, flattened2 = false) {
+  var _a2;
+  input = detype(input);
+  const decls = findDecls(input);
+  const allReferences = [];
+  let id = initialId;
+  for (const decl of decls) {
+    id++;
+    const b2 = parseProgram(decl);
+    const [references, forceVars, sendTargets, extraType] = findReferences(b2);
+    checkAssignments(b2, references, input);
+    const declarations = findDeclarations(b2, input);
+    const rewriteSpecs = flattened2 ? [] : checkNested(b2, id);
+    if (rewriteSpecs.length === 0) {
+      const myId = ((_a2 = declarations[0]) == null ? void 0 : _a2.name) || `${id}`;
+      allReferences.push({
+        id: myId,
+        body: b2,
+        declarations,
+        references,
+        forceVars,
+        sendTargets,
+        imports: [],
+        extraType,
+        // expression: false,
+        input: decl
+      });
+    } else {
+      let newInput = decl;
+      let newPart = "";
+      let overridden = false;
+      let again = false;
+      for (let i2 = 0; i2 < rewriteSpecs.length; i2++) {
+        const spec = rewriteSpecs[i2];
+        if (spec.type === "range") {
+          const sub = newInput.slice(spec.start, spec.end);
+          const varName = spec.name;
+          newPart += `const ${varName} = ${sub};
+`;
+          let length = spec.end - spec.start;
+          const newNewInput = `${newInput.slice(0, spec.start)}${spec.name.padEnd(length, " ")}${newInput.slice(spec.end)}`;
+          if (newNewInput.length !== decl.length) {
+            debugger;
+          }
+          newInput = newNewInput;
+        } else if (spec.type === "override") {
+          overridden = true;
+          newPart += spec.definition + "\n";
+        } else if (spec.type === "select") {
+          overridden = false;
+          const sub = spec.triggers.map((spec2) => newInput.slice(spec2.start, spec2.end));
+          const trigger = `Events._or_index(${sub.join(", ")})`;
+          const funcs = spec.funcs.map((spec2) => newInput.slice(spec2.start, spec2.end));
+          const init = newInput.slice(spec.init.start, spec.init.end);
+          const newNewInput = `const ${declarations[0].name} = ${spec.classType}._select(${init}, ${trigger}, [${funcs}]);`;
+          newInput = newNewInput;
+          again = true;
+          id++;
+          break;
+        }
+      }
+      const parsed = parseJavaScript(`${newPart}${overridden ? "" : "\n" + newInput}`, again ? id - 1 : initialId, !again);
+      allReferences.push(...parsed);
+    }
+  }
+  return allReferences;
+}
+function parseProgram(input) {
+  return Parser$1.parse(input, acornOptions);
+}
+function parseJSX(input) {
+  return Parser$1.extend(jsx()).parse(input, { ecmaVersion: 13 });
+}
+const renkonGlobals = /* @__PURE__ */ new Set([
+  "Events",
+  "Behaviors",
+  "Renkon"
+]);
+function transpileJavaScript(node) {
+  var _a2;
+  const outputs = Array.from(new Set((_a2 = node.declarations) == null ? void 0 : _a2.map((r) => r.name)));
+  const only = outputs.length === 0 ? "" : outputs[0];
+  const inputs = Array.from(new Set(node.references.map((r) => r.name))).filter((n2) => {
+    return !defaultGlobals.has(n2) && !renkonGlobals.has(n2) && !(node.sendTargets.findIndex((s) => s.name === n2) >= 0);
+  });
+  const forceVars = Array.from(new Set(node.forceVars.map((r) => r.name))).filter((n2) => !defaultGlobals.has(n2) && !renkonGlobals.has(n2));
+  const output = new Sourcemap(node.input).trim();
+  rewriteRenkonCalls(output, node.body);
+  output.insertLeft(0, `, body: (${inputs}) => {
+`);
+  output.insertLeft(0, `, outputs: ${JSON.stringify(only)}`);
+  output.insertLeft(0, `, inputs: ${JSON.stringify(inputs)}`);
+  output.insertLeft(0, `, forceVars: ${JSON.stringify(forceVars)}`);
+  output.insertLeft(0, `, blockId: "${node.blockId}"`);
+  output.insertLeft(0, `{id: "${node.id}"`);
+  output.insertRight(node.input.length, `
+return ${only};`);
+  output.insertRight(node.input.length, "\n}};\n");
+  return String(output);
+}
+function getFunctionBody(input, forMerge) {
+  const compiled = parseJavaScript(input, 0, true);
+  const node = compiled[0].body.body[0];
+  const params = node.params.map((p2) => p2.name);
+  const body = node.body.body;
+  const last = body[body.length - 1];
+  const returnArray = forMerge ? [] : getArray(last);
+  const output = new Sourcemap(input).trim();
+  output.delete(0, body[0].start);
+  output.delete(last.start, input.length);
+  return { params, returnArray, output: String(output) };
+}
+function getArray(returnNode) {
+  if (returnNode.type !== "ReturnStatement") {
+    console.error("cannot convert");
+    return null;
+  }
+  const array = returnNode.argument;
+  if (!array || array.type !== "ArrayExpression") {
+    console.error("cannot convert");
+    return null;
+  }
+  for (const elem of array.elements) {
+    if (!elem || elem.type !== "Identifier") {
+      console.error("cannot convert");
+      return null;
+    }
+  }
+  return array.elements.map((e) => e.name);
+}
+function quote(node, output) {
+  output.insertLeft(node.start, '"');
+  output.insertRight(node.end, '"');
+}
+function rewriteRenkonCalls(output, body) {
+  simple(body, {
+    CallExpression(node) {
+      const callee = node.callee;
+      if (callee.type === "MemberExpression" && callee.object.type === "Identifier") {
+        if (callee.object.name === "Events") {
+          output.insertRight(callee.object.end, ".create(Renkon)");
+          if (callee.property.type === "Identifier") {
+            if (callee.property.name === "delay") {
+              quote(node.arguments[0], output);
+            } else if (callee.property.name === "or" || callee.property.name === "_or_index") {
+              for (const arg of node.arguments) {
+                quote(arg, output);
+              }
+            } else if (callee.property.name === "send") {
+              quote(node.arguments[0], output);
+            } else if (callee.property.name === "collect" || callee.property.name === "_select") {
+              quote(node.arguments[1], output);
+            }
+          }
+        } else if (callee.object.name === "Behaviors") {
+          output.insertRight(callee.object.end, ".create(Renkon)");
+          if (callee.property.type === "Identifier") {
+            if (callee.property.name === "collect" || callee.property.name === "_select") {
+              quote(node.arguments[1], output);
+            } else if (callee.property.name === "or" || callee.property.name === "_or_index") {
+              for (const arg of node.arguments) {
+                quote(arg, output);
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+}
+const version$1 = "0.5.0";
+const packageJson = {
+  version: version$1
+};
+const typeKey = Symbol("typeKey");
+const isBehaviorKey = Symbol("isBehavior");
+const eventType = "EventType";
+const delayType = "DelayType";
+const timerType = "TimerType";
+const collectType = "CollectType";
+const selectType = "SelectType";
+const promiseType = "PromiseType";
+const behaviorType = "BehaviorType";
+const onceType = "OnceType";
+const orType = "OrType";
+const sendType = "SendType";
+const receiverType = "ReceiverType";
+const changeType = "ChangeType";
+const gatherType = "GatherType";
+const generatorNextType = "GeneratorNextType";
+const resolvePartType = "ResolvePart";
+_b = typeKey, _a$1 = isBehaviorKey;
+class Stream {
+  constructor(type, isBehavior) {
+    __publicField(this, _b);
+    __publicField(this, _a$1);
+    this[typeKey] = type;
+    this[isBehaviorKey] = isBehavior;
+  }
+  created(_state, _id) {
+    return this;
+  }
+  ready(node, state) {
+    var _a2;
+    for (const inputName of node.inputs) {
+      const varName = state.baseVarName(inputName);
+      const resolved = (_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value;
+      if (resolved === void 0 && !node.forceVars.includes(inputName)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  evaluate(_state, _node, _inputArray, _lastInputArray) {
+    return;
+  }
+  conclude(state, varName) {
+    const inputArray = state.inputArray.get(varName);
+    const inputs = state.nodes.get(varName).inputs;
+    if (!inputArray || !inputs) {
+      return;
+    }
+    for (let i2 = 0; i2 < inputs.length; i2++) {
+      const resolved = state.resolved.get(inputs[i2]);
+      if (resolved === void 0) {
+        inputArray[i2] = void 0;
+      }
+    }
+    return;
+  }
+}
+class DelayedEvent extends Stream {
+  constructor(delay, varName, isBehavior) {
+    super(delayType, isBehavior);
+    __publicField(this, "delay");
+    __publicField(this, "varName");
+    this.delay = delay;
+    this.varName = varName;
+  }
+  ready(node, state) {
+    const output = node.outputs;
+    const scratch = state.scratch.get(output);
+    if ((scratch == null ? void 0 : scratch.queue.length) > 0) {
+      return true;
+    }
+    return state.defaultReady(node);
+  }
+  created(state, id) {
+    if (!state.scratch.get(id)) {
+      state.scratch.set(id, { queue: [] });
+    }
+    return this;
+  }
+  evaluate(state, node, inputArray, lastInputArray) {
+    const value = state.spliceDelayedQueued(state.scratch.get(node.id), state.time);
+    if (value !== void 0) {
+      state.setResolved(node.id, { value, time: state.time });
+    }
+    const inputIndex = 0;
+    const myInput = inputArray[inputIndex];
+    const doIt = this[isBehaviorKey] && myInput !== void 0 && myInput !== (lastInputArray == null ? void 0 : lastInputArray[inputIndex]) || !this[isBehaviorKey] && myInput !== void 0;
+    if (doIt) {
+      const scratch = state.scratch.get(node.id);
+      scratch.queue.push({ time: state.time + this.delay, value: myInput });
+    }
+  }
+  conclude(state, varName) {
+    var _a2;
+    super.conclude(state, varName);
+    if (this[isBehaviorKey]) {
+      return;
+    }
+    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
+      state.resolved.delete(varName);
+      return varName;
+    }
+    return;
+  }
+}
+class TimerEvent extends Stream {
+  constructor(interval, isBehavior) {
+    super(timerType, isBehavior);
+    __publicField(this, "interval");
+    this.interval = interval;
+  }
+  created(_state, _id) {
+    return this;
+  }
+  ready(node, state) {
+    const output = node.outputs;
+    const last = state.scratch.get(output);
+    const interval = this.interval;
+    return last === void 0 || last + interval <= state.time;
+  }
+  evaluate(state, node, _inputArray, _lastInputArray) {
+    const interval = this.interval;
+    const logicalTrigger = interval * Math.floor(state.time / interval);
+    state.setResolved(node.id, { value: logicalTrigger, time: state.time });
+    state.scratch.set(node.id, logicalTrigger);
+  }
+  conclude(state, varName) {
+    var _a2;
+    super.conclude(state, varName);
+    if (this[isBehaviorKey]) {
+      return;
+    }
+    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
+      state.resolved.delete(varName);
+      return varName;
+    }
+    return;
+  }
+}
+class PromiseEvent extends Stream {
+  constructor(promise) {
+    super(promiseType, true);
+    __publicField(this, "promise");
+    this.promise = promise;
+  }
+  created(state, id) {
+    var _a2;
+    const oldPromise = (_a2 = state.scratch.get(id)) == null ? void 0 : _a2.promise;
+    const promise = this.promise;
+    if (oldPromise && promise !== oldPromise) {
+      state.resolved.delete(id);
+    }
+    promise.then((value) => {
+      var _a3;
+      const wasResolved = (_a3 = state.resolved.get(id)) == null ? void 0 : _a3.value;
+      if (!wasResolved) {
+        state.scratch.set(id, { promise });
+        state.setResolved(id, { value, time: state.time });
+      }
+    });
+    return this;
+  }
+}
+class OrStream extends Stream {
+  constructor(varNames, useIndex, isBehavior = false) {
+    super(orType, isBehavior);
+    __publicField(this, "varNames");
+    __publicField(this, "useIndex");
+    this.varNames = varNames;
+    this.useIndex = useIndex;
+  }
+  evaluate(state, node, inputArray, _lastInputArray) {
+    for (let i2 = 0; i2 < node.inputs.length; i2++) {
+      const myInput = inputArray[i2];
+      if (myInput !== void 0) {
+        if (this.useIndex) {
+          state.setResolved(node.id, { value: { index: i2, value: myInput }, time: state.time });
+        } else {
+          state.setResolved(node.id, { value: myInput, time: state.time });
+        }
+        return;
+      }
+    }
+  }
+  conclude(state, varName) {
+    var _a2;
+    super.conclude(state, varName);
+    if (this[isBehaviorKey]) {
+      return;
+    }
+    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
+      state.resolved.delete(varName);
+      return varName;
+    }
+    return;
+  }
+}
+class UserEvent extends Stream {
+  constructor(record, queued) {
+    super(eventType, false);
+    __publicField(this, "record");
+    __publicField(this, "queued");
+    this.record = record;
+    this.queued = !!queued;
+  }
+  created(state, id) {
+    let oldRecord = state.scratch.get(id);
+    if (oldRecord && oldRecord.cleanup && typeof oldRecord.cleanup === "function") {
+      oldRecord.cleanup();
+      oldRecord.cleanup = void 0;
+    }
+    state.scratch.set(id, this.record);
+    return this;
+  }
+  evaluate(state, node, _inputArray, _lastInputArray) {
+    let newValue;
+    if (this.queued) {
+      newValue = state.getEventValues(state.scratch.get(node.id), state.time);
+    } else {
+      newValue = state.getEventValue(state.scratch.get(node.id), state.time);
+    }
+    if (newValue !== void 0) {
+      if (newValue !== null && newValue.then) {
+        newValue.then((value) => {
+          state.setResolved(node.id, { value, time: state.time });
+        });
+      } else {
+        state.setResolved(node.id, { value: newValue, time: state.time });
+      }
+    }
+  }
+  conclude(state, varName) {
+    var _a2;
+    super.conclude(state, varName);
+    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
+      state.resolved.delete(varName);
+      return varName;
+    }
+    return;
+  }
+}
+class SendEvent extends Stream {
+  constructor() {
+    super(sendType, false);
+  }
+}
+class ReceiverEvent extends Stream {
+  constructor(options) {
+    const isBehavior = !!(options == null ? void 0 : options.isBehavior);
+    super(receiverType, isBehavior);
+    __publicField(this, "queued");
+    this.queued = !!(options == null ? void 0 : options.queued);
+  }
+  created(_state, _id) {
+    return this;
+  }
+  evaluate(state, node, _inputArray, _lastInputArray) {
+    const value = state.scratch.get(node.id);
+    if (value !== void 0) {
+      state.setResolved(node.id, { value, time: state.time });
+    }
+  }
+  conclude(state, varName) {
+    var _a2;
+    super.conclude(state, varName);
+    if (this[isBehaviorKey]) {
+      return;
+    }
+    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
+      state.resolved.delete(varName);
+      state.scratch.delete(varName);
+      return varName;
+    }
+    return;
+  }
+}
+class ChangeEvent extends Stream {
+  constructor(value) {
+    super(changeType, false);
+    __publicField(this, "value");
+    this.value = value;
+  }
+  created(state, id) {
+    state.scratch.set(id, this.value);
+    return this;
+  }
+  ready(node, state) {
+    var _a2;
+    const resolved = (_a2 = state.resolved.get(state.baseVarName(node.inputs[0]))) == null ? void 0 : _a2.value;
+    if (resolved !== void 0 && resolved === state.scratch.get(node.id)) {
+      return false;
+    }
+    return state.defaultReady(node);
+  }
+  evaluate(state, node, inputArray, _lastInputArray) {
+    state.setResolved(node.id, { value: this.value, time: state.time });
+    state.scratch.set(node.id, inputArray[0]);
+  }
+  conclude(state, varName) {
+    var _a2;
+    super.conclude(state, varName);
+    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
+      state.resolved.delete(varName);
+      return varName;
+    }
+    return;
+  }
+}
+class OnceEvent extends Stream {
+  constructor(value) {
+    super(onceType, false);
+    __publicField(this, "value");
+    this.value = value;
+  }
+  created(state, id) {
+    state.scratch.set(id, this.value);
+    return this;
+  }
+  ready(node, state) {
+    return state.scratch.get(node.id) !== void 0;
+  }
+  evaluate(state, node, _inputArray, _lastInputArray) {
+    state.setResolved(node.id, { value: this.value, time: state.time });
+  }
+  conclude(state, varName) {
+    var _a2;
+    super.conclude(state, varName);
+    state.scratch.delete(varName);
+    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
+      state.resolved.delete(varName);
+      return varName;
+    }
+    return;
+  }
+}
+class Behavior extends Stream {
+  constructor() {
+    super(behaviorType, true);
+  }
+}
+class CollectStream extends Stream {
+  constructor(init, varName, updater, isBehavior) {
+    super(collectType, isBehavior);
+    __publicField(this, "init");
+    __publicField(this, "varName");
+    __publicField(this, "updater");
+    this.init = init;
+    this.varName = varName;
+    this.updater = updater;
+  }
+  created(state, id) {
+    if (this.init && typeof this.init === "object" && this.init.then) {
+      this.init.then((value) => {
+        state.streams.set(id, this);
+        this.init = value;
+        state.setResolved(id, { value, time: state.time });
+        state.scratch.set(id, { current: this.init });
+      });
+      return this;
+    }
+    if (!state.scratch.get(id)) {
+      state.streams.set(id, this);
+      state.setResolved(id, { value: this.init, time: state.time });
+      state.scratch.set(id, { current: this.init });
+    }
+    return this;
+  }
+  evaluate(state, node, inputArray, lastInputArray) {
+    const scratch = state.scratch.get(node.id);
+    if (!scratch) {
+      return;
+    }
+    const inputIndex = node.inputs.indexOf(this.varName);
+    const inputValue = inputArray[inputIndex];
+    if (inputValue !== void 0 && (!lastInputArray || inputValue !== lastInputArray[inputIndex])) {
+      const newValue = this.updater(scratch.current, inputValue);
+      if (newValue !== void 0) {
+        if (newValue !== null && newValue.then) {
+          newValue.then((value) => {
+            state.setResolved(node.id, { value, time: state.time });
+            state.scratch.set(node.id, { current: value });
+          });
+        } else {
+          state.setResolved(node.id, { value: newValue, time: state.time });
+          state.scratch.set(node.id, { current: newValue });
+        }
+      }
+    }
+  }
+  conclude(state, varName) {
+    var _a2;
+    super.conclude(state, varName);
+    if (this[isBehaviorKey]) {
+      return;
+    }
+    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
+      state.resolved.delete(varName);
+      return varName;
+    }
+    return;
+  }
+}
+class SelectStream extends Stream {
+  constructor(init, varName, updaters, isBehavior) {
+    super(selectType, isBehavior);
+    __publicField(this, "init");
+    __publicField(this, "varName");
+    __publicField(this, "updaters");
+    this.init = init;
+    this.varName = varName;
+    this.updaters = updaters;
+  }
+  created(state, id) {
+    if (this.init && typeof this.init === "object" && this.init.then) {
+      this.init.then((value) => {
+        state.streams.set(id, this);
+        this.init = value;
+        state.setResolved(id, { value, time: state.time });
+        state.scratch.set(id, { current: this.init });
+      });
+      return this;
+    }
+    if (!state.scratch.get(id)) {
+      state.streams.set(id, this);
+      state.setResolved(id, { value: this.init, time: state.time });
+      state.scratch.set(id, { current: this.init });
+    }
+    return this;
+  }
+  evaluate(state, node, inputArray, _lastInputArray) {
+    const scratch = state.scratch.get(node.id);
+    if (scratch === void 0) {
+      return;
+    }
+    const inputIndex = node.inputs.indexOf(this.varName);
+    const orRecord = inputArray[inputIndex];
+    if (orRecord !== void 0) {
+      const newValue = this.updaters[orRecord.index](scratch.current, orRecord.value);
+      if (newValue !== void 0) {
+        if (newValue !== null && newValue.then) {
+          newValue.then((value) => {
+            state.setResolved(node.id, { value, time: state.time });
+            state.scratch.set(node.id, { current: value });
+          });
+        } else {
+          state.setResolved(node.id, { value: newValue, time: state.time });
+          state.scratch.set(node.id, { current: newValue });
+        }
+      }
+    }
+  }
+  conclude(state, varName) {
+    var _a2;
+    super.conclude(state, varName);
+    if (this[isBehaviorKey]) {
+      return;
+    }
+    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
+      state.resolved.delete(varName);
+      return varName;
+    }
+    return;
+  }
+}
+class GatherStream extends Stream {
+  constructor(regexp, isBehavior) {
+    super(gatherType, isBehavior);
+    __publicField(this, "regexp");
+    this.regexp = new RegExp(regexp);
+  }
+  created(_state, _id) {
+    return this;
+  }
+  evaluate(state, node, inputArray, lastInputArray) {
+    if (state.equals(inputArray, lastInputArray)) {
+      return;
+    }
+    const inputs = node.inputs;
+    const validInputNames = [];
+    const validInputs = [];
+    let hasPromise = false;
+    for (let i2 = 0; i2 < inputs.length; i2++) {
+      const v2 = inputArray[i2];
+      if (v2 !== void 0) {
+        validInputNames.push(inputs[i2]);
+        validInputs.push(v2);
+        if (v2 !== null && v2.then) {
+          hasPromise = true;
+        }
+      }
+    }
+    if (hasPromise) {
+      Promise.all(validInputs).then((values) => {
+        const result = {};
+        for (let i2 = 0; i2 < validInputNames.length; i2++) {
+          result[validInputNames[i2]] = values[i2];
+        }
+        state.setResolved(node.id, { value: result, time: state.time });
+      });
+    } else {
+      const result = {};
+      for (let i2 = 0; i2 < validInputNames.length; i2++) {
+        result[validInputNames[i2]] = validInputs[i2];
+      }
+      state.setResolved(node.id, { value: result, time: state.time });
+    }
+  }
+  conclude(state, varName) {
+    var _a2;
+    super.conclude(state, varName);
+    if (this[isBehaviorKey]) {
+      return;
+    }
+    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
+      state.resolved.delete(varName);
+      return varName;
+    }
+    return;
+  }
+}
+class ResolvePart extends Stream {
+  constructor(object, isBehavior) {
+    super(resolvePartType, isBehavior);
+    __publicField(this, "promise");
+    __publicField(this, "indices");
+    __publicField(this, "resolved");
+    __publicField(this, "object");
+    this.object = object;
+    if (Array.isArray(this.object)) {
+      const array = this.object;
+      const indices = [...Array(array.length).keys()].filter((i2) => {
+        const elem = this.object[i2];
+        return typeof elem === "object" && elem !== null && elem.then;
+      });
+      const promises = indices.map((i2) => array[i2]);
+      this.promise = Promise.all(promises);
+      this.indices = indices;
+    } else {
+      const keys2 = Object.keys(this.object).filter((k2) => {
+        const elem = this.object[k2];
+        return typeof elem === "object" && elem !== null && elem.then;
+      });
+      const promises = keys2.map((k2) => this.object[k2]);
+      this.promise = Promise.all(promises);
+      this.indices = keys2;
+    }
+    this.resolved = false;
+  }
+  created(state, id) {
+    if (!this.resolved) {
+      this.promise.then((values) => {
+        var _a2;
+        const wasResolved = (_a2 = state.resolved.get(id)) == null ? void 0 : _a2.value;
+        if (!wasResolved) {
+          this.resolved = true;
+          if (Array.isArray(this.object)) {
+            const result = [...this.object];
+            const indices = this.indices;
+            for (let i2 of indices) {
+              result[indices[i2]] = values[i2];
+            }
+            state.setResolved(id, { value: result, time: state.time });
+            return result;
+          } else {
+            const result = { ...this.object };
+            const indices = this.indices;
+            for (let i2 = 0; i2 < indices.length; i2++) {
+              result[indices[i2]] = values[i2];
+            }
+            state.setResolved(id, { value: result, time: state.time });
+            return result;
+          }
+        }
+      });
+    }
+    return this;
+  }
+  conclude(state, varName) {
+    var _a2;
+    super.conclude(state, varName);
+    if (this[isBehaviorKey]) {
+      return;
+    }
+    if (((_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value) !== void 0) {
+      state.resolved.delete(varName);
+      return varName;
+    }
+    return;
+  }
+}
+class GeneratorNextEvent extends Stream {
+  constructor(generator) {
+    super(generatorNextType, false);
+    __publicField(this, "promise");
+    __publicField(this, "generator");
+    const promise = generator.next();
+    this.promise = promise;
+    this.generator = generator;
+  }
+  created(state, id) {
+    if (this.generator.done) {
+      return this;
+    }
+    const promise = this.promise;
+    promise.then((value) => {
+      var _a2;
+      const wasResolved = (_a2 = state.resolved.get(id)) == null ? void 0 : _a2.value;
+      if (!wasResolved) {
+        state.setResolved(id, { value, time: state.time });
+      }
+    });
+    return this;
+  }
+  conclude(state, varName) {
+    var _a2;
+    super.conclude(state, varName);
+    const value = (_a2 = state.resolved.get(varName)) == null ? void 0 : _a2.value;
+    if (value !== void 0) {
+      if (!value.done) {
+        if (!this.generator.done) {
+          const promise = this.generator.next();
+          promise.then((value2) => {
+            var _a3;
+            const wasResolved = (_a3 = state.resolved.get(varName)) == null ? void 0 : _a3.value;
+            if (!wasResolved) {
+              state.setResolved(varName, { value: value2, time: state.time });
+            }
+          });
+          this.promise = promise;
+        }
+      } else {
+        this.generator.done = true;
+      }
+      state.resolved.delete(varName);
+      return varName;
+    }
+    return;
   }
 }
 class TSCompiler {
@@ -9952,8 +9954,8 @@ class Events {
     this.programState.registerEvent(receiver, value);
     return new SendEvent();
   }
-  receiver() {
-    return new ReceiverEvent(void 0);
+  receiver(options) {
+    return new ReceiverEvent(options);
   }
   observe(callback, options) {
     return eventBody({ forObserve: true, callback, state: this.programState, queued: options == null ? void 0 : options.queued });
@@ -10007,10 +10009,11 @@ class Behaviors {
   gather(regexp) {
     return new GatherStream(regexp, true);
   }
-  /*
-  startsWith(init:any, varName:VarName) {
-      return new CollectStream(init, varName, (_old, v) => v, true);
-  }*/
+  receiver(options) {
+    let args = { ...options };
+    args.isBehavior = true;
+    return new ReceiverEvent(args);
+  }
 }
 function topologicalSort(nodes) {
   let order = [];
@@ -10280,7 +10283,10 @@ class ProgramState {
           );
         } else {
           this.changeList.delete(id);
-          outputs = new ReceiverEvent(change);
+          if (change !== void 0) {
+            this.setResolved(id, { value: change, time: this.time });
+          }
+          outputs = this.streams.get(id);
         }
         this.inputArray.set(id, inputArray);
         const maybeValue = outputs;
@@ -10414,7 +10420,20 @@ class ProgramState {
     return varName[0] !== "$" ? varName : varName.slice(1);
   }
   registerEvent(receiver, value) {
-    this.changeList.set(receiver, value);
+    const stream = this.streams.get(receiver);
+    if (!stream) {
+      return;
+    }
+    if (stream.queued) {
+      let ary = this.changeList.get(receiver);
+      if (!ary) {
+        ary = [];
+        this.changeList.set(receiver, ary);
+      }
+      ary.push(value);
+    } else {
+      this.changeList.set(receiver, value);
+    }
     if (this.noTicking) {
       this.noTickingEvaluator();
     }
@@ -10457,15 +10476,26 @@ class ProgramState {
   }
   component(func) {
     return (input, key) => {
-      let programState = this.programStates.get(key);
-      if (!programState) {
+      let programState;
+      let returnValues = null;
+      let newProgramState = false;
+      let subProgramState = this.programStates.get(key);
+      if (!subProgramState) {
+        newProgramState = true;
         programState = new ProgramState(this.time);
         programState.lastReturned = void 0;
-        this.programStates.set(key, programState);
+      } else {
+        programState = subProgramState.programState;
+        returnValues = subProgramState.returnArray;
       }
-      const { params, returnArray, output } = getFunctionBody(func.toString(), false);
-      const receivers = params.map((r) => `const ${r} = undefined;`).join("\n");
-      programState.setupProgram([receivers, output]);
+      const maybeOldFunc = subProgramState == null ? void 0 : subProgramState.func;
+      if (newProgramState || func !== maybeOldFunc) {
+        const { params, returnArray, output } = getFunctionBody(func.toString(), false);
+        returnValues = returnArray;
+        const receivers = params.map((r) => `const ${r} = Events.receiver();`).join("\n");
+        programState.setupProgram([receivers, output]);
+        this.programStates.set(key, { programState, func, returnArray });
+      }
       const trigger = (input2) => {
         for (let key2 in input2) {
           programState.setResolvedForSubgraph(
@@ -10476,8 +10506,8 @@ class ProgramState {
         programState.evaluate(this.time);
         const result = {};
         const resultTest = [];
-        if (returnArray) {
-          for (const n2 of returnArray) {
+        if (returnValues) {
+          for (const n2 of returnValues) {
             const v2 = programState.resolved.get(n2);
             resultTest.push(v2 ? v2.value : void 0);
             if (v2 && v2.value !== void 0) {

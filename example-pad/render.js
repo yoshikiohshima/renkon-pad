@@ -1,4 +1,4 @@
-    const windowDOM = (id, position, zIndex, title, codeEditor, type) => {
+    const windowDOM = (id, position, zIndex, title, windowContent, type) => {
         // console.log("windowDOM");
         return h("div", {
             key: `${id}`,
@@ -13,8 +13,8 @@
             },
             ref: (ref) => {
                 if (ref) {
-                    if (ref !== codeEditor.dom.parentNode) {
-                        ref.appendChild(codeEditor.dom);
+                    if (ref !== windowContent.dom.parentNode) {
+                        ref.appendChild(windowContent.dom);
                     }
                 }
             },
@@ -63,10 +63,10 @@
         ])
     };
 
-    const windowElements = ((windows, positions, zIndex, titles, codeEditors, windowTypes) => {
+    const windowElements = ((windows, positions, zIndex, titles, windowContents, windowTypes) => {
         return h("div", {"class": "owner"}, windows.map((id) => {
-            return windowDOM(id, positions.map.get(id), zIndex.map.get(id), titles.map.get(id), codeEditors.map.get(id), windowTypes.map.get(id));
+            return windowDOM(id, positions.map.get(id), zIndex.map.get(id), titles.map.get(id), windowContents.map.get(id), windowTypes.map.get(id));
         }));
-    })(windows, positions, zIndex, titles, codeEditors, windowTypes);
+    })(windows, positions, zIndex, titles, windowContents, windowTypes);
 
     const _windowRender = render(windowElements, document.querySelector("#pad"));

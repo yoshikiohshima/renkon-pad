@@ -1,7 +1,7 @@
     const loadRequest = Events.receiver();
 
-    const _saver = ((windows, positions, zIndex, titles, codeEditors, windowTypes) => {
-        const code = new Map([...codeEditors.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
+    const _saver = ((windows, positions, zIndex, titles, windowContents, windowTypes) => {
+        const code = new Map([...windowContents.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
         const data = stringify({
             version: 1,
             windows,
@@ -17,7 +17,7 @@
         div.setAttribute("href", dataStr);
         div.setAttribute("download", `renkon-pad.json`);
         div.click();
-    })(windows, positions, zIndex, titles, codeEditors, windowTypes, save);
+    })(windows, positions, zIndex, titles, windowContents, windowTypes, save);
 
     const _loader = (() => {
         const input = document.createElement("div");

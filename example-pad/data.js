@@ -137,7 +137,7 @@
         }
     );
 
-    const codeEditors = Behaviors.select(
+    const windowContents = Behaviors.select(
         {map: new Map()},
         loadRequest, (now, loaded) => {
             for (let editor of now.map.values()) {
