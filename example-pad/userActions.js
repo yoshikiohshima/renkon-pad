@@ -17,7 +17,7 @@
         const code = [...windowContents.map.values()]
             .filter((obj) => obj.state)
             .map((editor) => editor.state.doc.toString());
-        iframe.dom.contentWindow.postMessage({code: code});
+        iframe.dom.contentWindow.postMessage({code: code, path: id});
     })(runRequest, windowContents);
 
     const remove = Events.receiver();
@@ -87,4 +87,5 @@
                 state: false
             });
         }
-    }
+    };
+

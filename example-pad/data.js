@@ -203,8 +203,32 @@
 
     const newRunner = (id) => {
         const runnerIframe = document.createElement("iframe");
-        runnerIframe.src = "window.html";
+        runnerIframe.srcdoc = `
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+    </head>
+    <body>
+        <div id="renkon">
+        </div>
+        <script type="module">
+            import {ProgramState, CodeMirror} from "./renkon-web.js";
+            window.thisProgramState = new ProgramState(0);
+            window.CodeMirror = CodeMirror;
+
+            window.onmessage = (evt) => {
+                if (evt.data && Array.isArray(evt.data.code)) {
+                    window.thisProgramState.updateProgram(evt.data.code, evt.data.path);
+                    if (window.thisProgramState.evaluatorRunning === 0) {
+                        window.thisProgramState.evaluator();
+                    }
+                }
+            };
+        </script>
+    </body>
+</html>`;
         runnerIframe.classList = "runnerIframe";
         runnerIframe.id = `runner-${id}`;
         return {dom: runnerIframe};
-    }
+    };

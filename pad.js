@@ -242,11 +242,35 @@ export function pad() {
 
     const newRunner = (id) => {
         const runnerIframe = document.createElement("iframe");
-        runnerIframe.src = "window.html";
+        runnerIframe.srcdoc = `
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+    </head>
+    <body>
+        <div id="renkon">
+        </div>
+        <script type="module">
+            import {ProgramState, CodeMirror} from "./renkon-web.js";
+            window.thisProgramState = new ProgramState(0);
+            window.CodeMirror = CodeMirror;
+
+            window.onmessage = (evt) => {
+                if (evt.data && Array.isArray(evt.data.code)) {
+                    window.thisProgramState.updateProgram(evt.data.code, evt.data.path);
+                    if (window.thisProgramState.evaluatorRunning === 0) {
+                        window.thisProgramState.evaluator();
+                    }
+                }
+            };
+        </script>
+    </body>
+</html>`;
         runnerIframe.classList = "runnerIframe";
         runnerIframe.id = `runner-${id}`;
         return {dom: runnerIframe};
-    }
+    };
 
     // userActions.js
 
@@ -269,7 +293,7 @@ export function pad() {
         const code = [...windowContents.map.values()]
             .filter((obj) => obj.state)
             .map((editor) => editor.state.doc.toString());
-        iframe.dom.contentWindow.postMessage({code: code});
+        iframe.dom.contentWindow.postMessage({code: code, path: id});
     })(runRequest, windowContents);
 
     const remove = Events.receiver();
@@ -480,9 +504,10 @@ export function pad() {
     });
 
     // analyzer;
-    const analyzed = ((windowContents, trigger) => {
-        if (trigger === null) {return new Map();}
-        if (typeof trigger === "object" && trigger.id) {return new Map();}
+    const analyzed = ((windowContents, trigger, showGraph) => {
+        if (!showGraph) {return undefined;}
+        if (trigger === null) {return undefined;}
+        if (typeof trigger === "object" && trigger.id) {return undefined;}
         const programState = new Renkon.constructor(0);
         programState.setLog(() => {});
 
@@ -558,7 +583,7 @@ export function pad() {
         }
 
         return edges;
-    })(windowContents, Events.or(remove, hovered));
+    })(windowContents, Events.or(remove, hovered), showGraph);
 
     const line = (p1, p2, color, label) => {
         let pl;
@@ -581,8 +606,8 @@ export function pad() {
     const hoveredB = Behaviors.keep(hovered);
 
     const graph = ((positions, analyzed, hoveredB, showGraph) => {
-        if (hoveredB === null || !showGraph) {return [];}
-        if (analyzed.size === 0) {return [];}
+        if (hoveredB === null) {return [];}
+        if (!showGraph) {return [];}
 
         const edges = analyzed.get(hoveredB);
 

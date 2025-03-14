@@ -1,6 +1,7 @@
-    const analyzed = ((windowContents, trigger) => {
-        if (trigger === null) {return new Map();}
-        if (typeof trigger === "object" && trigger.id) {return new Map();}
+    const analyzed = ((windowContents, trigger, showGraph) => {
+        if (!showGraph) {return undefined;}
+        if (trigger === null) {return undefined;}
+        if (typeof trigger === "object" && trigger.id) {return undefined;}
         const programState = new Renkon.constructor(0);
         programState.setLog(() => {});
 
@@ -76,7 +77,7 @@
         }
 
         return edges;
-    })(windowContents, Events.or(remove, hovered));
+    })(windowContents, Events.or(remove, hovered), showGraph);
 
     const line = (p1, p2, color, label) => {
         let pl;
@@ -99,8 +100,8 @@
     const hoveredB = Behaviors.keep(hovered);
 
     const graph = ((positions, analyzed, hoveredB, showGraph) => {
-        if (hoveredB === null || !showGraph) {return [];}
-        if (analyzed.size === 0) {return [];}
+        if (hoveredB === null) {return [];}
+        if (!showGraph) {return [];}
 
         const edges = analyzed.get(hoveredB);
 

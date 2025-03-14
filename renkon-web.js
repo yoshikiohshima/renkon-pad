@@ -9194,7 +9194,7 @@ function rewriteRenkonCalls(output, body) {
     }
   });
 }
-const version$1 = "0.5.0";
+const version$1 = "0.5.2";
 const packageJson = {
   version: version$1
 };
@@ -10134,7 +10134,7 @@ class ProgramState {
       }
     }, 0);
   }
-  setupProgram(scriptsArg) {
+  setupProgram(scriptsArg, path2 = "") {
     const invalidatedStreamNames = /* @__PURE__ */ new Set();
     const scripts = scriptsArg.map((s) => {
       if (typeof s === "string") {
@@ -10185,7 +10185,7 @@ class ProgramState {
       }
     }
     const translated = [...jsNodes].map(([_id, jsNode]) => ({ id: jsNode.id, code: transpileJavaScript(jsNode) }));
-    const evaluated = translated.map((tr) => this.evalCode(tr));
+    const evaluated = translated.map((tr) => this.evalCode(tr, path2));
     for (let [id2, node] of jsNodes) {
       if (node.extraType["gather"]) {
         const r = node.extraType["gather"];
@@ -10246,8 +10246,8 @@ class ProgramState {
       }
     }
   }
-  updateProgram(scripts) {
-    this.futureScripts = scripts;
+  updateProgram(scripts, path2 = "") {
+    this.futureScripts = { scripts, path: path2 };
   }
   evaluate(now) {
     this.time = now - this.startTime;
@@ -10331,20 +10331,22 @@ class ProgramState {
       stream.conclude(this, id);
     }
     if (this.futureScripts) {
-      const scripts = this.futureScripts;
+      const { scripts, path: path2 } = this.futureScripts;
       delete this.futureScripts;
-      this.setupProgram(scripts);
+      this.setupProgram(scripts, path2);
     }
     return this.updated;
   }
-  evalCode(arg) {
+  evalCode(arg, path2) {
     const { id, code: code2 } = arg;
     const hasWindow = typeof window !== "undefined";
     let body;
+    const p2 = path2 === "" || !path2.endsWith("/") ? path2 : path2.slice(0, -1);
     if (hasWindow) {
-      body = `return ${code2} //# sourceURL=${window.location.origin}/node/${id}`;
+      const base2 = window.location.origin === "null" ? window.location.pathname : window.location.origin;
+      body = `return ${code2} //# sourceURL=${base2}/${p2}/node/${id}`;
     } else {
-      body = `return ${code2} //# sourceURL=/node/${id}`;
+      body = `return ${code2} //# sourceURL=/${p2}/node/${id}`;
     }
     let func = new Function("Events", "Behaviors", "Renkon", body);
     let val = func(Events, Behaviors, this);
@@ -10493,7 +10495,7 @@ class ProgramState {
         const { params, returnArray, output } = getFunctionBody(func.toString(), false);
         returnValues = returnArray;
         const receivers = params.map((r) => `const ${r} = Events.receiver();`).join("\n");
-        programState.setupProgram([receivers, output]);
+        programState.setupProgram([receivers, output], func.name);
         this.programStates.set(key, { programState, func, returnArray });
       }
       const trigger = (input2) => {
