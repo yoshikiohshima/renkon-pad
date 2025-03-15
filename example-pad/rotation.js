@@ -1,10 +1,6 @@
-    const rotation = (id, r, position) => {
-        const s = Math.sin(r);
-        const c = Math.cos(r);
-        return `[id="${id}-win"] {transform: rotate(${r}deg)}`;
-    }
-
     const r = Events.timer(50) / 100;
+
+    const rotation = (id, r, position) => `[id="${id}-win"] {transform: rotate(${r}deg)}`;
 
     const rotations = windows.map((id) => rotation(id, r, positions.map.get(id))).join("\n");
 
