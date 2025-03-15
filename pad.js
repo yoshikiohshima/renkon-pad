@@ -505,9 +505,9 @@ export function pad() {
 
     // analyzer;
     const analyzed = ((windowContents, trigger, showGraph) => {
-        if (!showGraph) {return undefined;}
-        if (trigger === null) {return undefined;}
-        if (typeof trigger === "object" && trigger.id) {return undefined;}
+        if (!showGraph) {return new Map()}
+        if (trigger === null) {return new Map()}
+        if (typeof trigger === "object" && trigger.id) {return new Map();}
         const programState = new Renkon.constructor(0);
         programState.setLog(() => {});
 
