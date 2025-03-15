@@ -1,12 +1,12 @@
     const rotation = (id, r, position) => {
         const s = Math.sin(r);
         const c = Math.cos(r);
-        return `[id="${id}-win"] {transform: matrix(${c}, ${s}, ${-s}, ${c}, ${position.x}, ${position.y})}`;
+        return `[id="${id}-win"] {transform: rotate(${r}deg)}`;
     }
 
-    const r = Events.timer(50) / 500;
+    const r = Events.timer(50) / 100;
 
-    const rotations = windows.map((id) => rotation(id, r, positions.map.get(id)));
+    const rotations = windows.map((id) => rotation(id, r, positions.map.get(id))).join("\n");
 
     ((rotations) => {
         let style = document.head.querySelector("#rotation-css");
