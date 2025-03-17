@@ -6,6 +6,9 @@ on:
       - main
       - px25  # Add additional branches you want to deploy
 
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
 permissions:
   contents: read
   pages: write
