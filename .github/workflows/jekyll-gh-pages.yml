@@ -1,0 +1,55 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      - px25  # Add additional branches you want to deploy
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch
+        if: github.ref == 'refs/heads/main'
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Build main branch
+        if: github.ref == 'refs/heads/main'
+        run: |
+          mkdir -p output/main
+          # Run your build steps here (e.g., npm run build)
+          cp -r * output/main
+
+      - name: Checkout px25 branch
+        if: github.ref == 'refs/heads/px25'
+        uses: actions/checkout@v4
+        with:
+          ref: px25
+
+      - name: Build px25 branch
+        if: github.ref == 'refs/heads/px25'
+        run: |
+          mkdir -p output/px25
+          # Run your build steps here (e.g., npm run build)
+          cp -r * output/px25
+
+      - name: Deploy to GitHub Pages
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: output
+
+  publish:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v2
