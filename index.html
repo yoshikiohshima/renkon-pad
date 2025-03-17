@@ -2,29 +2,69 @@
 <html>
     <head>
         <meta charset="utf-8">
-    </head>
-    <body>
-        <div id="renkon">
-            <script type="reactive">
-                const {pad} = import("./pad.js");
-                Renkon.merge(pad);
-            </script>
-            <div id="buttonBox">
-                <button class="menuButton" id="addCodeButton">code</button>
-                <button class="menuButton" id="addRunnerButton">runner</button>
-                <div class="spacer"></div>
-                <button class="menuButton" id="showGraph">show graph</button>
-                <button class="menuButton" id="saveButton">save</button>
-                <button class="menuButton" id="loadButton">load</button>
-            </div>
-            <div id="pad"></div>
-        </div>
-        <div id="overlay"></div>
         <script type="module">
+            // this part of code identifies what renkon application, including renkon-pad as default,
+            // to load.
+            // 1) When there is a ?pad= option, and the option ends with ".json" and
+            //    the (partial) URL, that .json is used as the top level app.
+            // 2) When the .html file name is other than "index.html", the basename for the .html file
+            //    is used to construct a path "./${basename}.json", and it is used as the top-level app.
+            // 3) otherwise (no ?pad=, or the HTML is named "index.html"), the bootstrap version of renkon-pad
+            //    in pad.js is loaded.
+
+            // it could be renkon-core.js here, though it is just handy to use a package
+            // with CodeMirror bundled.
             import {view, CodeMirror, ProgramState} from "./renkon-web.js";
             window.CodeMirror = CodeMirror;
             window.ProgramState = ProgramState;
-            view({hideEditor: true});
+            const programState = new ProgramState(0);
+
+            // for debugging purpose, store the current programState to window
+            window.programState = programState;
+
+            function launcher() {
+                const pathname = window.location.pathname;
+                const match = /^.*\/([^/]*)\.html?$/.exec(pathname);
+                let basename = match ? match[1] : "index";
+                const url = new URL(window.location);
+                const option = url.searchParams.get("pad");
+
+                let docName;
+                if (option) {
+                    if (option.endsWith(".json")) {
+                        docName = option;
+                    } else {
+                        console.log("pad option does not have .json suffix.")
+                        return;
+                    }
+                } else {
+                    if (basename !== "index") {
+                        docName = `${basename}.json`;
+                    }
+                }
+
+                if (docName) {
+                    fetch(docName).then((resp) => resp.json()).then((json) => {
+                        programState.setupProgram(json.code.values.map((pair) => ({blockId: pair[0], code: pair[1]})), docName);
+                        if (programState.evaluatorRunning === 0) {
+                            programState.evaluator();
+                        }
+                    }).catch((err) => {
+                        console.err("docName could not be loaded");
+                    });
+                } else {
+                    // bootstrap version if this file name is index.html and the file? option is not specified
+                    programState.setupProgram([`
+                        const {pad} = import("./pad.js");
+                        console.log("default renkon-pad is starting");
+                        Renkon.merge(pad);`]);
+                    if (programState.evaluatorRunning === 0) {
+                        programState.evaluator();
+                    }
+                }
+            }
+            window.onload = launcher;
         </script>
-    </body>
+    </head>
+    <body></body>
 </html>

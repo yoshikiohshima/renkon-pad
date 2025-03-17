@@ -1,39 +1,28 @@
 export function pad() {
+    // init.js
+
     const {h, html, render} = import("./preact.standalone.module.js");
     const {stringify, parse} = import ("./stable-stringify.js");
 
-    /*
-      (() => {
-    const div = document.createElement("div");
-    div.innerHTML = `<div id="pad"></div>
-    <div id="buttonBox">
-      <button id="runButton">run</button>
-      <button id="addButton">add</button>
-      <button id="saveButton">save</button>
-      <button id="loadButton">load</button>
-    </div>
-    <link id="pad-css" rel="stylesheet" href="./pad.css" />
+    (() => {
+        const renkon = document.createElement("div");
+        renkon.id = "renkon";
+        renkon.innerHTML = `
+<div id="buttonBox">
+   <button class="menuButton" id="addCodeButton">code</button>
+   <button class="menuButton" id="addRunnerButton">runner</button>
+   <div class="spacer"></div>
+   <button class="menuButton" id="showGraph">show graph</button>
+   <button class="menuButton" id="saveButton">save</button>
+   <button class="menuButton" id="loadButton">load</button>
+</div>
+<div id="pad"></div>
+<div id="overlay"></div>
 `;
-    const renkon = document.querySelector("#renkon");
-    renkon.querySelector("#pad")?.remove();
-    renkon.querySelector("#buttonBox")?.remove();
-    renkon.querySelector("#codemirror-loader")?.remove();
 
-    renkon.appendChild(div.querySelector("#pad"));
-    renkon.appendChild(div.querySelector("#buttonBox"));
-    renkon.appendChild(div.querySelector("#pad-css"));
-
-    const script = document.createElement("script");
-    script.id = "codemirror-loader"
-    script.type = "module";
-    script.innerText = `import {CodeMirror} from "./renkon-web.js";
-      window.CodeMirror = CodeMirror;
-    `;
-
-    renkon.appendChild(script);
-
-})();
-    */
+        document.body.querySelector("#renkon")?.remove();
+        document.body.appendChild(renkon);
+    })();
 
     // data.js
 
@@ -347,9 +336,10 @@ export function pad() {
                     result.height = start.height + diffY;
                 }
                 Events.send(moveOrResize, result);
+                move;
             }
         } else if (downOrUpOrResize.type === "pointerup") {
-            return null;
+            return (move) => move;
         }
     })(downOrUpOrResize, positions);
 
