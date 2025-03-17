@@ -24,8 +24,6 @@ jobs:
     steps:
       - name: Checkout main branch
         uses: actions/checkout@v4
-	with:
-	  fetch-depth: 0
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
