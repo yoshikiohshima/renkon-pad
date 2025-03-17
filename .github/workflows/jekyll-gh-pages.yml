@@ -27,7 +27,7 @@ jobs:
         run: |
           mkdir -p output/main
           # Run your build steps here (e.g., npm run build)
-          cp -r * output/main
+          cp index.html pad.js preact.standalone.module.js renkon-pad.json renkon-web.js stable-stringify.js output/main
 
       - name: Checkout px25 branch
         if: github.ref == 'refs/heads/px25'
@@ -40,7 +40,7 @@ jobs:
         run: |
           mkdir -p output/px25
           # Run your build steps here (e.g., npm run build)
-          cp -r * output/px25
+          cp index.html pad.js preact.standalone.module.js renkon-pad.json renkon-web.js stable-stringify.js output/px25
 
       - name: Deploy to GitHub Pages
         uses: actions/upload-pages-artifact@v3
