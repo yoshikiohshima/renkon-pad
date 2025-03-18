@@ -506,7 +506,6 @@ export function pad() {
             programState.setupProgram(code);
         } catch(e) {
             console.log("Graph analyzer encountered an error in source code:");
-            console.log(e)
             return new Map();
         }
 
