@@ -237,10 +237,6 @@ export function pad() {
 <html>
     <head>
         <meta charset="utf-8">
-    </head>
-    <body>
-        <div id="renkon">
-        </div>
         <script type="module">
             import {ProgramState, CodeMirror} from "./renkon-web.js";
             window.thisProgramState = new ProgramState(0);
@@ -255,7 +251,8 @@ export function pad() {
                 }
             };
         </script>
-    </body>
+    </head>
+    <body></body>
 </html>`;
         runnerIframe.classList = "runnerIframe";
         runnerIframe.id = `runner-${id}`;
