@@ -222,7 +222,8 @@ export function pad() {
             extensions: [
                 mirror.basicSetup,
                 mirror.EditorView.lineWrapping,
-                mirror.EditorView.editorAttributes.of({"class": "editor"})
+                mirror.EditorView.editorAttributes.of({"class": "editor"}),
+                mirror.keymap.of([mirror.indentWithTab])
             ],
         });
         editor.dom.id = `${id}-editor`;
