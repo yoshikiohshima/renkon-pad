@@ -16,9 +16,15 @@ export function pad() {
    <button class="menuButton" id="saveButton">save</button>
    <button class="menuButton" id="loadButton">load</button>
 </div>
-<div id="pad"></div>
+<div id="pad"><div id="mover"></div></div>
 <div id="overlay"></div>
-`;
+<div id="navigationBox">
+   <div class="navigationButton-no-border"><div id="homeButton" class="navigationButtonImage"></div></div>
+   <div class="navigationButton"><div id="zoomInButton" class="navigationButtonImage"></div></div>
+   <div class="navigationButton"><div id="zoomOutButton" class="navigationButtonImage"></div></div>
+</div>
+
+`.trim();
 
         document.body.querySelector("#renkon")?.remove();
         document.body.appendChild(renkon);
@@ -259,12 +265,67 @@ export function pad() {
         return {dom: runnerIframe};
     };
 
+    const padViewChange = Events.receiver();
+
+    const padView = Behaviors.select(
+        {x: 0, y: 0, scale: 1},
+        padViewChange, (now, view) => {
+            let {x, y, scale} = view;
+            if (x > 0) {x = 0;}
+            if (y > 50) {y = 50;}
+            if (scale < 0.1) {scale = 0.1;}
+            if (scale > 20) {scale = 20;}
+            return {...now, ...{x, y, scale}};
+        }
+    );
+
+    const _padViewUpdate = ((padView) => {
+        document.querySelector("#mover").style.setProperty("left", `${padView.x}px`);
+        document.querySelector("#mover").style.setProperty("top", `${padView.y}px`);
+        document.querySelector("#mover").style.setProperty("transform", `scale(${padView.scale})`);
+    })(padView);
+
     // userActions.js
 
     const addCode = Events.listener("#addCodeButton", "click", () => "code");
     const addRunner = Events.listener("#addRunnerButton", "click", () => "runner");
     const save = Events.listener("#saveButton", "click", (evt) => evt);
     const load = Events.listener("#loadButton", "click", (evt) => evt);
+
+    const home = Events.listener("#homeButton", "click", () => "home");
+    const zoomIn = Events.listener("#zoomInButton", "click", () => "zoomIn");
+    const zoomOut = Events.listener("#zoomOutButton", "click", () => "zoomOut");
+    const navigationAction = Events.or(home, zoomIn, zoomOut);
+
+    const wheel = Events.listener("#pad", "wheel", (evt) => {evt.preventDefault(); return evt});
+    const _handleWheel = ((wheel, padView) => {
+        let deltaY = wheel.deltaY;
+        let absDeltaY = Math.min(30, Math.abs(deltaY));
+        let diff = Math.sign(deltaY) * absDeltaY;
+        let zoom = padView.scale;
+        let desiredZoom = zoom * (1 - diff / 200);
+
+        const xInMover = (wheel.clientX - padView.x) / padView.scale;
+        const newX = wheel.clientX - xInMover * desiredZoom;
+
+        const yInMover = (wheel.clientY - padView.y) / padView.scale;
+        const newY = wheel.clientY - yInMover * desiredZoom;
+
+        Events.send(padViewChange, {x: newX, y: newY, scale: desiredZoom});
+    })(wheel, padView);
+
+    Events.listener("#buttonBox", "wheel", (evt) => {evt.preventDefault(); return evt});
+    Events.listener("#navigationBox", "wheel", (evt) => {evt.preventDefault(); return evt});
+
+    const _handleNavigationAction = ((navigationAction, padView) => {
+        if (navigationAction === "zoomIn") {
+            Events.send(padViewChange, {x: padView.x, y: padView.y, scale: padView.scale * 1.1});
+        } else if (navigationAction === "zoomOut") {
+            Events.send(padViewChange, {x: padView.x, y: padView.y, scale: padView.scale * 0.9});
+        } else if (navigationAction === "home") {
+            Events.send(padViewChange, {x: 0, y: 0, scale: 1});
+        }
+    })(navigationAction, padView);
 
     const showGraph = Behaviors.collect(
         true,
@@ -288,14 +349,20 @@ export function pad() {
     const runRequest = Events.receiver();
 
     const padDown = Events.listener("#pad", "pointerdown", (evt) => {
+        let type;
+        let id;
         const strId = evt.target.id;
         if (!strId) {return;}
-        const id = `${Number.parseInt(strId)}`;
-        let type;
-        if (strId.endsWith("-win")) {
-            type = "moveDown";
-        } else if (strId.endsWith("-resize")) {
-            type = "windowResizeDown";
+        if (strId === "mover") {
+            type = "padDragDown";
+            id = strId;
+        } else {
+            id = `${Number.parseInt(strId)}`;
+            if (strId.endsWith("-win")) {
+                type = "moveDown";
+            } else if (strId.endsWith("-resize")) {
+                type = "windowResizeDown";
+            }
         }
         if (type) {
             evt.target.setPointerCapture(evt.pointerId);
@@ -315,16 +382,17 @@ export function pad() {
     const windowResize = Events.receiver();
     const moveOrResize = Events.receiver();
 
-    const moveCompute = ((downOrUpOrResize, positions) => {
+    const moveCompute = ((downOrUpOrResize, positions, padView) => {
         // console.log("moveCompute", downOrUpOrResize, positions);
         if (downOrUpOrResize.type === "moveDown" || downOrUpOrResize.type === "windowResizeDown") {
             const start = positions.map.get(downOrUpOrResize.id);
+            const scale = padView.scale;
             const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
             const type = downOrUpOrResize.type === "moveDown" ? "move" : "resize";
             return (move) => {
                 // console.log("pointermove", downOrUpOrResize, start);
-                const diffX = move.clientX - downPoint.x;
-                const diffY = move.clientY - downPoint.y;
+                const diffX = (move.clientX - downPoint.x) / scale;
+                const diffY = (move.clientY - downPoint.y) / scale;
                 const result = {id: downOrUpOrResize.id, type};
                 if (type === "move") {
                     result.x = start.x + diffX;
@@ -334,12 +402,28 @@ export function pad() {
                     result.height = start.height + diffY;
                 }
                 Events.send(moveOrResize, result);
-                move;
+                return move;
             }
+        } else if (downOrUpOrResize.type === "padDragDown") {
+            const start = padView;
+            const scale = start.scale;
+            const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
+            const type = "padDrag";
+            return (move) => {
+                // console.log("pointermove", downOrUpOrResize, start);
+                const diffX = (move.clientX - downPoint.x);
+                const diffY = (move.clientY - downPoint.y);
+                const result = {id: downOrUpOrResize.id, type, scale};
+                result.x = start.x + diffX;
+                result.y = start.y + diffY;
+                if (Number.isNaN(result.x)) {debugger;}
+                Events.send(padViewChange, result);
+                return move;
+            };
         } else if (downOrUpOrResize.type === "pointerup") {
             return (move) => move;
         }
-    })(downOrUpOrResize, positions);
+    })(downOrUpOrResize, positions, padView);
 
     const inputHandler = (evt) => {
         if (evt.key === "Enter") {
@@ -421,12 +505,12 @@ export function pad() {
     };
 
     const windowElements = ((windows, positions, zIndex, titles, windowContents, windowTypes) => {
-        return h("div", {"class": "owner"}, windows.map((id) => {
+        return h("div", {id: "owner", "class": "owner"}, windows.map((id) => {
             return windowDOM(id, positions.map.get(id), zIndex.map.get(id), titles.map.get(id), windowContents.map.get(id), windowTypes.map.get(id));
         }));
     })(windows, positions, zIndex, titles, windowContents, windowTypes);
 
-    const _windowRender = render(windowElements, document.querySelector("#pad"));
+    const _windowRender = render(windowElements, document.querySelector("#mover"));
 
     /// saver.js
 
@@ -592,7 +676,7 @@ export function pad() {
     const hovered = Events.receiver();
     const hoveredB = Behaviors.keep(hovered);
 
-    const graph = ((positions, analyzed, hoveredB, showGraph) => {
+    const graph = ((positions, padView, analyzed, hoveredB, showGraph) => {
         if (hoveredB === null) {return [];}
         if (!showGraph) {return [];}
 
@@ -605,8 +689,10 @@ export function pad() {
             let p1 = positions.map.get(hoveredB);
             p1 = {x: p1.x + p1.width, y: p1.y};
             p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
+            p1 = {x: p1.x * padView.scale + padView.x, y: p1.y + padView.y};
             let p2 = positions.map.get(edge.dest);
             p2 = {x: p2.x, y: p2.y + 10};
+            p2 = {x: p2.x * padView.scale + padView.x, y: p2.y * padView.scale + padView.y};
             return line(p1, p2, "#d88", edge.id);
         });
 
@@ -616,13 +702,15 @@ export function pad() {
             let p1 = positions.map.get(edge.origin);
             p1 = {x: p1.x + p1.width, y: p1.y};
             p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
+            p1 = {x: p1.x * padView.scale + padView.x, y: p1.y * padView.scale + padView.y};
             let p2 = positions.map.get(hoveredB);
             p2 = {x: p2.x, y: p2.y + 10};
+            p2 = {x: p2.x * padView.scale + padView.x, y: p2.y * padView.scale + padView.y};
             return line(p1, p2, "#88d", edge.id);
         });
 
         return html`<svg viewBox="0 0 ${window.innerWidth} ${window.innerHeight}" xmlns="http://www.w3.org/2000/svg">${outEdges}${inEdges}</svg>`;
-    })(positions, analyzed, hoveredB, showGraph);
+    })(positions, padView, analyzed, hoveredB, showGraph);
 
     const _graphRender = render(graph, document.querySelector("#overlay"));
 
@@ -632,23 +720,30 @@ export function pad() {
 html, body, #renkon {
     overflow: hidden;
     height: 100%;
+    margin: 0px;
 }
 
 #renkon {
-    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANEAAADRCAYAAABSOlfvAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAmpJREFUeNrs3bFthEAQQFGwXIA78JVACetK3AoduIarhCvBJZBsfh3gWYnAe9iOHIzQe9KIdDXw0V3EMCRSa11iysDjXjZbOOxkbpPhLE9uB4gIRAQiAhEBIgIRgYhARICIQEQgIhARICIQEYgIRASICEQEIgIRASICEYGIQESAiEBEICIQESAiEBGICEQEiAj+1dg+8ZjoPFPMGnN3azol5mYNnct+XTNEVBIt5iPmGvPpGem0F92bNXTe9+vVKr7x4eNf9+LDx8ed+PAxnIWIQEQgIhARiAgQEYgIRAQiAkQEIgIRgYgAEYGIQEQgIkBEICIQEYgIEBGICEQEIgJEBCICEYGIABGBiEBEICJARCAiEBGICBARiAhEBCICRAQiAhGBiEBEgIhARCAiEBEgIhARiAhEBIgIRAQiAhEBIgIRgYhARICIQEQgIhAR8Lex1rpZA5xEBL3EFJs47MWL7riTuY2fc+A/ESAiEBGICEQEIgJEBCICEYGIABGBiEBEICJARCAiEBGICBARiAhEBCICRAQiAhGBiAARgYhARCAiQEQgIhARiAgQEYgIRAQiAkQEIgIRgYgAEYGIQEQgIhARICIQEYgIRASICEQEIgIRASICEYGIQESAiEBEICIQESAiEBGICE7vudZaEp3nJWaKM7kzD5Ldpwxes+xljEMsiRYzxawxd89Ipz0oN2voXPbrahX923bxxv1xL5stHHYyt/GfCE5ARCAiEBGICEQEiAhEBCICEQEiAhGBiEBEgIhARCAiEBEgIhARiAhEBIgIRAQiAhEBIgIRgYhARICIQESQ0JcAAwDLXWiRCFyTrQAAAABJRU5ErkJggg==');
-}    
+}
 
 #pad {
     width: 100%;
-    height: 0px;
+    height: 100%;
     position: absolute;
-    top: 30px;
+    top: 0px;
     left: 0px;
 }
 
-.owner {
-    width: 100%;
-    height: 100%;
+#mover {
+    position:absolute;
+    width: 20000px;
+    height: 20000px;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANEAAADRCAYAAABSOlfvAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAmpJREFUeNrs3bFthEAQQFGwXIA78JVACetK3AoduIarhCvBJZBsfh3gWYnAe9iOHIzQe9KIdDXw0V3EMCRSa11iysDjXjZbOOxkbpPhLE9uB4gIRAQiAhEBIgIRgYhARICIQEQgIhARICIQEYgIRASICEQEIgIRASICEYGIQESAiEBEICIQESAiEBGICEQEiAj+1dg+8ZjoPFPMGnN3azol5mYNnct+XTNEVBIt5iPmGvPpGem0F92bNXTe9+vVKr7x4eNf9+LDx8ed+PAxnIWIQEQgIhARiAgQEYgIRAQiAkQEIgIRgYgAEYGIQEQgIkBEICIQEYgIEBGICEQEIgJEBCICEYGIABGBiEBEICJARCAiEBGICBARiAhEBCICRAQiAhGBiEBEgIhARCAiEBEgIhARiAhEBIgIRAQiAhEBIgIRgYhARICIQEQgIhAR8Lex1rpZA5xEBL3EFJs47MWL7riTuY2fc+A/ESAiEBGICEQEIgJEBCICEYGIABGBiEBEICJARCAiEBGICBARiAhEBCICRAQiAhGBiAARgYhARCAiQEQgIhARiAgQEYgIRAQiAkQEIgIRgYgAEYGIQEQgIhARICIQEYgIRASICEQEIgIRASICEYGIQESAiEBEICIQESAiEBGICE7vudZaEp3nJWaKM7kzD5Ldpwxes+xljEMsiRYzxawxd89Ipz0oN2voXPbrahX923bxxv1xL5stHHYyt/GfCE5ARCAiEBGICEQEiAhEBCICEQEiAhGBiEBEgIhARCAiEBEgIhARiAhEBIgIRAQiAhEBIgIRgYhARICIQESQ0JcAAwDLXWiRCFyTrQAAAABJRU5ErkJggg==');
+    transform-origin: 0px 0px;
+}
+
+#owner {
+    position: absolute;
 }
 
 .editor {
@@ -661,7 +756,7 @@ html, body, #renkon {
     height: 100%;
     width: 100%;
     position: absolute;
-    top: 30px;
+    top: 0px;
     left: 0px;
     z-index: 10000;
 }
@@ -682,6 +777,8 @@ html, body, #renkon {
     padding-top: 8px;
     border-bottom: 1px solid black;
     background-color: white;
+    position: absolute;
+    z-index: 200000;
 }
 
 .spacer {
@@ -778,6 +875,69 @@ html, body, #renkon {
 .resizeHandler:hover {
     background-color: rgba(0.1, 0.4, 0.1, 0.3);
 }
+
+#navigationBox {
+    display: flex;
+    flex-direction: column;
+    right: 20px;
+    gap: 10px;
+    bottom: 80px;
+    align-items: center;
+    width: 40px;
+    border: 1px solid black;
+    background-color: #d2d2d2;
+    position: absolute;
+    z-index: 200000;
+    border-radius: 8px;
+    box-shadow: 4px 5px 8px -2px rgba(0,0,0,.15);
+}
+
+.navigationButton {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #4D4D4D;
+    border-radius: 15px;
+    background-color: white;
+    display: flex;
+}
+
+.navigationButton-no-border {
+    width: 30px;
+    height: 30px;
+    display: flex;
+}
+
+.navigationButton:hover {
+    background-color: #eaeaea;
+}
+
+.navigationButton:first-child {
+    margin-top: 10px;
+}
+
+.navigationButton:last-child {
+    margin-bottom: 10px;
+}
+
+.navigationButtonImage {
+    width: 100%;
+    height: 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+#zoomInButton {
+    background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3Ctitle%3Eicon%2Fmaterial%2Fview_zoom-in%3C%2Ftitle%3E%3Cg%20id%3D%22icon%2Fmaterial%2Fview_zoom-in%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22ic-baseline-add%22%3E%3Cg%20id%3D%22Icon%22%20fill%3D%22%234D4D4D%22%3E%3Cpolygon%20id%3D%22Icon-Path%22%20points%3D%2219%2013%2013%2013%2013%2019%2011%2019%2011%2013%205%2013%205%2011%2011%2011%2011%205%2013%205%2013%2011%2019%2011%22%3E%3C%2Fpolygon%3E%3C%2Fg%3E%3Crect%20id%3D%22ViewBox%22%20fill-rule%3D%22nonzero%22%20x%3D%220%22%20y%3D%220%22%20width%3D%2224%22%20height%3D%2224%22%3E%3C%2Frect%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+#zoomOutButton {
+    background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3Ctitle%3Eicon%2Fmaterial%2Fview_zoom-out%3C%2Ftitle%3E%3Cg%20id%3D%22icon%2Fmaterial%2Fview_zoom-out%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22ic-baseline-minus%22%3E%3Cg%20id%3D%22Icon%22%20fill%3D%22%234D4D4D%22%3E%3Cpolygon%20id%3D%22Icon-Path%22%20points%3D%2219%2012.998%205%2012.998%205%2010.998%2019%2010.998%22%3E%3C%2Fpolygon%3E%3C%2Fg%3E%3Crect%20id%3D%22ViewBox%22%20fill-rule%3D%22nonzero%22%20x%3D%220%22%20y%3D%220%22%20width%3D%2224%22%20height%3D%2224%22%3E%3C%2Frect%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+#homeButton {
+    background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3Ctitle%3Eicon%2Fview-centered%3C%2Ftitle%3E%3Cg%20id%3D%22icon%2Fview-centered%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22Group-3%22%20transform%3D%22translate(2.000000%2C%204.000000)%22%20fill%3D%22%234D4D4D%22%3E%3Cpath%20d%3D%22M0%2C9%20L3%2C9%20L3%2C7%20L0%2C7%20L0%2C9%20Z%20M17%2C9%20L20.001%2C9%20L20.001%2C7%20L17%2C7%20L17%2C9%20Z%20M9%2C3%20L11%2C3%20L11%2C0%20L9%2C0%20L9%2C3%20Z%20M13%2C9%20L11%2C9%20L11%2C11%20L9%2C11%20L9%2C9%20L7%2C9%20L7%2C7%20L9%2C7%20L9%2C5%20L11%2C5%20L11%2C7%20L13%2C7%20L13%2C9%20Z%20M9%2C16%20L11%2C16%20L11%2C13%20L9%2C13%20L9%2C16%20Z%20M13%2C0%20L13%2C2%20L18%2C2%20L18%2C5%20L20%2C5%20L20%2C0%20L13%2C0%20Z%20M18%2C14%20L13%2C14%20L13%2C16%20L20%2C16%20L20%2C11%20L18%2C11%20L18%2C14%20Z%20M0%2C5%20L2%2C5%20L2%2C2%20L7%2C2%20L7%2C0%20L0%2C0%20L0%2C5%20Z%20M2%2C11%20L0%2C11%20L0%2C16%20L7%2C16%20L7%2C14%20L2%2C14%20L2%2C11%20Z%22%20id%3D%22Fill-1%22%3E%3C%2Fpath%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
 `;
 
     ((css) => {
