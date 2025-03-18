@@ -253,9 +253,9 @@ var SourceLocation = function SourceLocation2(p2, start, end) {
     this.source = p2.sourceFile;
   }
 };
-function getLineInfo(input2, offset2) {
+function getLineInfo(input, offset2) {
   for (var line = 1, cur2 = 0; ; ) {
-    var nextBreak = nextLineBreak(input2, cur2, offset2);
+    var nextBreak = nextLineBreak(input, cur2, offset2);
     if (nextBreak < 0) {
       return new Position(line, offset2 - cur2);
     }
@@ -416,7 +416,7 @@ function functionFlags(async, generator) {
   return SCOPE_FUNCTION | (async ? SCOPE_ASYNC : 0) | (generator ? SCOPE_GENERATOR : 0);
 }
 var BIND_NONE = 0, BIND_VAR = 1, BIND_LEXICAL = 2, BIND_FUNCTION = 3, BIND_SIMPLE_CATCH = 4, BIND_OUTSIDE = 5;
-var Parser$1 = function Parser2(options, input2, startPos) {
+var Parser$1 = function Parser2(options, input, startPos) {
   this.options = options = getOptions(options);
   this.sourceFile = options.sourceFile;
   this.keywords = wordsRegexp(keywords$1[options.ecmaVersion >= 6 ? 6 : options.sourceType === "module" ? "5module" : 5]);
@@ -431,7 +431,7 @@ var Parser$1 = function Parser2(options, input2, startPos) {
   var reservedStrict = (reserved ? reserved + " " : "") + reservedWords.strict;
   this.reservedWordsStrict = wordsRegexp(reservedStrict);
   this.reservedWordsStrictBind = wordsRegexp(reservedStrict + " " + reservedWords.strictBind);
-  this.input = String(input2);
+  this.input = String(input);
   this.containsEsc = false;
   if (startPos) {
     this.pos = startPos;
@@ -521,16 +521,16 @@ Parser$1.extend = function extend() {
   }
   return cls;
 };
-Parser$1.parse = function parse3(input2, options) {
-  return new this(options, input2).parse();
+Parser$1.parse = function parse3(input, options) {
+  return new this(options, input).parse();
 };
-Parser$1.parseExpressionAt = function parseExpressionAt2(input2, pos, options) {
-  var parser = new this(options, input2, pos);
+Parser$1.parseExpressionAt = function parseExpressionAt2(input, pos, options) {
+  var parser = new this(options, input, pos);
   parser.nextToken();
   return parser.parseExpression();
 };
-Parser$1.tokenizer = function tokenizer2(input2, options) {
-  return new this(options, input2);
+Parser$1.tokenizer = function tokenizer2(input, options) {
+  return new this(options, input);
 };
 Object.defineProperties(Parser$1.prototype, prototypeAccessors);
 var pp$9 = Parser$1.prototype;
@@ -5480,14 +5480,14 @@ Parser$1.acorn = {
   lineBreakG,
   nonASCIIwhitespace
 };
-function parse(input2, options) {
-  return Parser$1.parse(input2, options);
+function parse(input, options) {
+  return Parser$1.parse(input, options);
 }
-function parseExpressionAt(input2, pos, options) {
-  return Parser$1.parseExpressionAt(input2, pos, options);
+function parseExpressionAt(input, pos, options) {
+  return Parser$1.parseExpressionAt(input, pos, options);
 }
-function tokenizer(input2, options) {
-  return Parser$1.tokenizer(input2, options);
+function tokenizer(input, options) {
+  return Parser$1.tokenizer(input, options);
 }
 const t$1 = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
@@ -6614,16 +6614,16 @@ const defaultGlobals = /* @__PURE__ */ new Set([
   "Worker",
   "window"
 ]);
-function syntaxError(message, node, input2) {
-  const { line, column } = getLineInfo(input2, node.start);
+function syntaxError(message, node, input) {
+  const { line, column } = getLineInfo(input, node.start);
   return new SyntaxError(`${message} (${line}:${column})`);
 }
-function checkAssignments(node, references, input2) {
+function checkAssignments(node, references, input) {
   function checkConst(node2) {
     switch (node2.type) {
       case "Identifier":
-        if (references.includes(node2)) throw syntaxError(`Assignment to external variable '${node2.name}'`, node2, input2);
-        if (defaultGlobals.has(node2.name)) throw syntaxError(`Assignment to global '${node2.name}'`, node2, input2);
+        if (references.includes(node2)) throw syntaxError(`Assignment to external variable '${node2.name}'`, node2, input);
+        if (defaultGlobals.has(node2.name)) throw syntaxError(`Assignment to global '${node2.name}'`, node2, input);
         break;
       case "ObjectPattern":
         node2.properties.forEach((node3) => checkConst(node3.type === "Property" ? node3.value : node3));
@@ -6650,11 +6650,11 @@ function checkAssignments(node, references, input2) {
     ForInStatement: checkConstLeft
   });
 }
-function findDeclarations(node, input2) {
+function findDeclarations(node, input) {
   const declarations = [];
   function declareLocal(node2) {
     if (defaultGlobals.has(node2.name) || node2.name === "arguments") {
-      throw syntaxError(`Global '${node2.name}' cannot be redefined`, node2, input2);
+      throw syntaxError(`Global '${node2.name}' cannot be redefined`, node2, input);
     }
     declarations.push(node2);
   }
@@ -8878,10 +8878,10 @@ function D(e) {
   };
 }
 class Sourcemap {
-  constructor(input2) {
+  constructor(input) {
     __publicField(this, "input");
     __publicField(this, "_edits");
-    this.input = input2;
+    this.input = input;
     this._edits = [];
   }
   _bisectLeft(index) {
@@ -8945,9 +8945,9 @@ class Sourcemap {
     return positionAdd(ci, l2);
   }
   trim() {
-    const input2 = this.input;
-    if (input2.startsWith("\n")) this.delete(0, 1);
-    if (input2.endsWith("\n")) this.delete(input2.length - 1, input2.length);
+    const input = this.input;
+    if (input.startsWith("\n")) this.delete(0, 1);
+    if (input.endsWith("\n")) this.delete(input.length - 1, input.length);
     return this;
   }
   toString() {
@@ -8965,11 +8965,11 @@ class Sourcemap {
 function positionCompare(a2, b2) {
   return a2.line - b2.line || a2.column - b2.column;
 }
-function positionLength(input2, start = 0, end = input2.length) {
+function positionLength(input, start = 0, end = input.length) {
   let match;
   let line = 0;
   lineBreakG.lastIndex = start;
-  while ((match = lineBreakG.exec(input2)) && match.index < end) {
+  while ((match = lineBreakG.exec(input)) && match.index < end) {
     ++line;
     start = match.index + match[0].length;
   }
@@ -8981,14 +8981,14 @@ function positionSubtract(b2, a2) {
 function positionAdd(p2, l2) {
   return l2.line === 0 ? { line: p2.line, column: p2.column + l2.column } : { line: p2.line + l2.line, column: l2.column };
 }
-function detype(input2) {
+function detype(input) {
   const ts = D();
-  const node = Parser$1.extend(ts).parse(input2, {
+  const node = Parser$1.extend(ts).parse(input, {
     sourceType: "module",
     ecmaVersion: "latest",
     locations: true
   });
-  const output = new Sourcemap(input2).trim();
+  const output = new Sourcemap(input).trim();
   removeTypeNode(output, node);
   return String(output);
 }
@@ -9013,21 +9013,21 @@ const acornOptions = {
   ecmaVersion: 13,
   sourceType: "module"
 };
-function findDecls(input2) {
-  const body = parseProgram(input2);
+function findDecls(input) {
+  const body = parseProgram(input);
   const list2 = body.body;
-  return list2.map((decl) => input2.slice(decl.start, decl.end));
+  return list2.map((decl) => input.slice(decl.start, decl.end));
 }
-function parseJavaScript(input2, initialId, flattened2 = false) {
+function parseJavaScript(input, initialId, flattened2 = false) {
   var _a2;
   let decls;
   try {
-    input2 = detype(input2);
-    decls = findDecls(input2);
+    input = detype(input);
+    decls = findDecls(input);
   } catch (error) {
     const e = error;
     const message = e.message + `: error around -> 
-"${input2.slice(e.pos - 30, e.pos + 30)}`;
+"${input.slice(e.pos - 30, e.pos + 30)}`;
     console.log(message);
     throw error;
   }
@@ -9037,8 +9037,8 @@ function parseJavaScript(input2, initialId, flattened2 = false) {
     id++;
     const b2 = parseProgram(decl);
     const [references, forceVars, sendTargets, extraType] = findReferences(b2);
-    checkAssignments(b2, references, input2);
-    const declarations = findDeclarations(b2, input2);
+    checkAssignments(b2, references, input);
+    const declarations = findDeclarations(b2, input);
     const rewriteSpecs = flattened2 ? [] : checkNested(b2, id);
     if (rewriteSpecs.length === 0) {
       const myId = ((_a2 = declarations[0]) == null ? void 0 : _a2.name) || `${id}`;
@@ -9094,11 +9094,11 @@ function parseJavaScript(input2, initialId, flattened2 = false) {
   }
   return allReferences;
 }
-function parseProgram(input2) {
-  return Parser$1.parse(input2, acornOptions);
+function parseProgram(input) {
+  return Parser$1.parse(input, acornOptions);
 }
-function parseJSX(input2) {
-  return Parser$1.extend(jsx()).parse(input2, { ecmaVersion: 13 });
+function parseJSX(input) {
+  return Parser$1.extend(jsx()).parse(input, { ecmaVersion: 13 });
 }
 const renkonGlobals = /* @__PURE__ */ new Set([
   "Events",
@@ -9127,16 +9127,16 @@ return ${only};`);
   output.insertRight(node.input.length, "\n}};\n");
   return String(output);
 }
-function getFunctionBody(input2, forMerge) {
-  const compiled = parseJavaScript(input2, 0, true);
+function getFunctionBody(input, forMerge) {
+  const compiled = parseJavaScript(input, 0, true);
   const node = compiled[0].body.body[0];
   const params = node.params.map((p2) => p2.name);
   const body = node.body.body;
   const last = body[body.length - 1];
   const returnArray = forMerge ? [] : getArray(last);
-  const output = new Sourcemap(input2).trim();
+  const output = new Sourcemap(input).trim();
   output.delete(0, body[0].start);
-  output.delete(last.start, input2.length);
+  output.delete(last.start, input.length);
   return { params, returnArray, output: String(output) };
 }
 function getArray(returnNode) {
@@ -9197,7 +9197,7 @@ function rewriteRenkonCalls(output, body) {
     }
   });
 }
-const version$1 = "0.5.4";
+const version$1 = "0.5.5";
 const packageJson = {
   version: version$1
 };
@@ -9854,7 +9854,7 @@ class TSCompiler {
     } catch (error) {
       const e = error;
       const message = e.message + `: error around -> 
-"${input.slice(e.pos - 30, e.pos + 30)}`;
+"${tsCode.slice(e.pos - 30, e.pos + 30)}`;
       console.log(message);
       throw error;
     }
@@ -9873,10 +9873,14 @@ function isGenerator(value) {
   return typeof value === "object" && value.constructor === prototypicalGeneratorFunction.constructor;
 }
 const defaultHandler = (ev) => ev;
-function eventBody(options) {
-  let { forObserve, callback, dom, eventName, eventHandler, state, queued } = options;
+function eventBody(args) {
+  let { forObserve, callback, dom, eventName, eventHandler, state, queued, options } = args;
   let record = { queue: [] };
   let myHandler;
+  let myOptions;
+  if (options) {
+    myOptions = { ...options };
+  }
   let realDom;
   if (typeof dom === "string") {
     realDom = document.querySelector(dom);
@@ -9901,10 +9905,18 @@ function eventBody(options) {
       myHandler = defaultHandler;
     }
     if (myHandler) {
-      realDom.addEventListener(eventName, myHandler);
+      if (myOptions) {
+        realDom.addEventListener(eventName, myHandler, myOptions);
+      } else {
+        realDom.addEventListener(eventName, myHandler);
+      }
     }
     if (eventHandler === null) {
-      realDom.removeEventListener(eventName, myHandler);
+      if (myOptions) {
+        realDom.removeEventListener(eventName, myHandler, myOptions);
+      } else {
+        realDom.removeEventListener(eventName, myHandler);
+      }
     }
   }
   if (forObserve && callback) {
@@ -9930,7 +9942,21 @@ class Events {
     return new Events(state);
   }
   listener(dom, eventName, handler, options) {
-    return eventBody({ forObserve: false, dom, eventName, eventHandler: handler, state: this.programState, queued: !!(options == null ? void 0 : options.queued) });
+    let myOptions;
+    if (options) {
+      myOptions = { ...options };
+      delete myOptions.queued;
+    }
+    const queued = !!(options == null ? void 0 : options.queued);
+    return eventBody({
+      forObserve: false,
+      dom,
+      eventName,
+      eventHandler: handler,
+      state: this.programState,
+      queued,
+      options: myOptions
+    });
   }
   delay(varName, delay) {
     return new DelayedEvent(delay, varName, false);
@@ -9969,7 +9995,12 @@ class Events {
     return new ReceiverEvent(options);
   }
   observe(callback, options) {
-    return eventBody({ forObserve: true, callback, state: this.programState, queued: options == null ? void 0 : options.queued });
+    return eventBody({
+      forObserve: true,
+      callback,
+      state: this.programState,
+      queued: options == null ? void 0 : options.queued
+    });
   }
   message(event, data2, directWindow) {
     const isInIframe = window.top !== window;
@@ -10042,7 +10073,7 @@ function topologicalSort(nodes) {
     if (index >= 0) {
       edges.push(src.outputs);
     }
-    dst.inputs = dst.inputs.filter((input2) => !edges.includes(input2));
+    dst.inputs = dst.inputs.filter((input) => !edges.includes(input));
   }
   const leaves = workNodes.filter((node) => node.inputs.length === 0);
   while (leaves[0]) {
@@ -10060,8 +10091,8 @@ function topologicalSort(nodes) {
   return order;
 }
 function invalidatedInput(node, invalidatedVars) {
-  for (const input2 of node.inputs) {
-    if (invalidatedVars.has(input2)) {
+  for (const input of node.inputs) {
+    if (invalidatedVars.has(input)) {
       return true;
     }
   }
@@ -10250,9 +10281,9 @@ class ProgramState {
     }
     for (const [varName, node] of this.nodes) {
       const nodeNames = [...this.nodes].map(([id2, _body]) => id2);
-      for (const input2 of node.inputs) {
-        if (!nodeNames.includes(this.baseVarName(input2))) {
-          this.log(`Node ${varName} won't be evaluated as it depends on an undefined variable ${input2}.`);
+      for (const input of node.inputs) {
+        if (!nodeNames.includes(this.baseVarName(input))) {
+          this.log(`Node ${varName} won't be evaluated as it depends on an undefined variable ${input}.`);
         }
       }
     }
@@ -10488,7 +10519,7 @@ class ProgramState {
     });
   }
   component(func) {
-    return (input2, key) => {
+    return (input, key) => {
       let programState;
       let returnValues = null;
       let newProgramState = false;
@@ -10509,11 +10540,11 @@ class ProgramState {
         programState.setupProgram([receivers, output], func.name);
         this.programStates.set(key, { programState, func, returnArray });
       }
-      const trigger = (input22) => {
-        for (let key2 in input22) {
+      const trigger = (input2) => {
+        for (let key2 in input2) {
           programState.setResolvedForSubgraph(
             key2,
-            { value: input22[key2], time: this.time }
+            { value: input2[key2], time: this.time }
           );
         }
         programState.evaluate(this.time);
@@ -10531,7 +10562,7 @@ class ProgramState {
         }
         return {};
       };
-      return trigger(input2);
+      return trigger(input);
     };
   }
   renkonify(func, optSystem) {
@@ -18450,9 +18481,9 @@ function textFilter(state, facet, text2) {
     text2 = filter(text2, state);
   return text2;
 }
-function doPaste(view2, input2) {
-  input2 = textFilter(view2.state, clipboardInputFilter, input2);
-  let { state } = view2, changes, i2 = 1, text2 = state.toText(input2);
+function doPaste(view2, input) {
+  input = textFilter(view2.state, clipboardInputFilter, input);
+  let { state } = view2, changes, i2 = 1, text2 = state.toText(input);
   let byLine = text2.lines == state.selection.ranges.length;
   let linewise = lastLinewiseCopy != null && state.selection.ranges.every((r) => r.empty) && lastLinewiseCopy == text2.toString();
   if (linewise) {
@@ -18462,7 +18493,7 @@ function doPaste(view2, input2) {
       if (line.from == lastLine)
         return { range };
       lastLine = line.from;
-      let insert2 = state.toText((byLine ? text2.line(i2++).text : input2) + state.lineBreak);
+      let insert2 = state.toText((byLine ? text2.line(i2++).text : input) + state.lineBreak);
       return {
         changes: { from: line.from, insert: insert2 },
         range: EditorSelection.cursor(range.from + insert2.length)
@@ -21196,8 +21227,8 @@ class EditorView {
     if ((_a2 = document.fonts) === null || _a2 === void 0 ? void 0 : _a2.ready)
       document.fonts.ready.then(() => this.requestMeasure());
   }
-  dispatch(...input2) {
-    let trs = input2.length == 1 && input2[0] instanceof Transaction ? input2 : input2.length == 1 && Array.isArray(input2[0]) ? input2[0] : [this.state.update(...input2)];
+  dispatch(...input) {
+    let trs = input.length == 1 && input[0] instanceof Transaction ? input : input.length == 1 && Array.isArray(input[0]) ? input[0] : [this.state.update(...input)];
     this.dispatchTransactions(trs, this);
   }
   /**
@@ -23053,9 +23084,9 @@ class TooltipViewManager {
   }
   update(update2, above) {
     var _a2;
-    let input2 = update2.state.facet(this.facet);
-    let tooltips = input2.filter((x2) => x2);
-    if (input2 === this.input) {
+    let input = update2.state.facet(this.facet);
+    let tooltips = input.filter((x2) => x2);
+    if (input === this.input) {
       for (let t2 of this.tooltipViews)
         if (t2.update)
           t2.update(update2);
@@ -23092,7 +23123,7 @@ class TooltipViewManager {
       newAbove.forEach((val, i2) => above[i2] = val);
       above.length = newAbove.length;
     }
-    this.input = input2;
+    this.input = input;
     this.tooltips = tooltips;
     this.tooltipViews = tooltipViews;
     return true;
@@ -23742,9 +23773,9 @@ const panelPlugin = /* @__PURE__ */ ViewPlugin.fromClass(class {
     }
     this.top.syncClasses();
     this.bottom.syncClasses();
-    let input2 = update2.state.facet(showPanel);
-    if (input2 != this.input) {
-      let specs = input2.filter((x2) => x2);
+    let input = update2.state.facet(showPanel);
+    if (input != this.input) {
+      let specs = input.filter((x2) => x2);
       let panels = [], top2 = [], bottom = [], mount = [];
       for (let spec of specs) {
         let known = this.specs.indexOf(spec), panel;
@@ -25828,17 +25859,17 @@ class Parser {
   ranges, to parse only those ranges. The tree returned in that
   case will start at `ranges[0].from`.
   */
-  startParse(input2, fragments, ranges) {
-    if (typeof input2 == "string")
-      input2 = new StringInput(input2);
-    ranges = !ranges ? [new Range(0, input2.length)] : ranges.length ? ranges.map((r) => new Range(r.from, r.to)) : [new Range(0, 0)];
-    return this.createParse(input2, fragments || [], ranges);
+  startParse(input, fragments, ranges) {
+    if (typeof input == "string")
+      input = new StringInput(input);
+    ranges = !ranges ? [new Range(0, input.length)] : ranges.length ? ranges.map((r) => new Range(r.from, r.to)) : [new Range(0, 0)];
+    return this.createParse(input, fragments || [], ranges);
   }
   /**
   Run a full parse, returning the resulting tree.
   */
-  parse(input2, fragments, ranges) {
-    let parse4 = this.startParse(input2, fragments, ranges);
+  parse(input, fragments, ranges) {
+    let parse4 = this.startParse(input, fragments, ranges);
     for (; ; ) {
       let done = parse4.advance();
       if (done)
@@ -26856,7 +26887,7 @@ class ParseContext {
   */
   static getSkippingParser(until) {
     return new class extends Parser {
-      createParse(input2, fragments, ranges) {
+      createParse(input, fragments, ranges) {
         let from = ranges[0].from, to = ranges[ranges.length - 1].to;
         let parser = {
           parsedPos: from,
@@ -29378,7 +29409,7 @@ function toCharEnd(text2, pos) {
 }
 function createLineDialog(view2) {
   let line = String(view2.state.doc.lineAt(view2.state.selection.main.head).number);
-  let input2 = crelt("input", { class: "cm-textfield", name: "line", value: line });
+  let input = crelt("input", { class: "cm-textfield", name: "line", value: line });
   let dom = crelt("form", {
     class: "cm-gotoLine",
     onkeydown: (event) => {
@@ -29395,7 +29426,7 @@ function createLineDialog(view2) {
       event.preventDefault();
       go();
     }
-  }, crelt("label", view2.state.phrase("Go to line"), ": ", input2), " ", crelt("button", { class: "cm-button", type: "submit" }, view2.state.phrase("go")), crelt("button", {
+  }, crelt("label", view2.state.phrase("Go to line"), ": ", input), " ", crelt("button", { class: "cm-button", type: "submit" }, view2.state.phrase("go")), crelt("button", {
     name: "close",
     onclick: () => {
       view2.dispatch({ effects: dialogEffect.of(false) });
@@ -29405,7 +29436,7 @@ function createLineDialog(view2) {
     type: "button"
   }, ["×"]));
   function go() {
-    let match = /^([+-])?(\d+)?(:\d+)?(%)?$/.exec(input2.value);
+    let match = /^([+-])?(\d+)?(:\d+)?(%)?$/.exec(input.value);
     if (!match)
       return;
     let { state } = view2, startLine = state.doc.lineAt(state.selection.main.head);
@@ -29993,9 +30024,9 @@ function getSearchInput(view2) {
   return panel && panel.dom.querySelector("[main-field]");
 }
 function selectSearchInput(view2) {
-  let input2 = getSearchInput(view2);
-  if (input2 && input2 == view2.root.activeElement)
-    input2.select();
+  let input = getSearchInput(view2);
+  if (input && input == view2.root.activeElement)
+    input.select();
 }
 const openSearchPanel = (view2) => {
   let state = view2.state.field(searchState, false);
@@ -31964,8 +31995,8 @@ const lintKeymap = [
   { key: "F8", run: nextDiagnostic }
 ];
 const lintConfig = /* @__PURE__ */ Facet.define({
-  combine(input2) {
-    return Object.assign({ sources: input2.map((i2) => i2.source).filter((x2) => x2 != null) }, combineConfig(input2.map((i2) => i2.config), {
+  combine(input) {
+    return Object.assign({ sources: input.map((i2) => i2.source).filter((x2) => x2 != null) }, combineConfig(input.map((i2) => i2.config), {
       delay: 750,
       markerFilter: null,
       tooltipFilter: null,

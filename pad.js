@@ -265,8 +265,6 @@ export function pad() {
         return {dom: runnerIframe};
     };
 
-    const padViewChange = Events.receiver();
-
     const padView = Behaviors.select(
         {x: 0, y: 0, scale: 1},
         padViewChange, (now, view) => {
@@ -278,12 +276,6 @@ export function pad() {
             return {...now, ...{x, y, scale}};
         }
     );
-
-    const _padViewUpdate = ((padView) => {
-        document.querySelector("#mover").style.setProperty("left", `${padView.x}px`);
-        document.querySelector("#mover").style.setProperty("top", `${padView.y}px`);
-        document.querySelector("#mover").style.setProperty("transform", `scale(${padView.scale})`);
-    })(padView);
 
     // userActions.js
 
@@ -297,8 +289,17 @@ export function pad() {
     const zoomOut = Events.listener("#zoomOutButton", "click", () => "zoomOut");
     const navigationAction = Events.or(home, zoomIn, zoomOut);
 
-    const wheel = Events.listener("#pad", "wheel", (evt) => {evt.preventDefault(); return evt});
+    const padViewChange = Events.receiver();
+
+    const _padViewUpdate = ((padView) => {
+        document.querySelector("#mover").style.setProperty("left", `${padView.x}px`);
+        document.querySelector("#mover").style.setProperty("top", `${padView.y}px`);
+        document.querySelector("#mover").style.setProperty("transform", `scale(${padView.scale})`);
+    })(padView);
+
+    const wheel = Events.listener("#pad", "wheel", (evt) => {return evt});
     const _handleWheel = ((wheel, padView) => {
+        if (wheel.target.id !== "mover") {return;}
         let deltaY = wheel.deltaY;
         let absDeltaY = Math.min(30, Math.abs(deltaY));
         let diff = Math.sign(deltaY) * absDeltaY;
@@ -314,8 +315,8 @@ export function pad() {
         Events.send(padViewChange, {x: newX, y: newY, scale: desiredZoom});
     })(wheel, padView);
 
-    Events.listener("#buttonBox", "wheel", (evt) => {evt.preventDefault(); return evt});
-    Events.listener("#navigationBox", "wheel", (evt) => {evt.preventDefault(); return evt});
+    const _dummy1 = Events.listener("#buttonBox", "wheel", (evt) => {evt.preventDefault(); return evt});
+    const _dummy2 = Events.listener("#navigationBox", "wheel", (evt) => {evt.preventDefault(); return evt});
 
     const _handleNavigationAction = ((navigationAction, padView) => {
         if (navigationAction === "zoomIn") {
