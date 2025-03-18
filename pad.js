@@ -426,6 +426,8 @@ export function pad() {
         }
     })(downOrUpOrResize, positions, padView);
 
+    // render.js
+
     const inputHandler = (evt) => {
         if (evt.key === "Enter") {
             evt.preventDefault();
@@ -437,8 +439,6 @@ export function pad() {
             });
         }
     };
-
-    // render.js
 
     const windowDOM = (id, position, zIndex, title, windowContent, type) => {
         // console.log("windowDOM");
