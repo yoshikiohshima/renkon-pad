@@ -307,19 +307,11 @@ export function pad() {
 
     const _handleWheel = ((wheel, padView) => {
         if (wheel.target.id !== "mover") {return;}
+        let deltaX = wheel.deltaX;
         let deltaY = wheel.deltaY;
-        let absDeltaY = Math.min(30, Math.abs(deltaY));
-        let diff = Math.sign(deltaY) * absDeltaY;
         let zoom = padView.scale;
-        let desiredZoom = zoom * (1 - diff / 200);
 
-        const xInMover = (wheel.clientX - padView.x) / padView.scale;
-        const newX = wheel.clientX - xInMover * desiredZoom;
-
-        const yInMover = (wheel.clientY - padView.y) / padView.scale;
-        const newY = wheel.clientY - yInMover * desiredZoom;
-
-        Events.send(padViewChange, {x: newX, y: newY, scale: desiredZoom});
+        Events.send(padViewChange, {x: padView.x - deltaX, y: padView.y - deltaY, scale: padView.scale});
     })(wheel, padView);
 
     const _dummy1 = Events.listener("#buttonBox", "wheel", (evt) => {evt.preventDefault(); return evt});
