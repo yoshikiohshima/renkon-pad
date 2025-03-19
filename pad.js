@@ -297,7 +297,12 @@ export function pad() {
         document.querySelector("#mover").style.setProperty("transform", `scale(${padView.scale})`);
     })(padView);
 
-    const wheel = Events.listener("#pad", "wheel", (evt) => {return evt});
+    const wheel = Events.listener("#pad", "wheel", (evt) => {
+        evt.preventDefault();
+        evt.stopPropagation();
+        return evt
+    });
+
     const _handleWheel = ((wheel, padView) => {
         if (wheel.target.id !== "mover") {return;}
         let deltaY = wheel.deltaY;
@@ -722,9 +727,6 @@ html, body, #renkon {
     overflow: hidden;
     height: 100%;
     margin: 0px;
-}
-
-#renkon {
 }
 
 #pad {
