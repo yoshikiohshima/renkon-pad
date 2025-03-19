@@ -31,7 +31,7 @@ jobs:
       - name: Build main branch
         run: |
           mkdir -p output/main
-          cp index.html pad.js preact.standalone.module.js renkon-pad.json renkon-web.js stable-stringify.js output
+          cp index.html pad.js preact.standalone.module.js renkon-pad.json renkon-web.js stable-stringify.js cf.json llama.json output
 
       - name: Checkout px25 branch
         uses: actions/checkout@v4
@@ -42,7 +42,7 @@ jobs:
       - name: Copy px25 branch to output
         run: |
           mkdir -p output/px25
-          cp px25_temp/index.html px25_temp/pad.js px25_temp/preact.standalone.module.js px25_temp/renkon-pad.json px25_temp/renkon-web.js px25_temp/stable-stringify.js output/px25
+          cp px25_temp/index.html px25_temp/pad.js px25_temp/preact.standalone.module.js px25_temp/renkon-pad.json px25_temp/renkon-web.js px25_temp/stable-stringify.js px25_temp/cf.json px25_temp/llama.json output/px25
 
       - name: Deploy to GitHub Pages
         uses: actions/upload-pages-artifact@v3
