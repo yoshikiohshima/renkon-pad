@@ -9224,7 +9224,7 @@ function rewriteRenkonCalls(output, body) {
     }
   });
 }
-const version$1 = "0.5.7";
+const version$1 = "0.5.8";
 const packageJson = {
   version: version$1
 };
@@ -9404,12 +9404,12 @@ class OrStream extends Stream {
   evaluate(state, node, inputArray, _lastInputArray) {
     if (this.collection) {
       const indices = [];
-      const values = {};
+      const values = [];
       for (let i2 = 0; i2 < node.inputs.length; i2++) {
         if (inputArray[i2] !== void 0) {
           indices.push(i2);
         }
-        values[node.inputs[i2]] = inputArray[i2];
+        values[i2] = inputArray[i2];
       }
       if (indices.length === 0) {
         return;
