@@ -334,8 +334,8 @@ export function pad() {
         }
     })(wheel, padView);
 
-    const _dummy1 = Events.listener("#buttonBox", "wheel", (evt) => {evt.preventDefault(); return evt});
-    const _dummy2 = Events.listener("#navigationBox", "wheel", (evt) => {evt.preventDefault(); return evt});
+    Events.listener("#buttonBox", "wheel", (evt) => {evt.preventDefault(); return evt});
+    Events.listener("#navigationBox", "wheel", (evt) => {evt.preventDefault(); return evt});
 
     const _handleNavigationAction = ((navigationAction, padView) => {
         if (navigationAction === "zoomIn") {

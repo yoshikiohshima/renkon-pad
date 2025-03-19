@@ -9028,6 +9028,18 @@ function findDecls(input) {
   const list2 = body.body;
   return list2.map((decl) => input.slice(decl.start, decl.end));
 }
+function isCompilerArtifact(b2) {
+  if (b2.type !== "Program") {
+    return false;
+  }
+  if (b2.body[0].type !== "ExpressionStatement") {
+    return false;
+  }
+  if (b2.body[0].expression.type !== "Identifier") {
+    return false;
+  }
+  return /^_[0-9]/.test(b2.body[0].expression.name);
+}
 function parseJavaScript(input, initialId, flattened2 = false) {
   var _a2;
   let decls;
@@ -9050,6 +9062,9 @@ function parseJavaScript(input, initialId, flattened2 = false) {
     checkAssignments(b2, references, input);
     const declarations = findDeclarations(b2, input);
     const rewriteSpecs = flattened2 ? [] : checkNested(b2, id);
+    if (isCompilerArtifact(b2)) {
+      continue;
+    }
     if (rewriteSpecs.length === 0) {
       const myId = ((_a2 = declarations[0]) == null ? void 0 : _a2.name) || `${id}`;
       allReferences.push({
@@ -9209,7 +9224,7 @@ function rewriteRenkonCalls(output, body) {
     }
   });
 }
-const version$1 = "0.5.6";
+const version$1 = "0.5.7";
 const packageJson = {
   version: version$1
 };
