@@ -374,7 +374,6 @@ export function pad() {
         const strId = evt.target.id;
         if (!strId) {return;}
         if (strId === "pad") {
-            console.log("padDown");
             type = "padDragDown";
             id = strId;
         } else {
