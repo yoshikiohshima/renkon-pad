@@ -224,7 +224,7 @@ export function pad() {
     const newEditor = (id, doc) => {
         const mirror = window.CodeMirror;
         const editor = new mirror.EditorView({
-            doc: doc || `console.log("hello")`,
+            doc: doc || `console.log("hello")a\nb\nc\nd\ne\nf\ng\nh\ni\nj\nk\n`,
             extensions: [
                 mirror.basicSetup,
                 mirror.EditorView.lineWrapping,
@@ -298,7 +298,9 @@ export function pad() {
     })(padView);
 
     const wheel = Events.listener("#pad", "wheel", (evt) => {
-        if (evt.target?.id === "mover") {
+        // preventDefault() and stopPropagation() has to be called in the immediate event handler.
+        const pinch = Number.isInteger(evt.deltaX) && !Number.isInteger(evt.deltaY);
+        if (pinch) {
             evt.preventDefault();
             evt.stopPropagation();
         }
@@ -306,12 +308,30 @@ export function pad() {
     });
 
     const _handleWheel = ((wheel, padView) => {
-        if (wheel.target.id !== "mover") {return;}
+        const pinch = Number.isInteger(wheel.deltaX) && !Number.isInteger(wheel.deltaY);
+
         let deltaX = wheel.deltaX;
         let deltaY = wheel.deltaY;
         let zoom = padView.scale;
 
-        Events.send(padViewChange, {x: padView.x - deltaX, y: padView.y - deltaY, scale: padView.scale});
+        let absDeltaY = Math.min(30, Math.abs(deltaY));
+        let diff = Math.sign(deltaY) * absDeltaY;
+
+        let desiredZoom = zoom * (1 - diff / 200);
+
+        const xInMover = (wheel.clientX - padView.x) / padView.scale;
+        const newX = wheel.clientX - xInMover * desiredZoom;
+
+        const yInMover = (wheel.clientY - padView.y) / padView.scale;
+        const newY = wheel.clientY - yInMover * desiredZoom;
+
+        if (pinch) {
+            Events.send(padViewChange, {x: newX, y: newY, scale: desiredZoom});
+        } else {
+            if (wheel.target.id == "pad") {
+                Events.send(padViewChange, {x: padView.x - deltaX, y: padView.y - deltaY, scale: padView.scale});
+            }
+        }
     })(wheel, padView);
 
     const _dummy1 = Events.listener("#buttonBox", "wheel", (evt) => {evt.preventDefault(); return evt});
@@ -353,7 +373,8 @@ export function pad() {
         let id;
         const strId = evt.target.id;
         if (!strId) {return;}
-        if (strId === "mover") {
+        if (strId === "pad") {
+            console.log("padDown");
             type = "padDragDown";
             id = strId;
         } else {
@@ -723,6 +744,10 @@ html, body, #renkon {
     margin: 0px;
 }
 
+html, body {
+  overscroll-behavior-x: none;
+}
+
 #pad {
     width: 100%;
     height: 100%;
@@ -732,6 +757,7 @@ html, body, #renkon {
 }
 
 #mover {
+    pointer-events: none;
     position:absolute;
     width: 20000px;
     height: 20000px;
@@ -741,6 +767,7 @@ html, body, #renkon {
 
 #owner {
     position: absolute;
+    pointer-events: initial;
 }
 
 .editor {
