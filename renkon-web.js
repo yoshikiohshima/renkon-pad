@@ -411,7 +411,7 @@ function pushComment(options, array) {
     array.push(comment2);
   };
 }
-var SCOPE_TOP = 1, SCOPE_FUNCTION = 2, SCOPE_ASYNC = 4, SCOPE_GENERATOR = 8, SCOPE_ARROW = 16, SCOPE_SIMPLE_CATCH = 32, SCOPE_SUPER = 64, SCOPE_DIRECT_SUPER = 128, SCOPE_CLASS_STATIC_BLOCK = 256, SCOPE_VAR = SCOPE_TOP | SCOPE_FUNCTION | SCOPE_CLASS_STATIC_BLOCK;
+var SCOPE_TOP = 1, SCOPE_FUNCTION = 2, SCOPE_ASYNC = 4, SCOPE_GENERATOR = 8, SCOPE_ARROW = 16, SCOPE_SIMPLE_CATCH = 32, SCOPE_SUPER = 64, SCOPE_DIRECT_SUPER = 128, SCOPE_CLASS_STATIC_BLOCK = 256, SCOPE_CLASS_FIELD_INIT = 512, SCOPE_VAR = SCOPE_TOP | SCOPE_FUNCTION | SCOPE_CLASS_STATIC_BLOCK;
 function functionFlags(async, generator) {
   return SCOPE_FUNCTION | (async ? SCOPE_ASYNC : 0) | (generator ? SCOPE_GENERATOR : 0);
 }
@@ -474,19 +474,20 @@ prototypeAccessors.inFunction.get = function() {
   return (this.currentVarScope().flags & SCOPE_FUNCTION) > 0;
 };
 prototypeAccessors.inGenerator.get = function() {
-  return (this.currentVarScope().flags & SCOPE_GENERATOR) > 0 && !this.currentVarScope().inClassFieldInit;
+  return (this.currentVarScope().flags & SCOPE_GENERATOR) > 0;
 };
 prototypeAccessors.inAsync.get = function() {
-  return (this.currentVarScope().flags & SCOPE_ASYNC) > 0 && !this.currentVarScope().inClassFieldInit;
+  return (this.currentVarScope().flags & SCOPE_ASYNC) > 0;
 };
 prototypeAccessors.canAwait.get = function() {
   for (var i2 = this.scopeStack.length - 1; i2 >= 0; i2--) {
-    var scope = this.scopeStack[i2];
-    if (scope.inClassFieldInit || scope.flags & SCOPE_CLASS_STATIC_BLOCK) {
+    var ref2 = this.scopeStack[i2];
+    var flags = ref2.flags;
+    if (flags & (SCOPE_CLASS_STATIC_BLOCK | SCOPE_CLASS_FIELD_INIT)) {
       return false;
     }
-    if (scope.flags & SCOPE_FUNCTION) {
-      return (scope.flags & SCOPE_ASYNC) > 0;
+    if (flags & SCOPE_FUNCTION) {
+      return (flags & SCOPE_ASYNC) > 0;
     }
   }
   return this.inModule && this.options.ecmaVersion >= 13 || this.options.allowAwaitOutsideFunction;
@@ -494,8 +495,7 @@ prototypeAccessors.canAwait.get = function() {
 prototypeAccessors.allowSuper.get = function() {
   var ref2 = this.currentThisScope();
   var flags = ref2.flags;
-  var inClassFieldInit = ref2.inClassFieldInit;
-  return (flags & SCOPE_SUPER) > 0 || inClassFieldInit || this.options.allowSuperOutsideMethod;
+  return (flags & SCOPE_SUPER) > 0 || this.options.allowSuperOutsideMethod;
 };
 prototypeAccessors.allowDirectSuper.get = function() {
   return (this.currentThisScope().flags & SCOPE_DIRECT_SUPER) > 0;
@@ -504,10 +504,14 @@ prototypeAccessors.treatFunctionsAsVar.get = function() {
   return this.treatFunctionsAsVarInScope(this.currentScope());
 };
 prototypeAccessors.allowNewDotTarget.get = function() {
-  var ref2 = this.currentThisScope();
-  var flags = ref2.flags;
-  var inClassFieldInit = ref2.inClassFieldInit;
-  return (flags & (SCOPE_FUNCTION | SCOPE_CLASS_STATIC_BLOCK)) > 0 || inClassFieldInit;
+  for (var i2 = this.scopeStack.length - 1; i2 >= 0; i2--) {
+    var ref2 = this.scopeStack[i2];
+    var flags = ref2.flags;
+    if (flags & (SCOPE_CLASS_STATIC_BLOCK | SCOPE_CLASS_FIELD_INIT) || flags & SCOPE_FUNCTION && !(flags & SCOPE_ARROW)) {
+      return true;
+    }
+  }
+  return false;
 };
 prototypeAccessors.inClassStaticBlock.get = function() {
   return (this.currentVarScope().flags & SCOPE_CLASS_STATIC_BLOCK) > 0;
@@ -1342,11 +1346,9 @@ pp$8.parseClassField = function(field) {
     this.raise(field.key.start, "Classes can't have a static field named 'prototype'");
   }
   if (this.eat(types$1.eq)) {
-    var scope = this.currentThisScope();
-    var inClassFieldInit = scope.inClassFieldInit;
-    scope.inClassFieldInit = true;
+    this.enterScope(SCOPE_CLASS_FIELD_INIT | SCOPE_SUPER);
     field.value = this.parseMaybeAssign();
-    scope.inClassFieldInit = inClassFieldInit;
+    this.exitScope();
   } else {
     field.value = null;
   }
@@ -1469,6 +1471,9 @@ pp$8.parseExport = function(node, exports) {
     }
     node.specifiers = [];
     node.source = null;
+    if (this.options.ecmaVersion >= 16) {
+      node.attributes = [];
+    }
   } else {
     node.declaration = null;
     node.specifiers = this.parseExportSpecifiers(exports);
@@ -1490,6 +1495,9 @@ pp$8.parseExport = function(node, exports) {
         }
       }
       node.source = null;
+      if (this.options.ecmaVersion >= 16) {
+        node.attributes = [];
+      }
     }
     this.semicolon();
   }
@@ -2849,9 +2857,10 @@ pp$5.parseProperty = function(isPattern, refDestructuringErrors) {
   return this.finishNode(prop, "Property");
 };
 pp$5.parseGetterSetter = function(prop) {
-  prop.kind = prop.key.name;
+  var kind = prop.key.name;
   this.parsePropertyName(prop);
   prop.value = this.parseMethod(false);
+  prop.kind = kind;
   var paramCount = prop.kind === "get" ? 0 : 1;
   if (prop.value.params.length !== paramCount) {
     var start = prop.value.start;
@@ -2877,9 +2886,9 @@ pp$5.parsePropertyValue = function(prop, isPattern, isGenerator2, isAsync, start
     if (isPattern) {
       this.unexpected();
     }
-    prop.kind = "init";
     prop.method = true;
     prop.value = this.parseMethod(isGenerator2, isAsync);
+    prop.kind = "init";
   } else if (!isPattern && !containsEsc && this.options.ecmaVersion >= 5 && !prop.computed && prop.key.type === "Identifier" && (prop.key.name === "get" || prop.key.name === "set") && (this.type !== types$1.comma && this.type !== types$1.braceR && this.type !== types$1.eq)) {
     if (isGenerator2 || isAsync) {
       this.unexpected();
@@ -2893,7 +2902,6 @@ pp$5.parsePropertyValue = function(prop, isPattern, isGenerator2, isAsync, start
     if (prop.key.name === "await" && !this.awaitIdentPos) {
       this.awaitIdentPos = startPos;
     }
-    prop.kind = "init";
     if (isPattern) {
       prop.value = this.parseMaybeDefault(startPos, startLoc, this.copyNode(prop.key));
     } else if (this.type === types$1.eq && refDestructuringErrors) {
@@ -2904,6 +2912,7 @@ pp$5.parsePropertyValue = function(prop, isPattern, isGenerator2, isAsync, start
     } else {
       prop.value = this.copyNode(prop.key);
     }
+    prop.kind = "init";
     prop.shorthand = true;
   } else {
     this.unexpected();
@@ -3053,7 +3062,7 @@ pp$5.checkUnreserved = function(ref2) {
   if (this.inAsync && name2 === "await") {
     this.raiseRecoverable(start, "Cannot use 'await' as identifier inside an async function");
   }
-  if (this.currentThisScope().inClassFieldInit && name2 === "arguments") {
+  if (!(this.currentThisScope().flags & SCOPE_VAR) && name2 === "arguments") {
     this.raiseRecoverable(start, "Cannot use 'arguments' in class field initializer");
   }
   if (this.inClassStaticBlock && (name2 === "arguments" || name2 === "await")) {
@@ -3146,6 +3155,9 @@ var pp$4 = Parser$1.prototype;
 pp$4.raise = function(pos, message) {
   var loc = getLineInfo(this.input, pos);
   message += " (" + loc.line + ":" + loc.column + ")";
+  if (this.sourceFile) {
+    message += " in " + this.sourceFile;
+  }
   var err = new SyntaxError(message);
   err.pos = pos;
   err.loc = loc;
@@ -3164,7 +3176,6 @@ var Scope = function Scope2(flags) {
   this.var = [];
   this.lexical = [];
   this.functions = [];
-  this.inClassFieldInit = false;
 };
 pp$3.enterScope = function(flags) {
   this.scopeStack.push(new Scope(flags));
@@ -3226,7 +3237,7 @@ pp$3.currentScope = function() {
 pp$3.currentVarScope = function() {
   for (var i2 = this.scopeStack.length - 1; ; i2--) {
     var scope = this.scopeStack[i2];
-    if (scope.flags & SCOPE_VAR) {
+    if (scope.flags & (SCOPE_VAR | SCOPE_CLASS_FIELD_INIT | SCOPE_CLASS_STATIC_BLOCK)) {
       return scope;
     }
   }
@@ -3234,7 +3245,7 @@ pp$3.currentVarScope = function() {
 pp$3.currentThisScope = function() {
   for (var i2 = this.scopeStack.length - 1; ; i2--) {
     var scope = this.scopeStack[i2];
-    if (scope.flags & SCOPE_VAR && !(scope.flags & SCOPE_ARROW)) {
+    if (scope.flags & (SCOPE_VAR | SCOPE_CLASS_FIELD_INIT | SCOPE_CLASS_STATIC_BLOCK) && !(scope.flags & SCOPE_ARROW)) {
       return scope;
     }
   }
@@ -5458,7 +5469,7 @@ pp.readWord = function() {
   }
   return this.finishToken(type, word);
 };
-var version$2 = "8.14.0";
+var version$2 = "8.14.1";
 Parser$1.acorn = {
   Parser: Parser$1,
   version: version$2,
@@ -6699,6 +6710,17 @@ function isScope(node) {
 function isBlockScope(node) {
   return node.type === "BlockStatement" || node.type === "SwitchStatement" || node.type === "ForInStatement" || node.type === "ForOfStatement" || node.type === "ForStatement" || isScope(node);
 }
+function isCombinatorOf(node, cls, sels) {
+  const callee = node.callee;
+  if (callee.type === "MemberExpression" && callee.object.type === "Identifier") {
+    if (callee.object.name === cls) {
+      if (callee.property.type === "Identifier" && sels.includes(callee.property.name)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 function findReferences(node, {
   globals = defaultGlobals,
   filterDeclaration = () => true
@@ -6783,15 +6805,10 @@ function findReferences(node, {
       node2.specifiers.forEach((specifier) => declareLocal(root, specifier.local));
     },
     CallExpression(node2) {
-      const callee = node2.callee;
-      if (callee.type === "MemberExpression" && callee.object.type === "Identifier") {
-        if (callee.object.name === "Events") {
-          if (callee.property.type === "Identifier" && callee.property.name === "send") {
-            const arg = node2.arguments[0];
-            if (arg.type === "Identifier") {
-              sendTarget.push(arg);
-            }
-          }
+      if (isCombinatorOf(node2, "Events", ["send"])) {
+        const arg = node2.arguments[0];
+        if (arg.type === "Identifier") {
+          sendTarget.push(arg);
         }
       }
     }
@@ -6820,38 +6837,31 @@ function findReferences(node, {
   const extraType = {};
   simple(node, {
     CallExpression(node2) {
-      const callee = node2.callee;
-      if (callee.type === "MemberExpression" && callee.object.type === "Identifier") {
-        if (callee.object.name === "Events") {
-          if (callee.property.type === "Identifier" && (callee.property.name === "or" || callee.property.name === "_or_index")) {
-            for (const arg of node2.arguments) {
-              if (arg.type === "Identifier") {
-                forceVars.push(arg);
-              }
-            }
+      if (isCombinatorOf(node2, "Events", ["or", "_or_index", "some"])) {
+        for (const arg of node2.arguments) {
+          if (arg.type === "Identifier") {
+            forceVars.push(arg);
           }
-        } else if (callee.object.name === "Behaviors") {
-          if (callee.property.type === "Identifier" && callee.property.name === "collect") {
-            const arg = node2.arguments[1];
-            if (arg.type === "Identifier") {
-              forceVars.push(arg);
-            }
-          } else if (callee.property.type === "Identifier" && callee.property.name === "_select") {
-            if (node2.arguments[1].type === "Identifier") {
-              const name2 = node2.arguments[1].name;
-              if (/^_[0-9]/.exec(name2)) {
-                forceVars.push(node2.arguments[1]);
-              }
-              extraType["isSelect"] = true;
-            }
-          } else if (callee.property.type === "Identifier" && callee.property.name === "gather") {
-            extraType["gather"] = node2.arguments[0].value;
-          } else if (callee.property.type === "Identifier" && (callee.property.name === "or" || callee.property.name === "_or_index")) {
-            for (const arg of node2.arguments) {
-              if (arg.type === "Identifier") {
-                forceVars.push(arg);
-              }
-            }
+        }
+      } else if (isCombinatorOf(node2, "Behaviors", ["collect"])) {
+        const arg = node2.arguments[1];
+        if (arg.type === "Identifier") {
+          forceVars.push(arg);
+        }
+      } else if (isCombinatorOf(node2, "Behaviors", ["_select"])) {
+        if (node2.arguments[1].type === "Identifier") {
+          const name2 = node2.arguments[1].name;
+          if (/^_[0-9]/.exec(name2)) {
+            forceVars.push(node2.arguments[1]);
+          }
+          extraType["isSelect"] = true;
+        }
+      } else if (isCombinatorOf(node2, "Behaviors", ["gather"])) {
+        extraType["gather"] = node2.arguments[0].value;
+      } else if (isCombinatorOf(node2, "Behaviors", ["or", "_or_index", "some"])) {
+        for (const arg of node2.arguments) {
+          if (arg.type === "Identifier") {
+            forceVars.push(arg);
           }
         }
       }
@@ -9169,24 +9179,26 @@ function rewriteRenkonCalls(output, body) {
         if (callee.object.name === "Events") {
           output.insertRight(callee.object.end, ".create(Renkon)");
           if (callee.property.type === "Identifier") {
-            if (callee.property.name === "delay") {
+            const selector = callee.property.name;
+            if (selector === "delay") {
               quote(node.arguments[0], output);
-            } else if (callee.property.name === "or" || callee.property.name === "_or_index") {
+            } else if (["or", "_or_index", "some"].includes(selector)) {
               for (const arg of node.arguments) {
                 quote(arg, output);
               }
-            } else if (callee.property.name === "send") {
+            } else if (selector === "send") {
               quote(node.arguments[0], output);
-            } else if (callee.property.name === "collect" || callee.property.name === "_select") {
+            } else if (["collect", "_select"].includes(selector)) {
               quote(node.arguments[1], output);
             }
           }
         } else if (callee.object.name === "Behaviors") {
           output.insertRight(callee.object.end, ".create(Renkon)");
           if (callee.property.type === "Identifier") {
-            if (callee.property.name === "collect" || callee.property.name === "_select") {
+            const selector = callee.property.name;
+            if (["collect", "_select"].includes(selector)) {
               quote(node.arguments[1], output);
-            } else if (callee.property.name === "or" || callee.property.name === "_or_index") {
+            } else if (["or", "_or_index", "some"].includes(selector)) {
               for (const arg of node.arguments) {
                 quote(arg, output);
               }
@@ -9197,7 +9209,7 @@ function rewriteRenkonCalls(output, body) {
     }
   });
 }
-const version$1 = "0.5.5";
+const version$1 = "0.5.6";
 const packageJson = {
   version: version$1
 };
@@ -9365,14 +9377,35 @@ class PromiseEvent extends Stream {
   }
 }
 class OrStream extends Stream {
-  constructor(varNames, useIndex, isBehavior = false) {
+  constructor(varNames, useIndex, collection, isBehavior = false) {
     super(orType, isBehavior);
     __publicField(this, "varNames");
     __publicField(this, "useIndex");
+    __publicField(this, "collection");
     this.varNames = varNames;
     this.useIndex = useIndex;
+    this.collection = collection;
   }
   evaluate(state, node, inputArray, _lastInputArray) {
+    if (this.collection) {
+      const indices = [];
+      const values = {};
+      for (let i2 = 0; i2 < node.inputs.length; i2++) {
+        if (inputArray[i2] !== void 0) {
+          indices.push(i2);
+        }
+        values[node.inputs[i2]] = inputArray[i2];
+      }
+      if (indices.length === 0) {
+        return;
+      }
+      if (this.useIndex) {
+        state.setResolved(node.id, { value: indices, time: state.time });
+      } else {
+        state.setResolved(node.id, { value: values, time: state.time });
+      }
+      return;
+    }
     for (let i2 = 0; i2 < node.inputs.length; i2++) {
       const myInput = inputArray[i2];
       if (myInput !== void 0) {
@@ -9974,10 +10007,13 @@ class Events {
     return new GeneratorNextEvent(generator);
   }
   or(...varNames) {
-    return new OrStream(varNames, false);
+    return new OrStream(varNames, false, false);
+  }
+  some(...varNames) {
+    return new OrStream(varNames, false, true);
   }
   _or_index(...varNames) {
-    return new OrStream(varNames, true);
+    return new OrStream(varNames, true, false);
   }
   collect(init, varName, updater) {
     return new CollectStream(init, varName, updater, false);
