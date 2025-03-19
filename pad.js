@@ -298,9 +298,11 @@ export function pad() {
     })(padView);
 
     const wheel = Events.listener("#pad", "wheel", (evt) => {
-        evt.preventDefault();
-        evt.stopPropagation();
-        return evt
+        if (evt.target?.id === "mover") {
+            evt.preventDefault();
+            evt.stopPropagation();
+        }
+        return evt;
     });
 
     const _handleWheel = ((wheel, padView) => {
