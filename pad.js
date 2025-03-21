@@ -269,11 +269,10 @@ export function pad() {
     };
 
     const padView = Behaviors.select(
-        {x: 0, y: 0, scale: 1, width: 20000, height: 20000},
+        {x: 0, y: 0, scale: 1},
         padViewChange, (now, view) => {
             let {x, y, scale} = view;
 
-            console.log("padViewChange", view);
             if (scale < 0.1) {scale = 0.1;}
             if (scale > 20) {scale = 20;}
             return {...now, ...{x, y, scale}};
@@ -300,8 +299,6 @@ export function pad() {
         mover.style.setProperty("left", `${padView.x}px`);
         mover.style.setProperty("top", `${padView.y}px`);
         mover.style.setProperty("transform", `scale(${padView.scale})`);
-        mover.style.setProperty("width", `${padView.width}px`);
-        mover.style.setProperty("height", `${padView.height}px`);
 
         pad.style.setProperty("background-position", `${padView.x}px ${padView.y}px`);
         pad.style.setProperty("background-size", `${64 * padView.scale}px ${64 * padView.scale}px`);
@@ -782,6 +779,7 @@ html, body, #renkon {
 
 html, body {
   overscroll-behavior-x: none;
+  touch-events: none;
 }
 
 #pad {
