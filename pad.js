@@ -4,7 +4,7 @@ export function pad() {
     const {h, html, render} = import("./preact.standalone.module.js");
     const {stringify, parse} = import ("./stable-stringify.js");
 
-    (() => {
+    const renkon = (() => {
         const renkon = document.createElement("div");
         renkon.id = "renkon";
         renkon.innerHTML = `
@@ -22,6 +22,7 @@ export function pad() {
 
         document.body.querySelector("#renkon")?.remove();
         document.body.appendChild(renkon);
+        return renkon;
     })();
 
     // data.js
@@ -261,18 +262,18 @@ export function pad() {
 
     // userActions.js
 
-    const addCode = Events.listener("#addCodeButton", "click", () => "code");
-    const addRunner = Events.listener("#addRunnerButton", "click", () => "runner");
-    const save = Events.listener("#saveButton", "click", (evt) => evt);
-    const load = Events.listener("#loadButton", "click", (evt) => evt);
+    const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
+    const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
+    const save = Events.listener(renkon.querySelector("#saveButton"), "click", (evt) => evt);
+    const load = Events.listener(renkon.querySelector("#loadButton"), "click", (evt) => evt);
 
     const showGraph = Behaviors.collect(
         true,
-        Events.listener("#showGraph", "click", (evt) => evt),
+        Events.listener(renkon.querySelector("#showGraph"), "click", (evt) => evt),
         (now, _click) => !now
     );
 
-    document.querySelector("#showGraph").textContent = showGraph ? "show graph" : "hide graph";
+    renkon.querySelector("#showGraph").textContent = showGraph ? "show graph" : "hide graph";
 
     const _onRun = ((runRequest, windowContents) => {
         const id = runRequest.id;
@@ -287,7 +288,7 @@ export function pad() {
     const titleEditChange = Events.receiver();
     const runRequest = Events.receiver();
 
-    const padDown = Events.listener("#pad", "pointerdown", (evt) => {
+    const padDown = Events.listener(renkon.querySelector("#pad"), "pointerdown", (evt) => {
         const strId = evt.target.id;
         if (!strId) {return;}
         const id = `${Number.parseInt(strId)}`;
@@ -303,14 +304,14 @@ export function pad() {
         }
     });
 
-    const padUp = Events.listener("#pad", "pointerup", (evt) => {
+    const padUp = Events.listener(renkon.querySelector("#pad"), "pointerup", (evt) => {
         evt.target.releasePointerCapture(evt.pointerId);
         return {type: "pointerup", x: evt.clientX, y: evt.clientY};
     });
 
     const downOrUpOrResize = Events.or(padDown, padUp, windowResize);
 
-    const _padMove = Events.listener("#pad", "pointermove", moveCompute);
+    const _padMove = Events.listener(renkon.querySelector("#pad"), "pointermove", moveCompute);
 
     const windowResize = Events.receiver();
     const moveOrResize = Events.receiver();
