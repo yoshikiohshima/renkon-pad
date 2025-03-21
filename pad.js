@@ -344,8 +344,26 @@ export function pad() {
         }
     })(wheel, padView);
 
-    Events.listener(renkon.querySelector("#buttonBox"), "wheel", (evt) => {evt.preventDefault(); return evt});
-    Events.listener(renkon.querySelector("#navigationBox"), "wheel", (evt) => {evt.preventDefault(); return evt});
+    Events.listener(renkon.querySelector("#buttonBox"), "wheel", preventDefault);
+    Events.listener(renkon.querySelector("#navigationBox"), "wheel", preventDefault);
+
+    Events.listener(document.body, "gesturestart", preventDefault);
+    Events.listener(document.body, "gesturechange", preventDefault);
+    Events.listener(document.body, "gestureend", preventDefault);
+
+    const pointercancel = Events.listener(renkon.querySelector("#pad"), "pointercancel", pointerLost);
+    const lostpointercapture = Events.listener(renkon.querySelector("#pad"), "lostpointercapture", pointerLost);
+
+    const preventDefault = (evt) => {
+        evt.preventDefault();
+        return evt;
+    };
+
+    const pointerLost = (evt) => {
+        Renkon.evCache = new Map();
+        evt.preventDefault();
+        return {type: "lost"};
+    };
 
     const _handleNavigationAction = ((navigationAction, positions, padView) => {
         if (navigationAction === "zoomIn") {
@@ -411,6 +429,37 @@ export function pad() {
         let id;
         const strId = evt.target.id;
         if (!strId) {return;}
+
+        if (!Renkon.evCache) {
+            Renkon.evCache = new Map();
+        }
+
+        if (evt.isPrimary) {
+            evt.preventDefault();
+            evt.stopPropagation();
+            let x = evt.clientX;
+            let y = evt.clientY;
+            Renkon.evCache.set("primary", {x, y, evt});
+        }
+
+        evt.target.setPointerCapture(evt.pointerId);
+
+        if (Renkon.evCache.size === 1 && !evt.isPrimary) {
+            let primary =  Renkon.evCache.get("primary");
+            let x = evt.clientX;
+            let y = evt.clientY;
+            let dx = primary.x - evt.clientX;
+            let dy = primary.y - evt.clientY;
+            let origDiff = Math.sqrt(dx * dx + dy * dy);
+            let origCenterX = (dx / 2) + x;
+            let origCenterY = (dy / 2) + y;
+            Renkon.evCache.set(evt.pointerId, {origDiff, origScale: padView.scale, x, y, evt});
+            return {id, target: evt.target, type: "pinch", pointerId: evt.pointerId};
+        }
+
+        if (Renkon.evCache.size >= 2) {return;}
+
+        if (!evt.isPrimary) {return;}
         if (strId === "pad") {
             type = "padDragDown";
             id = strId;
@@ -430,10 +479,11 @@ export function pad() {
 
     const padUp = Events.listener(renkon.querySelector("#pad"), "pointerup", (evt) => {
         evt.target.releasePointerCapture(evt.pointerId);
+        Renkon.evCache.delete(evt.isPrimary ? "primary" : evt.pointerId);
         return {type: "pointerup", x: evt.clientX, y: evt.clientY};
     });
 
-    const downOrUpOrResize = Events.or(padDown, padUp, windowResize);
+    const downOrUpOrResize = Events.or(padDown, padUp, pointercancel, lostpointercapture, windowResize);
 
     const _padMove = Events.listener("#pad", "pointermove", moveCompute);
 
@@ -441,7 +491,6 @@ export function pad() {
     const moveOrResize = Events.receiver();
 
     const moveCompute = ((downOrUpOrResize, positions, padView) => {
-        // console.log("moveCompute", downOrUpOrResize, positions);
         if (downOrUpOrResize.type === "moveDown" || downOrUpOrResize.type === "windowResizeDown") {
             const start = positions.map.get(downOrUpOrResize.id);
             const scale = padView.scale;
@@ -477,7 +526,56 @@ export function pad() {
                 Events.send(padViewChange, result);
                 return move;
             };
-        } else if (downOrUpOrResize.type === "pointerup") {
+        } else if (downOrUpOrResize.type === "pinch") {
+            return (move) => {
+                const keys = [...Renkon.evCache.keys()];
+                const primary = Renkon.evCache.get("primary");
+                if (!primary) {
+                    // the first finger has been lifted
+                    return move;
+                }
+                const otherKey = keys.find((k) => k !== "primary");
+                const secondary = Renkon.evCache.get(otherKey);
+                const isPrimary = move.isPrimary;
+
+                if (isPrimary) {
+                    const newRecord = {...primary};
+                    newRecord.x = move.clientX;
+                    newRecord.y = move.clientY;
+                    Renkon.evCache.set("primary", newRecord);
+                } else {
+                    const newRecord = {...secondary};
+                    newRecord.x = move.clientX;
+                    newRecord.y = move.clientY;
+                    Renkon.evCache.set(otherKey, newRecord);
+                }
+
+                const origDiff = secondary.origDiff;
+                const origScale = secondary.origScale;
+
+                const pX = isPrimary ? move.clientX : primary.x;
+                const pY = isPrimary ? move.clientY : primary.y;
+
+                const sX = isPrimary ? secondary.x : move.clientX;
+                const sY = isPrimary ? secondary.y : move.clientY;
+
+                const newDiff = Math.sqrt((pX - sX) ** 2 + (pY - sY) ** 2);
+
+                const newScale = (newDiff / origDiff) * origScale;
+
+                const newCenterX = (pX - sX) / 2 + sX;
+                const newCenterY = (pY - sY) / 2 + sY;
+
+                const xInMover = (newCenterX - padView.x) / padView.scale;
+                const newX = newCenterX - xInMover * newScale;
+
+                const yInMover = (newCenterY - padView.y) / padView.scale;
+                const newY = newCenterY - yInMover * newScale;
+
+                Events.send(padViewChange, {x: newX, y: newY, scale: newScale});
+                return move;
+            }
+        } else if (downOrUpOrResize.type === "pointerup" || downOrUpOrResize.type === "lost") {
             return (move) => move;
         }
     })(downOrUpOrResize, positions, padView);
