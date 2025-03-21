@@ -19,9 +19,9 @@ export function pad() {
 <div id="pad"><div id="mover"></div></div>
 <div id="overlay"></div>
 <div id="navigationBox">
-   <div class="navigationButton-no-border"><div id="homeButton" class="navigationButtonImage"></div></div>
-   <div class="navigationButton"><div id="zoomInButton" class="navigationButtonImage"></div></div>
-   <div class="navigationButton"><div id="zoomOutButton" class="navigationButtonImage"></div></div>
+   <div class="navigationButton"><div id="homeButton" class="navigationButtonImage"></div></div>
+   <div class="navigationButton with-border"><div id="zoomInButton" class="navigationButtonImage"></div></div>
+   <div class="navigationButton with-border"><div id="zoomOutButton" class="navigationButtonImage"></div></div>
 </div>
 
 `.trim();
@@ -78,11 +78,14 @@ export function pad() {
             const news = typeKeys.filter((e) => !keys.includes(e));
             const olds = keys.filter((e) => !typeKeys.includes(e));
 
+            const newX = (-padView.x + typeKeys.length * 5 + 30) / padView.scale;
+            const newY = (-padView.y + typeKeys.length * 5 + 30) / padView.scale;
+
             const newWindow = (id, type) => {
                 return {
                     id,
-                    x: typeKeys.length * 30,
-                    y: typeKeys.length * 30 + 30,
+                    x: newX,
+                    y: newY,
                     width: type === "code" ? 300 : 800,
                     height: type === "code" ? 200 : 400
                 }
@@ -219,7 +222,7 @@ export function pad() {
         Events.or(addCode, addRunner, init), (now, _type) => now + 1
     );
 
-    const newWindowRequest = Events.change({id: newId, type: Events.or(addCode, addRunner, init)});
+    const newWindowRequest = Events.change({id: newId, type: Events.or(addCode, addRunner, init), padView});
 
     const newEditor = (id, doc) => {
         const mirror = window.CodeMirror;
@@ -266,11 +269,11 @@ export function pad() {
     };
 
     const padView = Behaviors.select(
-        {x: 0, y: 0, scale: 1},
+        {x: 0, y: 0, scale: 1, width: 20000, height: 20000},
         padViewChange, (now, view) => {
             let {x, y, scale} = view;
-            if (x > 0) {x = 0;}
-            if (y > 50) {y = 50;}
+
+            console.log("padViewChange", view);
             if (scale < 0.1) {scale = 0.1;}
             if (scale > 20) {scale = 20;}
             return {...now, ...{x, y, scale}};
@@ -292,9 +295,16 @@ export function pad() {
     const padViewChange = Events.receiver();
 
     const _padViewUpdate = ((padView) => {
-        document.querySelector("#mover").style.setProperty("left", `${padView.x}px`);
-        document.querySelector("#mover").style.setProperty("top", `${padView.y}px`);
-        document.querySelector("#mover").style.setProperty("transform", `scale(${padView.scale})`);
+        const mover = document.querySelector("#mover");
+        const pad = document.querySelector("#pad");
+        mover.style.setProperty("left", `${padView.x}px`);
+        mover.style.setProperty("top", `${padView.y}px`);
+        mover.style.setProperty("transform", `scale(${padView.scale})`);
+        mover.style.setProperty("width", `${padView.width}px`);
+        mover.style.setProperty("height", `${padView.height}px`);
+
+        pad.style.setProperty("background-position", `${padView.x}px ${padView.y}px`);
+        pad.style.setProperty("background-size", `${64 * padView.scale}px ${64 * padView.scale}px`);
     })(padView);
 
     const wheel = Events.listener("#pad", "wheel", (evt) => {
@@ -337,15 +347,43 @@ export function pad() {
     Events.listener("#buttonBox", "wheel", (evt) => {evt.preventDefault(); return evt});
     Events.listener("#navigationBox", "wheel", (evt) => {evt.preventDefault(); return evt});
 
-    const _handleNavigationAction = ((navigationAction, padView) => {
+    const _handleNavigationAction = ((navigationAction, positions, padView) => {
         if (navigationAction === "zoomIn") {
             Events.send(padViewChange, {x: padView.x, y: padView.y, scale: padView.scale * 1.1});
         } else if (navigationAction === "zoomOut") {
             Events.send(padViewChange, {x: padView.x, y: padView.y, scale: padView.scale * 0.9});
         } else if (navigationAction === "home") {
-            Events.send(padViewChange, {x: 0, y: 0, scale: 1});
+            let minLeft = Number.MAX_VALUE;
+            let minTop = Number.MAX_VALUE;
+            let maxRight = Number.MIN_VALUE;
+            let maxBottom = Number.MIN_VALUE;
+
+            if (positions.map.size === 0) {
+                Events.send(padViewChange, {x: 0, y: 0, scale: 1});
+                return;
+            }
+            for (let [_, position] of positions.map) {
+                minLeft = Math.min(position.x, minLeft);
+                minTop = Math.min(position.y, minTop);
+                maxRight = Math.max(position.x + position.width, maxRight);
+                maxBottom = Math.max(position.y + position.height, maxBottom);
+            }
+
+            const pad = document.body.querySelector("#pad").getBoundingClientRect();
+
+            const scaleX = pad.width / (maxRight - minLeft);
+            const scaleY = pad.height / (maxBottom - minTop);
+            const scale = Math.min(1, scaleX, scaleY) * 0.9;
+
+            const centerX = (maxRight + minLeft) / 2;
+            const centerY = (maxBottom + minTop) / 2;
+
+            let x = pad.width / 2 - centerX * scale;
+            let y = pad.height / 2 - centerY * scale;
+
+            Events.send(padViewChange, {x, y, scale});
         }
-    })(navigationAction, padView);
+    })(navigationAction, positions, padView);
 
     const showGraph = Behaviors.collect(
         true,
@@ -431,12 +469,11 @@ export function pad() {
             const type = "padDrag";
             return (move) => {
                 // console.log("pointermove", downOrUpOrResize, start);
-                const diffX = (move.clientX - downPoint.x);
-                const diffY = (move.clientY - downPoint.y);
+                const diffX = move.clientX - downPoint.x;
+                const diffY = move.clientY - downPoint.y;
                 const result = {id: downOrUpOrResize.id, type, scale};
                 result.x = start.x + diffX;
                 result.y = start.y + diffY;
-                if (Number.isNaN(result.x)) {debugger;}
                 Events.send(padViewChange, result);
                 return move;
             };
@@ -753,14 +790,12 @@ html, body {
     position: absolute;
     top: 0px;
     left: 0px;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAjElEQVR4XuXQAQ0AAAgCQfoHpYbOGt5vEODSdgovd3I+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+wIcWxEeefYmM2dAAAAAASUVORK5CYII=);
 }
 
 #mover {
     pointer-events: none;
     position:absolute;
-    width: 20000px;
-    height: 20000px;
-    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANEAAADRCAYAAABSOlfvAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAmpJREFUeNrs3bFthEAQQFGwXIA78JVACetK3AoduIarhCvBJZBsfh3gWYnAe9iOHIzQe9KIdDXw0V3EMCRSa11iysDjXjZbOOxkbpPhLE9uB4gIRAQiAhEBIgIRgYhARICIQEQgIhARICIQEYgIRASICEQEIgIRASICEYGIQESAiEBEICIQESAiEBGICEQEiAj+1dg+8ZjoPFPMGnN3azol5mYNnct+XTNEVBIt5iPmGvPpGem0F92bNXTe9+vVKr7x4eNf9+LDx8ed+PAxnIWIQEQgIhARiAgQEYgIRAQiAkQEIgIRgYgAEYGIQEQgIkBEICIQEYgIEBGICEQEIgJEBCICEYGIABGBiEBEICJARCAiEBGICBARiAhEBCICRAQiAhGBiEBEgIhARCAiEBEgIhARiAhEBIgIRAQiAhEBIgIRgYhARICIQEQgIhAR8Lex1rpZA5xEBL3EFJs47MWL7riTuY2fc+A/ESAiEBGICEQEIgJEBCICEYGIABGBiEBEICJARCAiEBGICBARiAhEBCICRAQiAhGBiAARgYhARCAiQEQgIhARiAgQEYgIRAQiAkQEIgIRgYgAEYGIQEQgIhARICIQEYgIRASICEQEIgIRASICEYGIQESAiEBEICIQESAiEBGICE7vudZaEp3nJWaKM7kzD5Ldpwxes+xljEMsiRYzxawxd89Ipz0oN2voXPbrahX923bxxv1xL5stHHYyt/GfCE5ARCAiEBGICEQEiAhEBCICEQEiAhGBiEBEgIhARCAiEBEgIhARiAhEBIgIRAQiAhEBIgIRgYhARICIQESQ0JcAAwDLXWiRCFyTrQAAAABJRU5ErkJggg==');
     transform-origin: 0px 0px;
 }
 
@@ -812,6 +847,7 @@ html, body {
     margin-left: 4px;
     margin-right: 4px;
     border-radius: 4px;
+    cursor: pointer;
 }
 		   
 
@@ -835,6 +871,8 @@ html, body {
     border: 2px ridge #ccc;
     box-sizing: border-box;
     border-radius: 6px 6px 0px 0px;
+    cursor: -webkit-grab;
+    cursor: grab;
 }
 
 .title {
@@ -860,6 +898,7 @@ html, body {
     pointer-events: all;
     border-radius: 8px;
     background-position: center;
+    cursor: pointer;
 }
 
 .titlebarButton:hover {
@@ -918,16 +957,14 @@ html, body {
 .navigationButton {
     width: 30px;
     height: 30px;
+    display: flex;
+    cursor: pointer;
+}
+
+.with-border {
     border: 1px solid #4D4D4D;
     border-radius: 15px;
     background-color: white;
-    display: flex;
-}
-
-.navigationButton-no-border {
-    width: 30px;
-    height: 30px;
-    display: flex;
 }
 
 .navigationButton:hover {
