@@ -4,7 +4,7 @@ export function pad() {
     const {h, html, render} = import("./preact.standalone.module.js");
     const {stringify, parse} = import ("./stable-stringify.js");
 
-    (() => {
+    const renkon = (() => {
         const renkon = document.createElement("div");
         renkon.id = "renkon";
         renkon.innerHTML = `
@@ -28,6 +28,7 @@ export function pad() {
 
         document.body.querySelector("#renkon")?.remove();
         document.body.appendChild(renkon);
+        return renkon;
     })();
 
     // data.js
@@ -281,14 +282,14 @@ export function pad() {
 
     // userActions.js
 
-    const addCode = Events.listener("#addCodeButton", "click", () => "code");
-    const addRunner = Events.listener("#addRunnerButton", "click", () => "runner");
-    const save = Events.listener("#saveButton", "click", (evt) => evt);
-    const load = Events.listener("#loadButton", "click", (evt) => evt);
+    const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
+    const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
+    const save = Events.listener(renkon.querySelector("#saveButton"), "click", (evt) => evt);
+    const load = Events.listener(renkon.querySelector("#loadButton"), "click", (evt) => evt);
 
-    const home = Events.listener("#homeButton", "click", () => "home");
-    const zoomIn = Events.listener("#zoomInButton", "click", () => "zoomIn");
-    const zoomOut = Events.listener("#zoomOutButton", "click", () => "zoomOut");
+    const home = Events.listener(renkon.querySelector("#homeButton"), "click", () => "home");
+    const zoomIn = Events.listener(renkon.querySelector("#zoomInButton"), "click", () => "zoomIn");
+    const zoomOut = Events.listener(renkon.querySelector("#zoomOutButton"), "click", () => "zoomOut");
     const navigationAction = Events.or(home, zoomIn, zoomOut);
 
     const padViewChange = Events.receiver();
@@ -299,12 +300,14 @@ export function pad() {
         mover.style.setProperty("left", `${padView.x}px`);
         mover.style.setProperty("top", `${padView.y}px`);
         mover.style.setProperty("transform", `scale(${padView.scale})`);
+        mover.style.setProperty("width", `${padView.width}px`);
+        mover.style.setProperty("height", `${padView.height}px`);
 
         pad.style.setProperty("background-position", `${padView.x}px ${padView.y}px`);
         pad.style.setProperty("background-size", `${64 * padView.scale}px ${64 * padView.scale}px`);
     })(padView);
 
-    const wheel = Events.listener("#pad", "wheel", (evt) => {
+    const wheel = Events.listener(renkon.querySelector("#pad"), "wheel", (evt) => {
         // preventDefault() and stopPropagation() has to be called in the immediate event handler.
         const pinch = Number.isInteger(evt.deltaX) && !Number.isInteger(evt.deltaY);
         if (pinch) {
@@ -341,16 +344,8 @@ export function pad() {
         }
     })(wheel, padView);
 
-    Events.listener("#buttonBox", "wheel", (evt) => {evt.preventDefault(); return evt});
-    Events.listener("#navigationBox", "wheel", (evt) => {evt.preventDefault(); return evt});
-
-    Events.listener(document, "gesturestart", gesture);
-    Events.listener(document, "gesturechange", gesture);
-    Events.listener(document, "gestureend", gesture);
-
-    const gesture = (evt) => {
-        evt.preventDefault();
-    }
+    Events.listener(renkon.querySelector("#buttonBox"), "wheel", (evt) => {evt.preventDefault(); return evt});
+    Events.listener(renkon.querySelector("#navigationBox"), "wheel", (evt) => {evt.preventDefault(); return evt});
 
     const _handleNavigationAction = ((navigationAction, positions, padView) => {
         if (navigationAction === "zoomIn") {
@@ -392,7 +387,7 @@ export function pad() {
 
     const showGraph = Behaviors.collect(
         true,
-        Events.listener("#showGraph", "click", (evt) => evt),
+        Events.listener(renkon.querySelector("#showGraph"), "click", (evt) => evt),
         (now, _click) => !now
     );
 
@@ -411,7 +406,7 @@ export function pad() {
     const titleEditChange = Events.receiver();
     const runRequest = Events.receiver();
 
-    const padDown = Events.listener("#pad", "pointerdown", (evt) => {
+    const padDown = Events.listener(renkon.querySelector("#pad"), "pointerdown", (evt) => {
         let type;
         let id;
         const strId = evt.target.id;
@@ -433,7 +428,7 @@ export function pad() {
         }
     });
 
-    const padUp = Events.listener("#pad", "pointerup", (evt) => {
+    const padUp = Events.listener(renkon.querySelector("#pad"), "pointerup", (evt) => {
         evt.target.releasePointerCapture(evt.pointerId);
         return {type: "pointerup", x: evt.clientX, y: evt.clientY};
     });
@@ -787,7 +782,6 @@ html, body, #renkon {
 
 html, body {
   overscroll-behavior-x: none;
-  touch-events: none;
 }
 
 #pad {
