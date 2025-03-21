@@ -344,6 +344,14 @@ export function pad() {
     Events.listener("#buttonBox", "wheel", (evt) => {evt.preventDefault(); return evt});
     Events.listener("#navigationBox", "wheel", (evt) => {evt.preventDefault(); return evt});
 
+    Events.listener(document, "gesturestart", gesture);
+    Events.listener(document, "gesturechange", gesture);
+    Events.listener(document, "gestureend", gesture);
+
+    const gesture = (evt) => {
+        evt.preventDefault();
+    }
+
     const _handleNavigationAction = ((navigationAction, positions, padView) => {
         if (navigationAction === "zoomIn") {
             Events.send(padViewChange, {x: padView.x, y: padView.y, scale: padView.scale * 1.1});
@@ -743,7 +751,7 @@ export function pad() {
             let p1 = positions.map.get(hoveredB);
             p1 = {x: p1.x + p1.width, y: p1.y};
             p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
-            p1 = {x: p1.x * padView.scale + padView.x, y: p1.y + padView.y};
+            p1 = {x: p1.x * padView.scale + padView.x, y: p1.y * padView.scale + padView.y};
             let p2 = positions.map.get(edge.dest);
             p2 = {x: p2.x, y: p2.y + 10};
             p2 = {x: p2.x * padView.scale + padView.x, y: p2.y * padView.scale + padView.y};
