@@ -1069,6 +1069,7 @@ html, body {
     bottom: -10px;
     right: -10px;
     border-radius: 6px;
+    z-index: 10000
 }
 
 .resizeHandler:hover {
