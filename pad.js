@@ -887,6 +887,18 @@ export function pad() {
     // css.js
 
     const css = `
+@font-face {
+    font-family: "OpenSans-Regular";
+    src: url("./assets/fonts/open-sans-v17-latin-ext_latin-regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: 'OpenSans-SemiBold';
+  src: url("./assets/fonts/open-sans-v17-latin-ext_latin-600.woff2") format('woff2');
+}
+
+
+
 html, body, #renkon {
     overflow: hidden;
     height: 100%;
@@ -957,10 +969,13 @@ html, body {
 }
 
 .menuButton {
+    font-family: 'OpenSans-SemiBold';
+    color: black;
     margin-left: 4px;
     margin-right: 4px;
     border-radius: 4px;
     cursor: pointer;
+    border: 2px solid #555;
 }
 		   
 
@@ -989,6 +1004,7 @@ html, body {
 }
 
 .title {
+    font-family: OpenSans-Regular;
     pointer-events: none;
     margin-left: 20px;
     flex-grow: 1;
