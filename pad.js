@@ -910,6 +910,7 @@ html, body, #renkon {
 
 html, body {
   overscroll-behavior-x: none;
+  touch-action: none;
 }
 
 #pad {
