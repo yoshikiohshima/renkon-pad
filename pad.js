@@ -360,7 +360,7 @@ export function pad() {
     };
 
     const pointerLost = (evt) => {
-        Renkon.evCache = new Map();
+        evCache.clear();
         evt.preventDefault();
         return {type: "lost"};
     };
@@ -424,62 +424,79 @@ export function pad() {
     const titleEditChange = Events.receiver();
     const runRequest = Events.receiver();
 
-    const padDown = Events.listener(renkon.querySelector("#pad"), "pointerdown", (evt) => {
-        let type;
-        let id;
+    const rawPadDown = Events.listener(renkon.querySelector("#pad"), "pointerdown", (evt) => {
         const strId = evt.target.id;
-        if (!strId) {return;}
-
-        if (!Renkon.evCache) {
-            Renkon.evCache = new Map();
-        }
-
-        if (evt.isPrimary) {
+        if (strId) {
             evt.preventDefault();
             evt.stopPropagation();
-            let x = evt.clientX;
-            let y = evt.clientY;
-            Renkon.evCache.set("primary", {x, y, evt});
         }
+        return evt;
+    }, {queued: true});
 
-        evt.target.setPointerCapture(evt.pointerId);
+    // this is an odd ball that gets mutated by padDownState and padUp
+    const evCache = new Map();
 
-        if (Renkon.evCache.size === 1 && !evt.isPrimary) {
-            let primary =  Renkon.evCache.get("primary");
-            let x = evt.clientX;
-            let y = evt.clientY;
-            let dx = primary.x - evt.clientX;
-            let dy = primary.y - evt.clientY;
-            let origDiff = Math.sqrt(dx * dx + dy * dy);
-            let origCenterX = (dx / 2) + x;
-            let origCenterY = (dy / 2) + y;
-            Renkon.evCache.set(evt.pointerId, {origDiff, origScale: padView.scale, x, y, evt});
-            return {id, target: evt.target, type: "pinch", pointerId: evt.pointerId};
-        }
-
-        if (Renkon.evCache.size >= 2) {return;}
-
-        if (!evt.isPrimary) {return;}
-        if (strId === "pad") {
-            type = "padDragDown";
-            id = strId;
-        } else {
-            id = `${Number.parseInt(strId)}`;
-            if (strId.endsWith("-win")) {
-                type = "moveDown";
-            } else if (strId.endsWith("-resize")) {
-                type = "windowResizeDown";
+    const padDown = Events.collect(undefined, rawPadDown, (old, evts) => {
+        let type;
+        let id;
+        if (evts.length <= 2 && evts[0].isPrimary) {
+            let primary = evts[0];
+            const strId = primary.target.id;
+            if (!strId) {return old;}
+            let x = primary.clientX;
+            let y = primary.clientY;
+            if (strId === "pad") {
+                type = "padDragDown";
+                id = strId;
+            } else {
+                id = `${Number.parseInt(strId)}`;
+                if (strId.endsWith("-win")) {
+                    type = "moveDown";
+                } else if (strId.endsWith("-resize")) {
+                    type = "windowResizeDown";
+                }
+            }
+            if (type) {
+                primary.target.setPointerCapture(primary.pointerId);
+                if (strId === "pad") {
+                    evCache.set("primary", {x, y});
+                }
+                if (evts.length === 1) {
+                    return {
+                        id, target: primary.target, type, x: primary.clientX, y: primary.clientY
+                    };
+                }
+            } else {
+                return old;
             }
         }
-        if (type) {
-            evt.target.setPointerCapture(evt.pointerId);
-            return {id, target: evt.target, type, x: evt.clientX, y: evt.clientY};
+
+        let secondary;
+        if (evCache.get("primary")) {
+            if (evts.length === 1 && evCache.size === 1 && !evts[0].isPrimary) {
+                secondary = evts[0];
+            }
+            if (evts.length === 2 && evCache.size === 1 && !evts[1].isPrimary) {
+                secondary = evts[1];
+            }
         }
+        if (!secondary) {return old;}
+
+        const strId = secondary.target.id;
+        if (strId !== "pad") {return old;}
+        let primary =  evCache.get("primary");
+        let x = secondary.clientX;
+        let y = secondary.clientY;
+        let dx = primary.x - secondary.clientX;
+        let dy = primary.y - secondary.clientY;
+        let origDiff = Math.sqrt(dx * dx + dy * dy);
+        evCache.set(secondary.pointerId, {origDiff, origScale: padView.scale, x, y});
+        return {evCache: old.evCache, type: "pinch", secondary: secondary.pointerId};
     });
 
     const padUp = Events.listener(renkon.querySelector("#pad"), "pointerup", (evt) => {
         evt.target.releasePointerCapture(evt.pointerId);
-        Renkon.evCache.delete(evt.isPrimary ? "primary" : evt.pointerId);
+        evCache.clear();
         return {type: "pointerup", x: evt.clientX, y: evt.clientY};
     });
 
@@ -497,7 +514,6 @@ export function pad() {
             const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
             const type = downOrUpOrResize.type === "moveDown" ? "move" : "resize";
             return (move) => {
-                // console.log("pointermove", downOrUpOrResize, start);
                 const diffX = (move.clientX - downPoint.x) / scale;
                 const diffY = (move.clientY - downPoint.y) / scale;
                 const result = {id: downOrUpOrResize.id, type};
@@ -517,7 +533,6 @@ export function pad() {
             const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
             const type = "padDrag";
             return (move) => {
-                // console.log("pointermove", downOrUpOrResize, start);
                 const diffX = move.clientX - downPoint.x;
                 const diffY = move.clientY - downPoint.y;
                 const result = {id: downOrUpOrResize.id, type, scale};
@@ -528,26 +543,26 @@ export function pad() {
             };
         } else if (downOrUpOrResize.type === "pinch") {
             return (move) => {
-                const keys = [...Renkon.evCache.keys()];
-                const primary = Renkon.evCache.get("primary");
+                const keys = [...evCache.keys()];
+                const primary = evCache.get("primary");
                 if (!primary) {
                     // the first finger has been lifted
                     return move;
                 }
                 const otherKey = keys.find((k) => k !== "primary");
-                const secondary = Renkon.evCache.get(otherKey);
+                const secondary = evCache.get(otherKey);
                 const isPrimary = move.isPrimary;
 
                 if (isPrimary) {
                     const newRecord = {...primary};
                     newRecord.x = move.clientX;
                     newRecord.y = move.clientY;
-                    Renkon.evCache.set("primary", newRecord);
+                    evCache.set("primary", newRecord);
                 } else {
                     const newRecord = {...secondary};
                     newRecord.x = move.clientX;
                     newRecord.y = move.clientY;
-                    Renkon.evCache.set(otherKey, newRecord);
+                    evCache.set(otherKey, newRecord);
                 }
 
                 const origDiff = secondary.origDiff;
