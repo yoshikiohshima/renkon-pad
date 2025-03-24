@@ -9,6 +9,7 @@ export function pad() {
         renkon.id = "renkon";
         renkon.innerHTML = `
 <div id="buttonBox">
+   <input class="menuButton" id="padTitle"></input>
    <button class="menuButton" id="addCodeButton">code</button>
    <button class="menuButton" id="addRunnerButton">runner</button>
    <div class="spacer"></div>
@@ -279,6 +280,30 @@ export function pad() {
             return {...now, ...{x, y, scale}};
         }
     );
+
+    const padTitle = Behaviors.select(
+        "untitled",
+        loadRequest, (now, data) => {
+            console.log("padTitle loaded");
+            return data.padTitle || "untitled"
+        },
+        titleChange, (now, request) => request
+    );
+
+    const titleChange = Events.observe((notify) => {
+        const change = (evt) => {
+            notify(evt.target.value);
+        };
+
+        renkon.querySelector("#padTitle").addEventListener("input", change);
+        return () => {renkon.querySelector("#padtitle").removeEventListener("change", change);}
+    });
+
+    const _padTitleUpdater = ((padTitle) => {
+        if (renkon.querySelector("#padTitle").value !== padTitle) {
+            renkon.querySelector("#padTitle").value = padTitle;
+        }
+    })(padTitle);
 
     // userActions.js
 
@@ -693,7 +718,7 @@ export function pad() {
 
     const loadRequest = Events.receiver();
 
-    const _saver = ((windows, positions, zIndex, titles, windowContents, windowTypes) => {
+    const _saver = ((windows, positions, zIndex, titles, windowContents, windowTypes, padTitle) => {
         const code = new Map([...windowContents.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
         const data = stringify({
             version: 1,
@@ -702,15 +727,16 @@ export function pad() {
             zIndex,
             titles,
             code,
-            windowTypes
+            windowTypes,
+            padTitle
         });
 
         const div = document.createElement("a");
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
         div.setAttribute("href", dataStr);
-        div.setAttribute("download", `renkon-pad.json`);
+        div.setAttribute("download", `${padTitle}.json`);
         div.click();
-    })(windows, positions, zIndex, titles, windowContents, windowTypes, save);
+    })(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, save);
 
     const _loader = (() => {
         const input = document.createElement("div");
@@ -904,8 +930,6 @@ export function pad() {
   src: url("./assets/fonts/open-sans-v17-latin-ext_latin-600.woff2") format('woff2');
 }
 
-
-
 html, body, #renkon {
     overflow: hidden;
     height: 100%;
@@ -961,6 +985,9 @@ html, body {
 
 #buttonBox {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    row-gap: 8px;
     left: 0px;
     top: 0px;
     width: 100%;
@@ -970,6 +997,10 @@ html, body {
     background-color: white;
     position: absolute;
     z-index: 200000;
+}
+
+#padTitle {
+    margin-left: 24px;
 }
 
 .spacer {
