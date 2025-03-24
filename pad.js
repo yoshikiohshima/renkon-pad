@@ -310,15 +310,19 @@ export function pad() {
     const wheel = Events.listener(renkon.querySelector("#pad"), "wheel", (evt) => {
         // preventDefault() and stopPropagation() has to be called in the immediate event handler.
         const pinch = Number.isInteger(evt.deltaX) && !Number.isInteger(evt.deltaY);
+        const strId = evt.target.id;
         if (pinch) {
             evt.preventDefault();
-            evt.stopPropagation();
+            if (strId === "pad") {
+                evt.stopPropagation();
+            }
         }
         return evt;
     });
 
     const _handleWheel = ((wheel, padView) => {
         const pinch = Number.isInteger(wheel.deltaX) && !Number.isInteger(wheel.deltaY);
+        const strId = wheel.target.id;
 
         let deltaX = wheel.deltaX;
         let deltaY = wheel.deltaY;
@@ -335,10 +339,10 @@ export function pad() {
         const yInMover = (wheel.clientY - padView.y) / padView.scale;
         const newY = wheel.clientY - yInMover * desiredZoom;
 
-        if (pinch) {
-            Events.send(padViewChange, {x: newX, y: newY, scale: desiredZoom});
-        } else {
-            if (wheel.target.id == "pad") {
+        if (strId === "pad") {
+            if (pinch) {
+                Events.send(padViewChange, {x: newX, y: newY, scale: desiredZoom});
+            } else {
                 Events.send(padViewChange, {x: padView.x - deltaX, y: padView.y - deltaY, scale: padView.scale});
             }
         }
