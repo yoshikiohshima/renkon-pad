@@ -425,6 +425,7 @@ export function pad() {
     const runRequest = Events.receiver();
 
     const rawPadDown = Events.listener(renkon.querySelector("#pad"), "pointerdown", (evt) => {
+        // console.log("rawPadDown", evt);
         const strId = evt.target.id;
         if (strId) {
             evt.preventDefault();
@@ -442,7 +443,7 @@ export function pad() {
         if (evts.length <= 2 && evts[0].isPrimary) {
             let primary = evts[0];
             const strId = primary.target.id;
-            if (!strId) {return old;}
+            if (!strId) {return {...old, type: ""};}
             let x = primary.clientX;
             let y = primary.clientY;
             if (strId === "pad") {
@@ -467,7 +468,7 @@ export function pad() {
                     };
                 }
             } else {
-                return old;
+                return {...old, type: ""};
             }
         }
 
@@ -495,8 +496,10 @@ export function pad() {
     });
 
     const padUp = Events.listener(renkon.querySelector("#pad"), "pointerup", (evt) => {
+        // console.log("ev1", evCache);
         evt.target.releasePointerCapture(evt.pointerId);
         evCache.clear();
+        // console.log("ev2", evCache);
         return {type: "pointerup", x: evt.clientX, y: evt.clientY};
     });
 
