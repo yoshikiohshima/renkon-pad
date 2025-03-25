@@ -480,7 +480,7 @@ export function pad() {
                 id = strId;
             } else {
                 id = `${Number.parseInt(strId)}`;
-                if (strId.endsWith("-win")) {
+                if (strId.endsWith("-titleBar")) {
                     type = "moveDown";
                 } else if (strId.endsWith("-resize")) {
                     type = "windowResizeDown";
@@ -1031,7 +1031,6 @@ html, body {
 
 .titleBar {
     background-color: #bbb;
-    pointer-events: none;
     width: 100%;
     height: 24px;
     display: flex;
@@ -1100,7 +1099,8 @@ html, body {
     bottom: -10px;
     right: -10px;
     border-radius: 6px;
-    z-index: 10000
+    z-index: 10000;
+    cursor: se-resize;
 }
 
 .resizeHandler:hover {
