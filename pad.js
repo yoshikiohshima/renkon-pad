@@ -80,8 +80,8 @@ export function pad() {
             const news = typeKeys.filter((e) => !keys.includes(e));
             const olds = keys.filter((e) => !typeKeys.includes(e));
 
-            const newX = (-padView.x + typeKeys.length * 5 + 30) / padView.scale;
-            const newY = (-padView.y + typeKeys.length * 5 + 30) / padView.scale;
+            const newX = (-padView.x + typeKeys.length * 5 + 40) / padView.scale;
+            const newY = (-padView.y + typeKeys.length * 5 + 45) / padView.scale;
 
             const newWindow = (id, type) => {
                 return {
