@@ -391,8 +391,6 @@ export function pad() {
 
     const isSafari = window.navigator.userAgent.includes("Safari") && !window.navigator.userAgent.includes("Chrome");
 
-    console.log("isSafari", isSafari);
-
     const pointercancel = Events.listener(renkon.querySelector("#pad"), "pointercancel", pointerLost);
     const lostpointercapture = Events.listener(renkon.querySelector("#pad"), "lostpointercapture", pointerLost);
 
