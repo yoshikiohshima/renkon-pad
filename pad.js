@@ -230,7 +230,7 @@ export function pad() {
     const newEditor = (id, doc) => {
         const mirror = window.CodeMirror;
         const editor = new mirror.EditorView({
-            doc: doc || `console.log("hello")\na\nb\nc\nd\ne\nf\ng\nh\ni\nk`,
+            doc: doc || `console.log("hello")`,
             extensions: [
                 mirror.basicSetup,
                 mirror.EditorView.lineWrapping,
