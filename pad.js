@@ -472,8 +472,10 @@ export function pad() {
     const runRequest = Events.receiver();
 
     const rawPadDown = Events.listener(renkon.querySelector("#pad"), "pointerdown", (evt) => {
-        // console.log("rawPadDown", evt);
         const strId = evt.target.id;
+        if (strId.endsWith("-title") && (evt.target.getAttribute("contenteditable") === "true")) {
+            return evt;
+        }
         if (strId) {
             evt.preventDefault();
             evt.stopPropagation();
@@ -1050,7 +1052,7 @@ html, body {
 .titleBar {
     background-color: #bbb;
     width: 100%;
-    height: 24px;
+    height: 28px;
     display: flex;
     border: 2px ridge #ccc;
     box-sizing: border-box;
@@ -1066,18 +1068,17 @@ html, body {
     flex-grow: 1;
     margin-right: 20px;
     padding-left: 10px;
-    pointer-events: none;
-    user-select: none;
 }
 
 .title[contentEditable="true"] {
     background-color: #eee;
     pointer-events: all;
+    user-select: all;
 }
 
 .titlebarButton {
-    height: 17px;
-    width: 17px;
+    height: 19px;
+    width: 19px;
     margin: 2px;
     margin-top: 2px;
     pointer-events: all;
