@@ -13,6 +13,7 @@ export function pad() {
    <button class="menuButton" id="addCodeButton">code</button>
    <button class="menuButton" id="addRunnerButton">runner</button>
    <div class="spacer"></div>
+   <button class="menuButton" id="pinch">normal</button>
    <button class="menuButton" id="showGraph">show graph</button>
    <button class="menuButton" id="saveButton">save</button>
    <button class="menuButton" id="loadButton">load</button>
@@ -229,7 +230,7 @@ export function pad() {
     const newEditor = (id, doc) => {
         const mirror = window.CodeMirror;
         const editor = new mirror.EditorView({
-            doc: doc || `console.log("hello")`,
+            doc: doc || `console.log("hello")\na\nb\nc\nd\ne\nf\ng\nh\ni\nk`,
             extensions: [
                 mirror.basicSetup,
                 mirror.EditorView.lineWrapping,
@@ -334,19 +335,37 @@ export function pad() {
 
     const wheel = Events.listener(renkon.querySelector("#pad"), "wheel", (evt) => {
         // preventDefault() and stopPropagation() has to be called in the immediate event handler.
-        const pinch = Number.isInteger(evt.deltaX) && !Number.isInteger(evt.deltaY);
+        let pinch = Number.isInteger(evt.deltaX) && !Number.isInteger(evt.deltaY);
+        if (flipPinch) {
+            pinch = !pinch;
+        }
+        // console.log("wheel pinch", pinch);
+
         const strId = evt.target.id;
-        if (pinch) {
-            evt.preventDefault();
-            if (strId === "pad") {
-                evt.stopPropagation();
+        // console.log("strId", strId);
+        if (!flipPinch) {
+            if (pinch) {
+                evt.preventDefault();
             }
+        } else {
+            if (strId === "pad") {
+                evt.preventDefault();
+            }
+        }
+
+        if (strId === "pad") {
+            evt.stopPropagation();
         }
         return evt;
     });
 
-    const _handleWheel = ((wheel, padView) => {
-        const pinch = Number.isInteger(wheel.deltaX) && !Number.isInteger(wheel.deltaY);
+    const _handleWheel = ((wheel, padView, flipPinch) => {
+        let pinch = Number.isInteger(wheel.deltaX) && !Number.isInteger(wheel.deltaY);
+        if (flipPinch) {
+            pinch = !pinch;
+        }
+
+        // console.log("pinch", pinch);
         const strId = wheel.target.id;
 
         let deltaX = wheel.deltaX;
@@ -371,7 +390,7 @@ export function pad() {
                 Events.send(padViewChange, {x: padView.x - deltaX, y: padView.y - deltaY, scale: padView.scale});
             }
         }
-    })(wheel, padView);
+    })(wheel, padView, flipPinch);
 
     Events.listener(renkon.querySelector("#buttonBox"), "wheel", preventDefault);
     Events.listener(renkon.querySelector("#navigationBox"), "wheel", preventDefault);
@@ -452,6 +471,14 @@ export function pad() {
     const remove = Events.receiver();
     const titleEditChange = Events.receiver();
     const runRequest = Events.receiver();
+
+    const flipPinch = Behaviors.collect(
+        false,
+        Events.listener(renkon.querySelector("#pinch"), "click", (evt) => evt),
+        (now, _click) => !now
+    );
+
+    document.querySelector("#pinch").textContent = flipPinch ? "scroll" : "zoom";
 
     const rawPadDown = Events.listener(renkon.querySelector("#pad"), "pointerdown", (evt) => {
         // console.log("rawPadDown", evt);
