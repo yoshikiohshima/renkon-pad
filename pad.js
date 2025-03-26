@@ -333,9 +333,12 @@ export function pad() {
     })(padView);
 
     const wheel = Events.listener(renkon.querySelector("#pad"), "wheel", (evt) => {
-        // preventDefault() and stopPropagation() has to be called in the immediate event handler.
-        // const pinch = Number.isInteger(evt.deltaX) && !Number.isInteger(evt.deltaY) && evt.ctrlKey;
-        const pinch = evt.ctrlKey;
+        let pinch;
+        if (isSafari) {
+            pinch = (Number.isInteger(evt.deltaX) && !Number.isInteger(evt.deltaY)) || evt.metaKey;
+        } else {
+            pinch = evt.ctrlKey || evt.metaKey;
+        }
         const strId = evt.target.id;
         if (pinch) {
             evt.preventDefault();
@@ -347,8 +350,12 @@ export function pad() {
     });
 
     const _handleWheel = ((wheel, padView) => {
-        // const pinch = Number.isInteger(wheel.deltaX) && !Number.isInteger(wheel.deltaY) && wheel.ctrlKey;
-        const pinch = wheel.ctrlKey;
+        let pinch;
+        if (isSafari) {
+            pinch = (Number.isInteger(wheel.deltaX) && !Number.isInteger(wheel.deltaY)) || wheel.metaKey;
+        } else {
+            pinch = wheel.ctrlKey || wheel.metaKey;
+        }
         const strId = wheel.target.id;
 
         let deltaX = wheel.deltaX;
@@ -378,15 +385,26 @@ export function pad() {
     Events.listener(renkon.querySelector("#buttonBox"), "wheel", preventDefault);
     Events.listener(renkon.querySelector("#navigationBox"), "wheel", preventDefault);
 
-    Events.listener(document.body, "gesturestart", preventDefault);
-    Events.listener(document.body, "gesturechange", preventDefault);
-    Events.listener(document.body, "gestureend", preventDefault);
+    Events.listener(document.body, "gesturestart", preventDefaultSafari);
+    Events.listener(document.body, "gesturechange", preventDefaultSafari);
+    Events.listener(document.body, "gestureend", preventDefaultSafari);
+
+    const isSafari = window.navigator.userAgent.includes("Safari") && !window.navigator.userAgent.includes("Chrome");
+
+    console.log("isSafari", isSafari);
 
     const pointercancel = Events.listener(renkon.querySelector("#pad"), "pointercancel", pointerLost);
     const lostpointercapture = Events.listener(renkon.querySelector("#pad"), "lostpointercapture", pointerLost);
 
     const preventDefault = (evt) => {
         evt.preventDefault();
+        return evt;
+    };
+
+    const preventDefaultSafari = (evt) => {
+        if (!isSafari) {
+            evt.preventDefault();
+        }
         return evt;
     };
 
