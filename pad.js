@@ -228,13 +228,29 @@ export function pad() {
 
     const newEditor = (id, doc) => {
         const mirror = window.CodeMirror;
+
+        const config = {
+	    // eslint configuration
+            languageOptions: {
+                globals: mirror.globals,
+                parserOptions: {
+                    ecmaVersion: 2022,
+                    sourceType: "module",
+                },
+            },
+            rules: {
+	    },
+        };
+        
         const editor = new mirror.EditorView({
             doc: doc || `console.log("hello")`,
             extensions: [
                 mirror.basicSetup,
+                mirror.javascript({typescript: true}),
                 mirror.EditorView.lineWrapping,
                 mirror.EditorView.editorAttributes.of({"class": "editor"}),
-                mirror.keymap.of([mirror.indentWithTab])
+                mirror.keymap.of([mirror.indentWithTab]),
+                mirror.linter(mirror.esLint(new mirror.eslint.Linter(), config))
             ],
         });
         editor.dom.id = `${id}-editor`;
