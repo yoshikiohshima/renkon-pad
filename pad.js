@@ -541,7 +541,7 @@ export function pad() {
         let dy = primary.y - secondary.clientY;
         let origDiff = Math.sqrt(dx * dx + dy * dy);
         evCache.set(secondary.pointerId, {origDiff, origScale: padView.scale, x, y});
-        return {evCache: old.evCache, type: "pinch", secondary: secondary.pointerId};
+        return {type: "pinch", secondary: secondary.pointerId};
     });
 
     const padUp = Events.listener(renkon.querySelector("#pad"), "pointerup", (evt) => {
