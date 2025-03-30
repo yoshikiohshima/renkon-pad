@@ -82,7 +82,7 @@ export function stringifyCodeMap(map) {
     }
 
     return "\n{__codeMap: true, value: " + "[" + 
-        [...map].map(([key, value]) => ("[" + "`" + replace(key) + "`" + ", " + "`\n" +  replace(value) + "\n`" + "]")).join(",\n") + "]" + "}"
+        [...map].map(([key, value]) => ("[" + "`" + replace(key) + "`" + ", " + "`" +  replace(value) + "`" + "]")).join(",\n") + "]" + "}"
 }
 
 export function parseCodeMap(string) {
