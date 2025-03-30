@@ -2,7 +2,7 @@ export function pad() {
     // init.js
 
     const {h, html, render} = import("./preact.standalone.module.js");
-    const {stringify, parse} = import ("./stable-stringify.js");
+    const {stringify, parse, stringifyCodeMap, parseCodeMap} = import ("./stable-stringify.js");
 
     const renkon = (() => {
         const renkon = document.createElement("div");
@@ -754,21 +754,22 @@ export function pad() {
 
     const loadRequest = Events.receiver();
 
-    const _saver = ((windows, positions, zIndex, titles, windowContents, windowTypes, padTitle) => {
+    const _saver2 = ((windows, positions, zIndex, titles, windowContents, windowTypes, padTitle) => {
         const code = new Map([...windowContents.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
-        const data = stringify({
-            version: 1,
+        const data1 = stringify({
+            version: 2,
             windows,
             positions,
             zIndex,
             titles,
-            code,
             windowTypes,
             padTitle
         });
 
+        const data2 = stringifyCodeMap(code);
+
         const div = document.createElement("a");
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
+        const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(data1) + encodeURIComponent(data2);
         div.setAttribute("href", dataStr);
         div.setAttribute("download", `${padTitle}.json`);
         div.click();
@@ -776,7 +777,7 @@ export function pad() {
 
     const _loader = (() => {
         const input = document.createElement("div");
-        input.innerHTML = `<input id="imageinput" type="file" accept="application/json">`;
+        input.innerHTML = `<input id="imageinput" type="file" accept=".json">`;
         const imageInput = input.firstChild;
 
         imageInput.onchange = () => {
@@ -788,10 +789,34 @@ export function pad() {
                 reader.readAsArrayBuffer(file);
             }).then((data) => {
                 const result = new TextDecoder("utf-8").decode(data);
-                const loaded = parse(result);
-                if (loaded.version === 1) {
-                    Events.send(loadRequest, loaded);
+                const index = result.indexOf("{__codeMap: true, value:");
+
+                if (index < 0) {
+                    const loaded = parse(result);
+                    if (loaded.version === 1) {
+                        Events.send(loadRequest, loaded);
+                        imageInput.remove();
+                        return;
+                    }
+                    console.log("unknown type of data");
+                    imageInput.remove();
+                    return;
                 }
+
+                const data1 = result.slice(0, index);
+                const data2 = result.slice(index);
+
+                const loaded = parse(data1);
+
+                if (loaded.version === 2) {
+                    debugger;
+                    const code = parseCodeMap(data2);
+                    loaded.code = code;
+                    Events.send(loadRequest, loaded);
+                    imageInput.remove();
+                    return;
+                }
+                console.log("unknown type of data");
                 imageInput.remove();
             });
             imageInput.value = "";

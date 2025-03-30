@@ -53,7 +53,7 @@ function stringifyInner(node, seen) {
         let key = keys[i];
         let value = stringifyInner(node[key], seen, out);
         if (!value) continue;
-        if (out !== '') out += ',';
+        if (out !== '') out += ',\n';
         out += JSON.stringify(key) + ':' + value;
     }
     seen.delete(node);
@@ -74,4 +74,18 @@ export function parse(string) {
         }
         return value;
     });
+}
+
+export function stringifyCodeMap(map) {
+    function replace(str) {
+        return str.replaceAll("`", "\\`");
+    }
+
+    return "\n{__codeMap: true, value: " + "[" + 
+        [...map].map(([key, value]) => ("[" + "`" + replace(key) + "`" + ", " + "`\n" +  replace(value) + "\n`" + "]")).join(",\n") + "]" + "}"
+}
+
+export function parseCodeMap(string) {
+    const array = eval("(" + string + ")");
+    return new Map(array.value);
 }
