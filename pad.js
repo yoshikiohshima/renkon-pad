@@ -1,5 +1,5 @@
 export function pad() {
-    // init.js
+    // Initialization
 
     const {h, html, render} = import("./preact.standalone.module.js");
     const {stringify, parse, stringifyCodeMap, parseCodeMap} = import ("./stable-stringify.js");
@@ -32,7 +32,7 @@ export function pad() {
         return renkon;
     })();
 
-    // data.js
+    // Data Structure
 
     // [id:string]
     const windows = Behaviors.select(
@@ -321,7 +321,7 @@ export function pad() {
         }
     })(padTitle);
 
-    // userActions.js
+    // User Interaction
 
     const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
     const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
@@ -663,7 +663,7 @@ export function pad() {
         }
     })(downOrUpOrResize, positions, padView);
 
-    // render.js
+    // Rendering
 
     const inputHandler = (evt) => {
         if (evt.key === "Enter") {
@@ -750,7 +750,7 @@ export function pad() {
 
     const _windowRender = render(windowElements, document.querySelector("#mover"));
 
-    /// saver.js
+    /// Save and Load
 
     const loadRequest = Events.receiver();
 
@@ -838,7 +838,7 @@ export function pad() {
         Events.send(loadRequest, data);
     });
 
-    // analyzer;
+    // Graph Visualization
     const analyzed = ((windowContents, trigger, showGraph) => {
         if (!showGraph) {return new Map()}
         if (trigger === null) {return new Map()}
@@ -977,7 +977,7 @@ export function pad() {
 
     const _graphRender = render(graph, document.querySelector("#overlay"));
 
-    // css.js
+    // CSS
 
     const css = `
 @font-face {

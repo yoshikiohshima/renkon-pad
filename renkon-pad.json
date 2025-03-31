@@ -1,1 +1,1293 @@
-{"code":{"__map":true,"values":[["3","    const addCode = Events.listener(renkon.querySelector(\"#addCodeButton\"), \"click\", () => \"code\");\n    const addRunner = Events.listener(renkon.querySelector(\"#addRunnerButton\"), \"click\", () => \"runner\");\n    const save = Events.listener(renkon.querySelector(\"#saveButton\"), \"click\", (evt) => evt);\n    const load = Events.listener(renkon.querySelector(\"#loadButton\"), \"click\", (evt) => evt);\n\n    const home = Events.listener(renkon.querySelector(\"#homeButton\"), \"click\", () => \"home\");\n    const zoomIn = Events.listener(renkon.querySelector(\"#zoomInButton\"), \"click\", () => \"zoomIn\");\n    const zoomOut = Events.listener(renkon.querySelector(\"#zoomOutButton\"), \"click\", () => \"zoomOut\");\n    const navigationAction = Events.or(home, zoomIn, zoomOut);\n\n    const padViewChange = Events.receiver();\n\n    const _padViewUpdate = ((padView) => {\n        const mover = document.querySelector(\"#mover\");\n        const pad = document.querySelector(\"#pad\");\n        mover.style.setProperty(\"left\", `${padView.x}px`);\n        mover.style.setProperty(\"top\", `${padView.y}px`);\n        mover.style.setProperty(\"transform\", `scale(${padView.scale})`);\n        mover.style.setProperty(\"width\", `${padView.width}px`);\n        mover.style.setProperty(\"height\", `${padView.height}px`);\n\n        pad.style.setProperty(\"background-position\", `${padView.x}px ${padView.y}px`);\n        pad.style.setProperty(\"background-size\", `${64 * padView.scale}px ${64 * padView.scale}px`);\n    })(padView);\n\n    const wheel = Events.listener(renkon.querySelector(\"#pad\"), \"wheel\", (evt) => {\n        let pinch;\n        if (isSafari) {\n            pinch = (Number.isInteger(evt.deltaX) && !Number.isInteger(evt.deltaY)) || evt.metaKey;\n        } else {\n            pinch = evt.ctrlKey || evt.metaKey;\n        }\n        const strId = evt.target.id;\n        if (pinch) {\n            evt.preventDefault();\n            if (strId === \"pad\") {\n                evt.stopPropagation();\n            }\n        }\n        return evt;\n    });\n\n    const _handleWheel = ((wheel, padView) => {\n        let pinch;\n        if (isSafari) {\n            pinch = (Number.isInteger(wheel.deltaX) && !Number.isInteger(wheel.deltaY)) || wheel.metaKey;\n        } else {\n            pinch = wheel.ctrlKey || wheel.metaKey;\n        }\n        const strId = wheel.target.id;\n\n        let deltaX = wheel.deltaX;\n        let deltaY = wheel.deltaY;\n        let zoom = padView.scale;\n\n        let absDeltaY = Math.min(30, Math.abs(deltaY));\n        let diff = Math.sign(deltaY) * absDeltaY;\n\n        let desiredZoom = zoom * (1 - diff / 200);\n\n        const xInMover = (wheel.clientX - padView.x) / padView.scale;\n        const newX = wheel.clientX - xInMover * desiredZoom;\n\n        const yInMover = (wheel.clientY - padView.y) / padView.scale;\n        const newY = wheel.clientY - yInMover * desiredZoom;\n\n        if (strId === \"pad\") {\n            if (pinch) {\n                Events.send(padViewChange, {x: newX, y: newY, scale: desiredZoom});\n            } else {\n                Events.send(padViewChange, {x: padView.x - deltaX, y: padView.y - deltaY, scale: padView.scale});\n            }\n        }\n    })(wheel, padView);\n\n    Events.listener(renkon.querySelector(\"#buttonBox\"), \"wheel\", preventDefault);\n    Events.listener(renkon.querySelector(\"#navigationBox\"), \"wheel\", preventDefault);\n\n    Events.listener(document.body, \"gesturestart\", preventDefaultSafari);\n    Events.listener(document.body, \"gesturechange\", preventDefaultSafari);\n    Events.listener(document.body, \"gestureend\", preventDefaultSafari);\n\n    const isSafari = window.navigator.userAgent.includes(\"Safari\") && !window.navigator.userAgent.includes(\"Chrome\");\n\n    const pointercancel = Events.listener(renkon.querySelector(\"#pad\"), \"pointercancel\", pointerLost);\n    const lostpointercapture = Events.listener(renkon.querySelector(\"#pad\"), \"lostpointercapture\", pointerLost);\n\n    const preventDefault = (evt) => {\n        evt.preventDefault();\n        return evt;\n    };\n\n    const preventDefaultSafari = (evt) => {\n        if (!isSafari) {\n            evt.preventDefault();\n        }\n        return evt;\n    };\n\n    const pointerLost = (evt) => {\n        evCache.clear();\n        evt.preventDefault();\n        return {type: \"lost\"};\n    };\n\n    const _handleNavigationAction = ((navigationAction, positions, padView) => {\n        if (navigationAction === \"zoomIn\") {\n            Events.send(padViewChange, {x: padView.x, y: padView.y, scale: padView.scale * 1.1});\n        } else if (navigationAction === \"zoomOut\") {\n            Events.send(padViewChange, {x: padView.x, y: padView.y, scale: padView.scale * 0.9});\n        } else if (navigationAction === \"home\") {\n            let minLeft = Number.MAX_VALUE;\n            let minTop = Number.MAX_VALUE;\n            let maxRight = Number.MIN_VALUE;\n            let maxBottom = Number.MIN_VALUE;\n\n            if (positions.map.size === 0) {\n                Events.send(padViewChange, {x: 0, y: 0, scale: 1});\n                return;\n            }\n            for (let [_, position] of positions.map) {\n                minLeft = Math.min(position.x, minLeft);\n                minTop = Math.min(position.y, minTop);\n                maxRight = Math.max(position.x + position.width, maxRight);\n                maxBottom = Math.max(position.y + position.height, maxBottom);\n            }\n\n            const pad = document.body.querySelector(\"#pad\").getBoundingClientRect();\n\n            const scaleX = pad.width / (maxRight - minLeft);\n            const scaleY = pad.height / (maxBottom - minTop);\n            const scale = Math.min(1, scaleX, scaleY) * 0.9;\n\n            const centerX = (maxRight + minLeft) / 2;\n            const centerY = (maxBottom + minTop) / 2;\n\n            let x = pad.width / 2 - centerX * scale;\n            let y = pad.height / 2 - centerY * scale;\n\n            Events.send(padViewChange, {x, y, scale});\n        }\n    })(navigationAction, positions, padView);\n\n    const showGraph = Behaviors.collect(\n        true,\n        Events.listener(renkon.querySelector(\"#showGraph\"), \"click\", (evt) => evt),\n        (now, _click) => !now\n    );\n\n    document.querySelector(\"#showGraph\").textContent = showGraph ? \"show graph\" : \"hide graph\";\n\n    const _onRun = ((runRequest, windowContents) => {\n        const id = runRequest.id;\n        const iframe = windowContents.map.get(id);\n        const code = [...windowContents.map.values()]\n            .filter((obj) => obj.state)\n            .map((editor) => editor.state.doc.toString());\n        iframe.dom.contentWindow.postMessage({code: code, path: id});\n    })(runRequest, windowContents);\n\n    const remove = Events.receiver();\n    const titleEditChange = Events.receiver();\n    const runRequest = Events.receiver();\n\n    const rawPadDown = Events.listener(renkon.querySelector(\"#pad\"), \"pointerdown\", (evt) => {\n        const strId = evt.target.id;\n        if (strId.endsWith(\"-title\") && (evt.target.getAttribute(\"contenteditable\") === \"true\")) {\n            return evt;\n        }\n        if (strId) {\n            evt.preventDefault();\n            evt.stopPropagation();\n        }\n        return evt;\n    }, {queued: true});\n\n    // this is an odd ball that gets mutated by padDownState and padUp\n    const evCache = new Map();\n\n    const padDown = Events.collect(undefined, rawPadDown, (old, evts) => {\n        let type;\n        let id;\n        if (evts.length <= 2 && evts[0].isPrimary) {\n            let primary = evts[0];\n            const strId = primary.target.id;\n            if (!strId) {return {...old, type: \"\"};}\n            let x = primary.clientX;\n            let y = primary.clientY;\n            if (strId === \"pad\") {\n                type = \"padDragDown\";\n                id = strId;\n            } else {\n                id = `${Number.parseInt(strId)}`;\n                if (strId.endsWith(\"-titleBar\")) {\n                    type = \"moveDown\";\n                } else if (strId.endsWith(\"-resize\")) {\n                    type = \"windowResizeDown\";\n                }\n            }\n            if (type) {\n                primary.target.setPointerCapture(primary.pointerId);\n                if (strId === \"pad\") {\n                    evCache.set(\"primary\", {x, y});\n                }\n                if (evts.length === 1) {\n                    return {\n                        id, target: primary.target, type, x: primary.clientX, y: primary.clientY\n                    };\n                }\n            } else {\n                return {...old, type: \"\"};\n            }\n        }\n\n        let secondary;\n        if (evCache.get(\"primary\")) {\n            if (evts.length === 1 && evCache.size === 1 && !evts[0].isPrimary) {\n                secondary = evts[0];\n            }\n            if (evts.length === 2 && evCache.size === 1 && !evts[1].isPrimary) {\n                secondary = evts[1];\n            }\n        }\n        if (!secondary) {return old;}\n\n        const strId = secondary.target.id;\n        if (strId !== \"pad\") {return old;}\n        let primary =  evCache.get(\"primary\");\n        let x = secondary.clientX;\n        let y = secondary.clientY;\n        let dx = primary.x - secondary.clientX;\n        let dy = primary.y - secondary.clientY;\n        let origDiff = Math.sqrt(dx * dx + dy * dy);\n        evCache.set(secondary.pointerId, {origDiff, origScale: padView.scale, x, y});\n        return {type: \"pinch\", secondary: secondary.pointerId};\n    });\n\n    const padUp = Events.listener(renkon.querySelector(\"#pad\"), \"pointerup\", (evt) => {\n        // console.log(\"ev1\", evCache);\n        evt.target.releasePointerCapture(evt.pointerId);\n        evCache.clear();\n        // console.log(\"ev2\", evCache);\n        return {type: \"pointerup\", x: evt.clientX, y: evt.clientY};\n    });\n\n    const downOrUpOrResize = Events.or(padDown, padUp, pointercancel, lostpointercapture, windowResize);\n\n    const _padMove = Events.listener(\"#pad\", \"pointermove\", moveCompute);\n\n    const windowResize = Events.receiver();\n    const moveOrResize = Events.receiver();\n\n    const moveCompute = ((downOrUpOrResize, positions, padView) => {\n        if (downOrUpOrResize.type === \"moveDown\" || downOrUpOrResize.type === \"windowResizeDown\") {\n            const start = positions.map.get(downOrUpOrResize.id);\n            const scale = padView.scale;\n            const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};\n            const type = downOrUpOrResize.type === \"moveDown\" ? \"move\" : \"resize\";\n            return (move) => {\n                const diffX = (move.clientX - downPoint.x) / scale;\n                const diffY = (move.clientY - downPoint.y) / scale;\n                const result = {id: downOrUpOrResize.id, type};\n                if (type === \"move\") {\n                    result.x = start.x + diffX;\n                    result.y = start.y + diffY;\n                } else {\n                    result.width = start.width + diffX;\n                    result.height = start.height + diffY;\n                }\n                Events.send(moveOrResize, result);\n                return move;\n            }\n        } else if (downOrUpOrResize.type === \"padDragDown\") {\n            const start = padView;\n            const scale = start.scale;\n            const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};\n            const type = \"padDrag\";\n            return (move) => {\n                const diffX = move.clientX - downPoint.x;\n                const diffY = move.clientY - downPoint.y;\n                const result = {id: downOrUpOrResize.id, type, scale};\n                result.x = start.x + diffX;\n                result.y = start.y + diffY;\n                Events.send(padViewChange, result);\n                return move;\n            };\n        } else if (downOrUpOrResize.type === \"pinch\") {\n            return (move) => {\n                const keys = [...evCache.keys()];\n                const primary = evCache.get(\"primary\");\n                if (!primary) {\n                    // the first finger has been lifted\n                    return move;\n                }\n                const otherKey = keys.find((k) => k !== \"primary\");\n                const secondary = evCache.get(otherKey);\n                const isPrimary = move.isPrimary;\n\n                if (isPrimary) {\n                    const newRecord = {...primary};\n                    newRecord.x = move.clientX;\n                    newRecord.y = move.clientY;\n                    evCache.set(\"primary\", newRecord);\n                } else {\n                    const newRecord = {...secondary};\n                    newRecord.x = move.clientX;\n                    newRecord.y = move.clientY;\n                    evCache.set(otherKey, newRecord);\n                }\n\n                const origDiff = secondary.origDiff;\n                const origScale = secondary.origScale;\n\n                const pX = isPrimary ? move.clientX : primary.x;\n                const pY = isPrimary ? move.clientY : primary.y;\n\n                const sX = isPrimary ? secondary.x : move.clientX;\n                const sY = isPrimary ? secondary.y : move.clientY;\n\n                const newDiff = Math.sqrt((pX - sX) ** 2 + (pY - sY) ** 2);\n\n                const newScale = (newDiff / origDiff) * origScale;\n\n                const newCenterX = (pX - sX) / 2 + sX;\n                const newCenterY = (pY - sY) / 2 + sY;\n\n                const xInMover = (newCenterX - padView.x) / padView.scale;\n                const newX = newCenterX - xInMover * newScale;\n\n                const yInMover = (newCenterY - padView.y) / padView.scale;\n                const newY = newCenterY - yInMover * newScale;\n\n                Events.send(padViewChange, {x: newX, y: newY, scale: newScale});\n                return move;\n            }\n        } else if (downOrUpOrResize.type === \"pointerup\" || downOrUpOrResize.type === \"lost\") {\n            return (move) => move;\n        }\n    })(downOrUpOrResize, positions, padView);\n\n"],["4","    const inputHandler = (evt) => {\n        if (evt.key === \"Enter\") {\n            evt.preventDefault();\n            evt.stopPropagation();\n            Events.send(titleEditChange, {\n                id: `${Number.parseInt(evt.target.id)}`,\n                title: evt.target.textContent,\n                state: false\n            });\n        }\n    };\n\n    const windowDOM = (id, position, zIndex, title, windowContent, type) => {\n        // console.log(\"windowDOM\");\n        return h(\"div\", {\n            key: `${id}`,\n            id: `${id}-win`,\n            \"class\": \"window\",\n            style: {\n                left: `${position.x}px`,\n                top: `${position.y}px`,\n                width: `${position.width}px`,\n                height: `${position.height}px`,\n                zIndex: `${zIndex}`,\n            },\n            ref: (ref) => {\n                if (ref) {\n                    if (ref !== windowContent.dom.parentNode) {\n                        ref.appendChild(windowContent.dom);\n                    }\n                }\n            },\n            onPointerEnter: (evt) => Events.send(hovered, `${Number.parseInt(evt.target.id)}`),\n            onPointerLeave: (_evt) => Events.send(hovered, null)\n        }, [\n            h(\"div\", {\n                id: `${id}-titleBar`,\n                \"class\": \"titleBar\",\n            }, [\n                h(\"div\", {\n                    id: `${id}-runButton`,\n                    \"class\": \"titlebarButton runButton\",\n                    type,\n                    onClick: (evt) => {\n                        //console.log(evt);\n                        Events.send(runRequest, {id: `${Number.parseInt(evt.target.id)}`});\n                    },\n                }),\n                h(\"div\", {\n                    id: `${id}-title`,\n                    \"class\": \"title\",\n                    contentEditable: `${title.state}`,\n                    onKeydown: inputHandler,\n                }, title.title),\n                h(\"div\", {\n                    id: `${id}-edit`,\n                    \"class\": `titlebarButton editButton`,\n                    onClick: (evt) => {\n                        // console.log(evt);\n                        Events.send(titleEditChange, {id: `${Number.parseInt(evt.target.id)}`, state: !title.state});\n                    },\n                }, []),\n                h(\"div\", {\n                    id: `${id}-close`,\n                    \"class\": \"titlebarButton closeButton\",\n                    onClick: (evt) => {\n                        Events.send(remove, {id: `${Number.parseInt(evt.target.id)}`, type: \"remove\"})\n                    }\n                }),\n            ]),\n            h(\"div\", {\n                id: `${id}-resize`,\n                \"class\": \"resizeHandler\",\n            }, [])\n        ])\n    };\n\n    const windowElements = ((windows, positions, zIndex, titles, windowContents, windowTypes) => {\n        return h(\"div\", {id: \"owner\", \"class\": \"owner\"}, windows.map((id) => {\n            return windowDOM(id, positions.map.get(id), zIndex.map.get(id), titles.map.get(id), windowContents.map.get(id), windowTypes.map.get(id));\n        }));\n    })(windows, positions, zIndex, titles, windowContents, windowTypes);\n\n    const _windowRender = render(windowElements, document.querySelector(\"#mover\"));\n"],["5","    const loadRequest = Events.receiver();\n\n    const _saver = ((windows, positions, zIndex, titles, windowContents, windowTypes, padTitle) => {\n        const code = new Map([...windowContents.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));\n        const data = stringify({\n            version: 1,\n            windows,\n            positions,\n            zIndex,\n            titles,\n            code,\n            windowTypes,\n            padTitle\n        });\n\n        const div = document.createElement(\"a\");\n        const dataStr = \"data:text/json;charset=utf-8,\" + encodeURIComponent(data);\n        div.setAttribute(\"href\", dataStr);\n        div.setAttribute(\"download\", `${padTitle}.json`);\n        div.click();\n    })(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, save);\n\n    const _loader = (() => {\n        const input = document.createElement(\"div\");\n        input.innerHTML = `<input id=\"imageinput\" type=\"file\" accept=\"application/json\">`;\n        const imageInput = input.firstChild;\n\n        imageInput.onchange = () => {\n            const file = imageInput.files[0];\n            if (!file) {imageInput.remove(); return;}\n            new Promise(resolve => {\n                let reader = new FileReader();\n                reader.onload = () => resolve(reader.result);\n                reader.readAsArrayBuffer(file);\n            }).then((data) => {\n                const result = new TextDecoder(\"utf-8\").decode(data);\n                const loaded = parse(result);\n                if (loaded.version === 1) {\n                    Events.send(loadRequest, loaded);\n                }\n                imageInput.remove();\n            });\n            imageInput.value = \"\";\n        };\n        imageInput.oncancel = () => imageInput.remove();\n        document.body.appendChild(imageInput);\n        imageInput.click();\n    })(load);\n\n    const nameFromUrl = (() => {\n        const maybeUrl = new URL(window.location).searchParams.get(\"file\");\n        if (maybeUrl) {\n            return maybeUrl;\n        }\n        return undefined;\n    })();\n\n    const _loadFromUrl = fetch(nameFromUrl).then((resp) => resp.text()).then((text) => {\n        const data = parse(text);\n        Events.send(loadRequest, data);\n    });\n\n"],["6","    const css = `\n@font-face {\n    font-family: \"OpenSans-Regular\";\n    src: url(\"./assets/fonts/open-sans-v17-latin-ext_latin-regular.woff2\") format(\"woff2\");\n}\n\n@font-face {\n  font-family: 'OpenSans-SemiBold';\n  src: url(\"./assets/fonts/open-sans-v17-latin-ext_latin-600.woff2\") format('woff2');\n}\n\nhtml, body, #renkon {\n    overflow: hidden;\n    height: 100%;\n    margin: 0px;\n}\n\nhtml, body {\n  overscroll-behavior-x: none;\n  touch-action: none;\n}\n\n#pad {\n    width: 100%;\n    height: 100%;\n    position: absolute;\n    top: 0px;\n    left: 0px;\n    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAjElEQVR4XuXQAQ0AAAgCQfoHpYbOGt5vEODSdgovd3I+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+wIcWxEeefYmM2dAAAAAASUVORK5CYII=);\n}\n\n#mover {\n    pointer-events: none;\n    position:absolute;\n    transform-origin: 0px 0px;\n}\n\n#owner {\n    position: absolute;\n    pointer-events: initial;\n}\n\n.editor {\n    height: calc(100% - 24px);\n    border-radius: 0px 0px 6px 6px;\n}\n\n#overlay {\n    pointer-events: none;\n    height: 100%;\n    width: 100%;\n    position: absolute;\n    top: 0px;\n    left: 0px;\n    z-index: 10000;\n}\n\n.window {\n    position: absolute;\n    background-color: #eee;\n    border-radius: 6px;\n    box-shadow: inset 0 2px 2px 0 rgba(255, 255, 255, 0.8), 1px 1px 8px 0 rgba(0, 35, 46, 0.2);\n}\n\n#buttonBox {\n    display: flex;\n    flex-wrap: wrap;\n    justify-content: flex-end;\n    row-gap: 8px;\n    left: 0px;\n    top: 0px;\n    width: 100%;\n    padding-bottom: 8px;\n    padding-top: 8px;\n    border-bottom: 1px solid black;\n    background-color: white;\n    position: absolute;\n    z-index: 200000;\n}\n\n#padTitle {\n    margin-left: 24px;\n}\n\n.spacer {\n    flex-grow: 1;\n}\n\n.menuButton {\n    font-family: 'OpenSans-SemiBold';\n    color: black;\n    margin-left: 4px;\n    margin-right: 4px;\n    border-radius: 4px;\n    cursor: pointer;\n    border: 2px solid #555;\n}\n\t\t   \n\n.runnerIframe {\n    width: 100%;\n    height: calc(100% - 24px);\n    border-radius: 0px 0px 6px 6px;\n    border: 2px solid black;\n    box-sizing: border-box;\n    border-radius: 0px 0px 6px 6px;\n    background-color: #fff;\n    user-select: none;\n}\n\n.titleBar {\n    background-color: #bbb;\n    width: 100%;\n    height: 28px;\n    display: flex;\n    border: 2px ridge #ccc;\n    box-sizing: border-box;\n    border-radius: 6px 6px 0px 0px;\n    cursor: -webkit-grab;\n    cursor: grab;\n}\n\n.title {\n    font-family: OpenSans-Regular;\n    pointer-events: none;\n    margin-left: 20px;\n    flex-grow: 1;\n    margin-right: 20px;\n    padding-left: 10px;\n}\n\n.title[contentEditable=\"true\"] {\n    background-color: #eee;\n    pointer-events: all;\n    user-select: all;\n}\n\n.titlebarButton {\n    height: 19px;\n    width: 19px;\n    margin: 2px;\n    margin-top: 2px;\n    pointer-events: all;\n    border-radius: 8px;\n    background-position: center;\n    cursor: pointer;\n}\n\n.titlebarButton:hover {\n    background-color: #eee;\n}\n\n.closeButton {\n    background-image: url(\"data:image/svg+xml,%3Csvg%20id%3D%22Layer_1%22%20data-name%3D%22Layer%201%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M8.48%2C12.25C6.4%2C10.17%2C4.37%2C8.16%2C2.35%2C6.15c-.34-.34-.68-.69-1-1.05a2.34%2C2.34%2C0%2C0%2C1%2C.17-3.26%2C2.3%2C2.3%2C0%2C0%2C1%2C3.25-.09C7%2C3.93%2C9.23%2C6.14%2C11.45%2C8.34a5.83%2C5.83%2C0%2C0%2C1%2C.43.58c.36-.4.62-.71.9-1%2C2-2%2C4.12-4%2C6.12-6.08a2.51%2C2.51%2C0%2C0%2C1%2C3.41%2C0%2C2.37%2C2.37%2C0%2C0%2C1%2C0%2C3.43c-2.18%2C2.22-4.39%2C4.41-6.58%2C6.62-.11.1-.21.22-.34.35l.44.48L22.09%2C19A2.7%2C2.7%2C0%2C0%2C1%2C23%2C20.56a2.49%2C2.49%2C0%2C0%2C1-1.29%2C2.54A2.36%2C2.36%2C0%2C0%2C1%2C19%2C22.69c-2-2-4-4-6.06-6-.33-.33-.62-.68-1-1.12-1.63%2C1.66-3.17%2C3.25-4.73%2C4.82-.79.8-1.6%2C1.59-2.42%2C2.36a2.32%2C2.32%2C0%2C0%2C1-3.21-.1%2C2.3%2C2.3%2C0%2C0%2C1-.19-3.25c2.14-2.2%2C4.31-4.36%2C6.48-6.54Z%22%20fill%3D%22%234D4D4D%22%2F%3E%3C%2Fsvg%3E\");\n}\n\n.editButton {\n    background-image: url(\"data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3C!--%20Generator%3A%20Sketch%2064%20(93537)%20-%20https%3A%2F%2Fsketch.com%20--%3E%3Ctitle%3Eicon%2Fmaterial%2Fedit%3C%2Ftitle%3E%3Cdesc%3ECreated%20with%20Sketch.%3C%2Fdesc%3E%3Cg%20id%3D%22icon%2Fmaterial%2Fedit%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22ic-round-edit%22%3E%3Cg%20id%3D%22Icon%22%20fill%3D%22%234D4D4D%22%3E%3Cpath%20d%3D%22M3%2C17.46%20L3%2C20.5%20C3%2C20.78%203.22%2C21%203.5%2C21%20L6.54%2C21%20C6.67%2C21%206.8%2C20.95%206.89%2C20.85%20L17.81%2C9.94%20L14.06%2C6.19%20L3.15%2C17.1%20C3.05%2C17.2%203%2C17.32%203%2C17.46%20Z%20M20.71%2C7.04%20C20.8972281%2C6.85315541%2021.002444%2C6.59950947%2021.002444%2C6.335%20C21.002444%2C6.07049053%2020.8972281%2C5.81684459%2020.71%2C5.63%20L18.37%2C3.29%20C18.1831554%2C3.10277191%2017.9295095%2C2.99755597%2017.665%2C2.99755597%20C17.4004905%2C2.99755597%2017.1468446%2C3.10277191%2016.96%2C3.29%20L15.13%2C5.12%20L18.88%2C8.87%20L20.71%2C7.04%20Z%22%20id%3D%22Icon-Shape%22%3E%3C%2Fpath%3E%3C%2Fg%3E%3Crect%20id%3D%22ViewBox%22%20fill-rule%3D%22nonzero%22%20x%3D%220%22%20y%3D%220%22%20width%3D%2224%22%20height%3D%2224%22%3E%3C%2Frect%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E\");\n}\n\n.runButton {\n    background-image: url(\"data:image/svg+xml,%3Csvg%20id%3D%22Layer_1%22%20data-name%3D%22Layer%201%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M12.32%2C19.94c-2.36-.11-4.67-.17-7-.34-1.91-.14-2.65-.91-2.89-2.91a29.26%2C29.26%2C0%2C0%2C1%2C.09-8.2A2.63%2C2.63%2C0%2C0%2C1%2C5.11%2C6.11%2C102.77%2C102.77%2C0%2C0%2C1%2C18.59%2C6a8.52%2C8.52%2C0%2C0%2C1%2C1.12.12C21.15%2C6.38%2C21.88%2C7.2%2C22.1%2C9A29.32%2C29.32%2C0%2C0%2C1%2C22%2C17.19a2.58%2C2.58%2C0%2C0%2C1-2.59%2C2.4C17%2C19.73%2C14.66%2C19.82%2C12.32%2C19.94Zm-2.06-4.05%2C5.29-3-5.29-3Z%22%20fill%3D%22%234D4D4D%22%2F%3E%3C%2Fsvg%3E\");\n    display: none;\n    pointer-events: none;\n}\n\n.runButton[type=\"runner\"] {\n    display: inherit;\n    pointer-events: all;\n}\n\n.resizeHandler {\n    position: absolute;\n    background-color: rgba(0.1, 0.1, 0.1, 0.1);\n    width: 20px;\n    height: 20px;\n    bottom: -10px;\n    right: -10px;\n    border-radius: 6px;\n    z-index: 10000;\n    cursor: se-resize;\n}\n\n.resizeHandler:hover {\n    background-color: rgba(0.1, 0.4, 0.1, 0.3);\n}\n\n#navigationBox {\n    display: flex;\n    flex-direction: column;\n    right: 20px;\n    gap: 10px;\n    bottom: 80px;\n    align-items: center;\n    width: 40px;\n    border: 1px solid black;\n    background-color: #d2d2d2;\n    position: absolute;\n    z-index: 200000;\n    border-radius: 8px;\n    box-shadow: 4px 5px 8px -2px rgba(0,0,0,.15);\n}\n\n.navigationButton {\n    width: 30px;\n    height: 30px;\n    display: flex;\n    cursor: pointer;\n}\n\n.with-border {\n    border: 1px solid #4D4D4D;\n    border-radius: 15px;\n    background-color: white;\n}\n\n.navigationButton:hover {\n    background-color: #eaeaea;\n}\n\n.navigationButton:first-child {\n    margin-top: 10px;\n}\n\n.navigationButton:last-child {\n    margin-bottom: 10px;\n}\n\n.navigationButtonImage {\n    width: 100%;\n    height: 100%;\n    background-position: center;\n    background-repeat: no-repeat;\n}\n\n#zoomInButton {\n    background-image: url(\"data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3Ctitle%3Eicon%2Fmaterial%2Fview_zoom-in%3C%2Ftitle%3E%3Cg%20id%3D%22icon%2Fmaterial%2Fview_zoom-in%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22ic-baseline-add%22%3E%3Cg%20id%3D%22Icon%22%20fill%3D%22%234D4D4D%22%3E%3Cpolygon%20id%3D%22Icon-Path%22%20points%3D%2219%2013%2013%2013%2013%2019%2011%2019%2011%2013%205%2013%205%2011%2011%2011%2011%205%2013%205%2013%2011%2019%2011%22%3E%3C%2Fpolygon%3E%3C%2Fg%3E%3Crect%20id%3D%22ViewBox%22%20fill-rule%3D%22nonzero%22%20x%3D%220%22%20y%3D%220%22%20width%3D%2224%22%20height%3D%2224%22%3E%3C%2Frect%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E\");\n}\n\n#zoomOutButton {\n    background-image: url(\"data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3Ctitle%3Eicon%2Fmaterial%2Fview_zoom-out%3C%2Ftitle%3E%3Cg%20id%3D%22icon%2Fmaterial%2Fview_zoom-out%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22ic-baseline-minus%22%3E%3Cg%20id%3D%22Icon%22%20fill%3D%22%234D4D4D%22%3E%3Cpolygon%20id%3D%22Icon-Path%22%20points%3D%2219%2012.998%205%2012.998%205%2010.998%2019%2010.998%22%3E%3C%2Fpolygon%3E%3C%2Fg%3E%3Crect%20id%3D%22ViewBox%22%20fill-rule%3D%22nonzero%22%20x%3D%220%22%20y%3D%220%22%20width%3D%2224%22%20height%3D%2224%22%3E%3C%2Frect%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E\");\n}\n\n#homeButton {\n    background-image: url(\"data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3Ctitle%3Eicon%2Fview-centered%3C%2Ftitle%3E%3Cg%20id%3D%22icon%2Fview-centered%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22Group-3%22%20transform%3D%22translate(2.000000%2C%204.000000)%22%20fill%3D%22%234D4D4D%22%3E%3Cpath%20d%3D%22M0%2C9%20L3%2C9%20L3%2C7%20L0%2C7%20L0%2C9%20Z%20M17%2C9%20L20.001%2C9%20L20.001%2C7%20L17%2C7%20L17%2C9%20Z%20M9%2C3%20L11%2C3%20L11%2C0%20L9%2C0%20L9%2C3%20Z%20M13%2C9%20L11%2C9%20L11%2C11%20L9%2C11%20L9%2C9%20L7%2C9%20L7%2C7%20L9%2C7%20L9%2C5%20L11%2C5%20L11%2C7%20L13%2C7%20L13%2C9%20Z%20M9%2C16%20L11%2C16%20L11%2C13%20L9%2C13%20L9%2C16%20Z%20M13%2C0%20L13%2C2%20L18%2C2%20L18%2C5%20L20%2C5%20L20%2C0%20L13%2C0%20Z%20M18%2C14%20L13%2C14%20L13%2C16%20L20%2C16%20L20%2C11%20L18%2C11%20L18%2C14%20Z%20M0%2C5%20L2%2C5%20L2%2C2%20L7%2C2%20L7%2C0%20L0%2C0%20L0%2C5%20Z%20M2%2C11%20L0%2C11%20L0%2C16%20L7%2C16%20L7%2C14%20L2%2C14%20L2%2C11%20Z%22%20id%3D%22Fill-1%22%3E%3C%2Fpath%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E\");\n}\n\n`;\n\n    ((css) => {\n        const renkon = document.querySelector(\"#renkon\");\n        const style = document.createElement(\"style\");\n        style.id = \"pad-css\";\n        style.textContent = css;\n        renkon.querySelector(\"#pad-css\")?.remove();\n        renkon.appendChild(style);\n    })(css);\n"],["7","    const analyzed = ((windowContents, trigger, showGraph) => {\n        if (!showGraph) {return new Map()}\n        if (trigger === null) {return new Map()}\n        if (typeof trigger === \"object\" && trigger.id) {return new Map();}\n        const programState = new Renkon.constructor(0);\n        programState.setLog(() => {});\n\n        const code = [...windowContents.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));\n        try {\n            programState.setupProgram(code);\n        } catch(e) {\n            console.log(\"Graph analyzer encountered an error in source code:\");\n            return new Map();\n        }\n\n        const nodes = new Map();\n        for (let jsNode of programState.nodes.values()) {\n            let ary = nodes.get(jsNode.blockId);\n            if (!ary) {\n                ary = [];\n                nodes.set(jsNode.blockId, ary);\n            }\n            ary.push({inputs: jsNode.inputs, outputs: jsNode.outputs});\n        }\n\n        const exportedNames = new Map();\n        const importedNames = new Map();\n        for (let [id, subNodes] of nodes) {\n            const exSet = new Set();\n            exportedNames.set(id, exSet);\n\n            const inSet = new Set();\n            importedNames.set(id, inSet);\n\n            for (let subNode of subNodes) {\n                let outputs = subNode.outputs;\n                if (outputs.length > 0 && !/^_[0-9]/.exec(outputs)) {\n                    exSet.add(outputs);\n                }\n                for (let inString of subNode.inputs) {\n                    if (!/^_[0-9]/.exec(inString)) {\n                        inSet.add(inString);\n                    }\n                }\n            }\n        }\n\n        // {edgesOut: [{id: \"defined name\", dest: '2'}, ...],\n        //  edgesIn: [{id: \"defined name\", origin: '2'}, ...]}\n        const edges = new Map();\n\n        for (let [id, _] of nodes) {\n            const exporteds = exportedNames.get(id);\n            const importeds = importedNames.get(id);\n\n            const edgesOut = [];\n            const edgesIn = [];\n            const exports = new Set();\n\n            for (let exported of exporteds) {\n                for (let [destId, destSet] of importedNames) {\n                    if (destSet.has(exported) && id !== destId) {\n                        edgesOut.push({id: exported, dest: destId});\n                        exports.add(exported);\n                    }\n                }\n            }\n            for (let imported of importeds) {\n                for (let [sourceId, sourceSet] of exportedNames) {\n                    if (sourceSet.has(imported) && id !== sourceId) {\n                        edgesIn.push({id: imported, origin: sourceId});\n                    }\n                }\n            }\n            edges.set(id, {edgesOut, edgesIn, exports: [...exports]});\n        }\n\n        return edges;\n    })(windowContents, Events.or(remove, hovered), showGraph);\n\n    const line = (p1, p2, color, label) => {\n        let pl;\n        let pr;\n        if (p1.x < p2.x) {\n            pl = p1;\n            pr = p2;\n        } else {\n            pl = p2;\n            pr = p1;\n        }\n        const c0 = `${pl.x} ${pl.y}`;\n        const c1 = `${pl.x + (pr.x - pl.x) * 0.5} ${pl.y + (pr.y - pl.y) * 0.2}`;\n        const c2 = `${pr.x - (pr.x - pl.x) * 0.2} ${pl.y + (pr.y - pl.y) * 0.6}`;\n        const c3 = `${pr.x} ${pr.y}`;\n        return html`<path d=\"M ${c0} C ${c1} ${c2} ${c3}\" stroke=\"${color}\" fill=\"transparent\" stroke-width=\"2\" stroke-linecap=\"round\"></path><text x=\"${p1.x + 5}\" y=\"${p1.y}\">${label}</text>`;\n    };\n\n    const hovered = Events.receiver();\n    const hoveredB = Behaviors.keep(hovered);\n\n    const graph = ((positions, padView, analyzed, hoveredB, showGraph) => {\n        if (hoveredB === null) {return [];}\n        if (!showGraph) {return [];}\n\n        const edges = analyzed.get(hoveredB);\n\n        if (!edges) {return [];} // runner does not have edges\n\n        const outEdges = edges.edgesOut.map((edge) => {\n            const ind = edges.exports.indexOf(edge.id);\n            let p1 = positions.map.get(hoveredB);\n            p1 = {x: p1.x + p1.width, y: p1.y};\n            p1 = {x: p1.x, y: p1.y + ind * 20 + 10};\n            p1 = {x: p1.x * padView.scale + padView.x, y: p1.y * padView.scale + padView.y};\n            let p2 = positions.map.get(edge.dest);\n            p2 = {x: p2.x, y: p2.y + 10};\n            p2 = {x: p2.x * padView.scale + padView.x, y: p2.y * padView.scale + padView.y};\n            return line(p1, p2, \"#d88\", edge.id);\n        });\n\n        const inEdges = edges.edgesIn.map((edge) => {\n            const exporter = analyzed.get(edge.origin);\n            const ind = exporter.exports.indexOf(edge.id);\n            let p1 = positions.map.get(edge.origin);\n            p1 = {x: p1.x + p1.width, y: p1.y};\n            p1 = {x: p1.x, y: p1.y + ind * 20 + 10};\n            p1 = {x: p1.x * padView.scale + padView.x, y: p1.y * padView.scale + padView.y};\n            let p2 = positions.map.get(hoveredB);\n            p2 = {x: p2.x, y: p2.y + 10};\n            p2 = {x: p2.x * padView.scale + padView.x, y: p2.y * padView.scale + padView.y};\n            return line(p1, p2, \"#88d\", edge.id);\n        });\n\n        return html`<svg viewBox=\"0 0 ${window.innerWidth} ${window.innerHeight}\" xmlns=\"http://www.w3.org/2000/svg\">${outEdges}${inEdges}</svg>`;\n    })(positions, padView, analyzed, hoveredB, showGraph);\n\n    const _graphRender = render(graph, document.querySelector(\"#overlay\"));\n\n"],["9","    // [id:string]\n    const windows = Behaviors.select(\n        [],\n        loadRequest, (now, data) => {\n            console.log(\"windows loaded\");\n            return data.windows\n        },\n        newWindowRequest, (now, spec) => [...now, `${spec.id}`],\n        remove, (now, removeCommand) => now.filter((e) => e != removeCommand.id),\n    );\n\n    // {map: Map<id, type:\"code\"|\"runner\">\n    const windowTypes = Behaviors.select(\n        {map: new Map()},\n        loadRequest, (now, data) => {\n            console.log(\"windowTypes loaded\");\n            return data.windowTypes;\n        },\n        newWindowRequest, (now, spec) => {\n            now.map.set(`${spec.id}`, spec.type);\n            return {map: now.map};\n        },\n        Events.change(windows), (now, windows) => {\n            const keys = [...now.map.keys()];\n            const news = windows.filter((e) => !keys.includes(e));\n            const olds = keys.filter((e) => !windows.includes(e));\n\n            olds.forEach((id) => now.map.delete(`${id}`));\n            news.forEach((id) => now.map.set(`${id}`, \"code\"));\n            return {map: now.map};\n        }\n    );\n\n    // {id, x: number, y: number, width: number, height: number}\n    const positions = Behaviors.select(\n        {map: new Map()},\n        loadRequest, (now, data) => {\n            console.log(\"positions loaded\");\n            return data.positions\n        },\n        Events.change(windowTypes), (now, types) => {\n            const keys = [...now.map.keys()];\n            const typeKeys = [...types.map.keys()];\n            const news = typeKeys.filter((e) => !keys.includes(e));\n            const olds = keys.filter((e) => !typeKeys.includes(e));\n\n            const newX = (-padView.x + typeKeys.length * 5 + 40) / padView.scale;\n            const newY = (-padView.y + typeKeys.length * 5 + 45) / padView.scale;\n\n            const newWindow = (id, type) => {\n                return {\n                    id,\n                    x: newX,\n                    y: newY,\n                    width: type === \"code\" ? 300 : 800,\n                    height: type === \"code\" ? 200 : 400\n                }\n            };\n            olds.forEach((id) => now.map.delete(`${id}`));\n            news.forEach((id) => now.map.set(`${id}`, newWindow(id, types.map.get(id))));\n            return {map: now.map};\n        },\n        moveOrResize, (now, command) => {\n            if (command.type === \"move\" || command.type === \"resize\") {\n                const v = {...now.map.get(command.id), ...command};\n                v.width = Math.max(120, v.width);\n                v.height = Math.max(120, v.height);\n                now.map.set(command.id, v);\n                return {map: now.map};\n            }\n            return now;\n        },\n    );\n\n    const findMax = (map)  => {\n        let maxId = -1;\n        let max = -1;\n        for (let [id, value] of map) {\n            if (value > max) {\n                maxId = id;\n                max = value;\n            }\n        }\n        return {maxId, max};\n    };\n\n    const zIndex = Behaviors.select(\n        {map: new Map()},\n        loadRequest, (now, data) => {\n            console.log(\"zIndex loaded\");\n            if (data.zIndex) return data.zIndex;\n            return {map: new Map(data.windows.map((w, i) => [w, i + 100]))};\n        },\n        Events.change(windows), (now, command) => {\n            const keys = [...now.map.keys()];\n            const news = command.filter((e) => !keys.includes(e));\n            const olds = keys.filter((e) => !command.includes(e));\n\n            const {maxId:_maxId, max} = findMax(now.map);\n            let z = max < 0 ? 100 : max + 1;\n            olds.forEach((id) => now.map.delete(id));\n            news.forEach((id) => now.map.set(id, z++));\n            return {map: now.map};\n        },\n        moveOrResize, (now, command) => {\n            if (command.type === \"move\") {\n                const z = now.map.get(command.id);\n\n                const {maxId, max} = findMax(now.map);\n                if (maxId !== command.id) {\n                    now.map.set(maxId, z);\n                    now.map.set(command.id, max);\n                }\n                return {map: now.map};\n            }\n            return now\n        },\n    );\n\n    const titles = Behaviors.select(\n        {map: new Map()},\n        loadRequest, (now, loaded) => {\n            console.log(\"titles loaded\");\n            return loaded.titles || {map: new Map()};\n        },\n        Events.change(windows), (now, command) => {\n            const keys = [...now.map.keys()];\n            const news = command.filter((e) => !keys.includes(e));\n            const olds = keys.filter((e) => !command.includes(e));\n\n            olds.forEach((id) => now.map.delete(id));\n            news.forEach((id) => now.map.set(id, {id, state: false, title: \"untitled\"}));\n            return {map: now.map};\n        },\n        titleEditChange, (now, change) => {\n            const id = change.id;\n            const v = {...now.map.get(id), ...change};\n            now.map.set(id, v);\n            return {map: now.map};\n        }\n    );\n\n    const windowContents = Behaviors.select(\n        {map: new Map()},\n        loadRequest, (now, loaded) => {\n            for (let editor of now.map.values()) {\n                editor.dom.remove();\n            }\n            now.map.clear();\n\n            for (let [id, type] of loaded.windowTypes.map) {\n                let elem;\n                if (type === \"code\") {\n                    elem = newEditor(id, loaded.code.get(id));\n                } else {\n                    elem = newRunner(id);\n                }\n                now.map.set(id, elem);\n            }\n            return {map: now.map};\n        },\n        Events.change(windowTypes), (now, types) => {\n            const keys = [...now.map.keys()];\n            const typeKeys = [...types.map.keys()];\n            const news = typeKeys.filter((e) => !keys.includes(e));\n            const olds = keys.filter((e) => !typeKeys.includes(e));\n            olds.forEach((id) => {\n                const editor = now.map.get(id);\n                editor.dom.remove();\n                now.map.delete(id)\n            });\n            news.forEach((id) => {\n                const type = types.map.get(id);\n                now.map.set(id, type === \"code\" ? newEditor(id) : newRunner(id));\n            });\n            return {map: now.map};\n        }\n    );\n\n    const init = Events.once(\"code\");\n\n    const newId = Events.select(\n        0,\n        loadRequest, (now, request) => {\n            const max = Math.max(...request.windows.map((w) => Number.parseInt(w)));\n            return max;\n        },\n        Events.or(addCode, addRunner, init), (now, _type) => now + 1\n    );\n\n    const newWindowRequest = Events.change({id: newId, type: Events.or(addCode, addRunner, init), padView});\n\n    const newEditor = (id, doc) => {\n        const mirror = window.CodeMirror;\n        const editor = new mirror.EditorView({\n            doc: doc || `console.log(\"hello\")`,\n            extensions: [\n                mirror.basicSetup,\n                mirror.EditorView.lineWrapping,\n                mirror.EditorView.editorAttributes.of({\"class\": \"editor\"}),\n                mirror.keymap.of([mirror.indentWithTab])\n            ],\n        });\n        editor.dom.id = `${id}-editor`;\n        return editor;\n    };\n\n    const newRunner = (id) => {\n        const runnerIframe = document.createElement(\"iframe\");\n        runnerIframe.srcdoc = `\n<!DOCTYPE html>\n<html>\n    <head>\n        <meta charset=\"utf-8\">\n        <script type=\"module\">\n            import {ProgramState, CodeMirror} from \"./renkon-web.js\";\n            window.thisProgramState = new ProgramState(0);\n            window.CodeMirror = CodeMirror;\n\n            window.onmessage = (evt) => {\n                if (evt.data && Array.isArray(evt.data.code)) {\n                    window.thisProgramState.updateProgram(evt.data.code, evt.data.path);\n                    if (window.thisProgramState.evaluatorRunning === 0) {\n                        window.thisProgramState.evaluator();\n                    }\n                }\n            };\n        </script>\n    </head>\n    <body></body>\n</html>`;\n        runnerIframe.classList = \"runnerIframe\";\n        runnerIframe.id = `runner-${id}`;\n        return {dom: runnerIframe};\n    };\n\n    const padView = Behaviors.select(\n        {x: 0, y: 0, scale: 1},\n        padViewChange, (now, view) => {\n            let {x, y, scale} = view;\n\n            if (scale < 0.1) {scale = 0.1;}\n            if (scale > 20) {scale = 20;}\n            return {...now, ...{x, y, scale}};\n        }\n    );\n\n    const padTitle = Behaviors.select(\n        \"untitled\",\n        loadRequest, (now, data) => {\n            console.log(\"padTitle loaded\");\n            return data.padTitle || \"untitled\"\n        },\n        titleChange, (now, request) => request\n    );\n\n    const titleChange = Events.observe((notify) => {\n        const change = (evt) => {\n            notify(evt.target.value);\n        };\n\n        renkon.querySelector(\"#padTitle\").addEventListener(\"input\", change);\n        return () => {renkon.querySelector(\"#padtitle\").removeEventListener(\"change\", change);}\n    });\n\n    const _padTitleUpdater = ((padTitle) => {\n        if (renkon.querySelector(\"#padTitle\").value !== padTitle) {\n            renkon.querySelector(\"#padTitle\").value = padTitle;\n        }\n    })(padTitle);\n\n"],["11","    const {h, html, render} = import(\"./preact.standalone.module.js\");\n    const {stringify, parse} = import (\"./stable-stringify.js\");\n\n    const renkon = (() => {\n        const renkon = document.createElement(\"div\");\n        renkon.id = \"renkon\";\n        renkon.innerHTML = `\n<div id=\"buttonBox\">\n   <input class=\"menuButton\" id=\"padTitle\"></input>\n   <button class=\"menuButton\" id=\"addCodeButton\">code</button>\n   <button class=\"menuButton\" id=\"addRunnerButton\">runner</button>\n   <div class=\"spacer\"></div>\n   <button class=\"menuButton\" id=\"showGraph\">show graph</button>\n   <button class=\"menuButton\" id=\"saveButton\">save</button>\n   <button class=\"menuButton\" id=\"loadButton\">load</button>\n</div>\n<div id=\"pad\"><div id=\"mover\"></div></div>\n<div id=\"overlay\"></div>\n<div id=\"navigationBox\">\n   <div class=\"navigationButton\"><div id=\"homeButton\" class=\"navigationButtonImage\"></div></div>\n   <div class=\"navigationButton with-border\"><div id=\"zoomInButton\" class=\"navigationButtonImage\"></div></div>\n   <div class=\"navigationButton with-border\"><div id=\"zoomOutButton\" class=\"navigationButtonImage\"></div></div>\n</div>\n\n`.trim();\n\n        document.body.querySelector(\"#renkon\")?.remove();\n        document.body.appendChild(renkon);\n        return renkon;\n    })();\n\n"]]},"padTitle":"Renkon-Pad","positions":{"map":{"__map":true,"values":[["3",{"height":354.43359375,"id":"3","type":"move","width":639.1328125,"x":569.4909011108825,"y":281.78515625}],["4",{"height":156.05859375,"id":"4","type":"move","width":422.49609375,"x":1263.0629476736149,"y":56.15330921358563}],["5",{"height":222.1761186226843,"id":"5","type":"move","width":423.40083434258537,"x":1256.4765361525328,"y":230.57815758403288}],["6",{"height":120.2578125,"id":"6","type":"move","width":428.8203125,"x":1257.7621465460402,"y":723.25390625}],["7",{"height":229.41796875,"id":"7","type":"move","width":432.4375,"x":1253.192414704304,"y":471.7458687049746}],["9",{"height":200.41796875,"id":"9","type":"move","width":488.5546875,"x":604.1508643538015,"y":53.695262221501494}],["11",{"height":425.50390625,"id":"11","type":"move","width":574.8828125,"x":-17.4453125,"y":42.3125}]]}},"titles":{"map":{"__map":true,"values":[["3",{"id":"3","state":false,"title":"User Interaction"}],["4",{"id":"4","state":false,"title":"Rendering"}],["5",{"id":"5","state":false,"title":"Save and Load"}],["6",{"id":"6","state":false,"title":"CSS"}],["7",{"id":"7","state":false,"title":"Graph Visualization"}],["9",{"id":"9","state":false,"title":"Data Structure"}],["11",{"id":"11","state":false,"title":"Initialization"}]]}},"version":1,"windowTypes":{"map":{"__map":true,"values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"]]}},"windows":["3","4","5","6","7","9","11"],"zIndex":{"map":{"__map":true,"values":[["3",109],["4",107],["5",105],["6",108],["7",100],["9",103],["11",104]]}}}
+{"padTitle":"Renkon-Pad",
+"positions":{"map":{"__map":true,
+"values":[["3",{"height":354.43359375,
+"id":"3",
+"type":"move",
+"width":639.1328125,
+"x":569.4909011108825,
+"y":281.78515625}],["4",{"height":156.05859375,
+"id":"4",
+"type":"move",
+"width":422.49609375,
+"x":1263.0629476736149,
+"y":56.15330921358563}],["5",{"height":222.1761186226843,
+"id":"5",
+"type":"move",
+"width":423.40083434258537,
+"x":1256.4765361525328,
+"y":230.57815758403288}],["6",{"height":120.2578125,
+"id":"6",
+"type":"move",
+"width":428.8203125,
+"x":1257.7621465460402,
+"y":723.25390625}],["7",{"height":229.41796875,
+"id":"7",
+"type":"move",
+"width":432.4375,
+"x":1253.192414704304,
+"y":471.7458687049746}],["9",{"height":200.41796875,
+"id":"9",
+"type":"move",
+"width":488.5546875,
+"x":604.1508643538015,
+"y":53.695262221501494}],["11",{"height":425.50390625,
+"id":"11",
+"type":"move",
+"width":574.8828125,
+"x":-17.4453125,
+"y":42.3125}]]}},
+"titles":{"map":{"__map":true,
+"values":[["3",{"id":"3",
+"state":false,
+"title":"User Interaction"}],["4",{"id":"4",
+"state":false,
+"title":"Rendering"}],["5",{"id":"5",
+"state":false,
+"title":"Save and Load"}],["6",{"id":"6",
+"state":false,
+"title":"CSS"}],["7",{"id":"7",
+"state":false,
+"title":"Graph Visualization"}],["9",{"id":"9",
+"state":false,
+"title":"Data Structure"}],["11",{"id":"11",
+"state":false,
+"title":"Initialization"}]]}},
+"version":2,
+"windowTypes":{"map":{"__map":true,
+"values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"]]}},
+"windows":["3","4","5","6","7","9","11"],
+"zIndex":{"map":{"__map":true,
+"values":[["3",109],["4",107],["5",105],["6",108],["7",100],["9",103],["11",104]]}}}
+{__codeMap: true, value: [[`3`, `    const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
+    const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
+    const save = Events.listener(renkon.querySelector("#saveButton"), "click", (evt) => evt);
+    const load = Events.listener(renkon.querySelector("#loadButton"), "click", (evt) => evt);
+
+    const home = Events.listener(renkon.querySelector("#homeButton"), "click", () => "home");
+    const zoomIn = Events.listener(renkon.querySelector("#zoomInButton"), "click", () => "zoomIn");
+    const zoomOut = Events.listener(renkon.querySelector("#zoomOutButton"), "click", () => "zoomOut");
+    const navigationAction = Events.or(home, zoomIn, zoomOut);
+
+    const padViewChange = Events.receiver();
+
+    const _padViewUpdate = ((padView) => {
+        const mover = document.querySelector("#mover");
+        const pad = document.querySelector("#pad");
+        mover.style.setProperty("left", \`\${padView.x}px\`);
+        mover.style.setProperty("top", \`\${padView.y}px\`);
+        mover.style.setProperty("transform", \`scale(\${padView.scale})\`);
+        mover.style.setProperty("width", \`\${padView.width}px\`);
+        mover.style.setProperty("height", \`\${padView.height}px\`);
+
+        pad.style.setProperty("background-position", \`\${padView.x}px \${padView.y}px\`);
+        pad.style.setProperty("background-size", \`\${64 * padView.scale}px \${64 * padView.scale}px\`);
+    })(padView);
+
+    const wheel = Events.listener(renkon.querySelector("#pad"), "wheel", (evt) => {
+        let pinch;
+        if (isSafari) {
+            pinch = (Number.isInteger(evt.deltaX) && !Number.isInteger(evt.deltaY)) || evt.metaKey;
+        } else {
+            pinch = evt.ctrlKey || evt.metaKey;
+        }
+        const strId = evt.target.id;
+        if (pinch) {
+            evt.preventDefault();
+            if (strId === "pad") {
+                evt.stopPropagation();
+            }
+        }
+        return evt;
+    });
+
+    const _handleWheel = ((wheel, padView) => {
+        let pinch;
+        if (isSafari) {
+            pinch = (Number.isInteger(wheel.deltaX) && !Number.isInteger(wheel.deltaY)) || wheel.metaKey;
+        } else {
+            pinch = wheel.ctrlKey || wheel.metaKey;
+        }
+        const strId = wheel.target.id;
+
+        let deltaX = wheel.deltaX;
+        let deltaY = wheel.deltaY;
+        let zoom = padView.scale;
+
+        let absDeltaY = Math.min(30, Math.abs(deltaY));
+        let diff = Math.sign(deltaY) * absDeltaY;
+
+        let desiredZoom = zoom * (1 - diff / 200);
+
+        const xInMover = (wheel.clientX - padView.x) / padView.scale;
+        const newX = wheel.clientX - xInMover * desiredZoom;
+
+        const yInMover = (wheel.clientY - padView.y) / padView.scale;
+        const newY = wheel.clientY - yInMover * desiredZoom;
+
+        if (strId === "pad") {
+            if (pinch) {
+                Events.send(padViewChange, {x: newX, y: newY, scale: desiredZoom});
+            } else {
+                Events.send(padViewChange, {x: padView.x - deltaX, y: padView.y - deltaY, scale: padView.scale});
+            }
+        }
+    })(wheel, padView);
+
+    Events.listener(renkon.querySelector("#buttonBox"), "wheel", preventDefault);
+    Events.listener(renkon.querySelector("#navigationBox"), "wheel", preventDefault);
+
+    Events.listener(document.body, "gesturestart", preventDefaultSafari);
+    Events.listener(document.body, "gesturechange", preventDefaultSafari);
+    Events.listener(document.body, "gestureend", preventDefaultSafari);
+
+    const isSafari = window.navigator.userAgent.includes("Safari") && !window.navigator.userAgent.includes("Chrome");
+
+    const pointercancel = Events.listener(renkon.querySelector("#pad"), "pointercancel", pointerLost);
+    const lostpointercapture = Events.listener(renkon.querySelector("#pad"), "lostpointercapture", pointerLost);
+
+    const preventDefault = (evt) => {
+        evt.preventDefault();
+        return evt;
+    };
+
+    const preventDefaultSafari = (evt) => {
+        if (!isSafari) {
+            evt.preventDefault();
+        }
+        return evt;
+    };
+
+    const pointerLost = (evt) => {
+        evCache.clear();
+        evt.preventDefault();
+        return {type: "lost"};
+    };
+
+    const _handleNavigationAction = ((navigationAction, positions, padView) => {
+        if (navigationAction === "zoomIn") {
+            Events.send(padViewChange, {x: padView.x, y: padView.y, scale: padView.scale * 1.1});
+        } else if (navigationAction === "zoomOut") {
+            Events.send(padViewChange, {x: padView.x, y: padView.y, scale: padView.scale * 0.9});
+        } else if (navigationAction === "home") {
+            let minLeft = Number.MAX_VALUE;
+            let minTop = Number.MAX_VALUE;
+            let maxRight = Number.MIN_VALUE;
+            let maxBottom = Number.MIN_VALUE;
+
+            if (positions.map.size === 0) {
+                Events.send(padViewChange, {x: 0, y: 0, scale: 1});
+                return;
+            }
+            for (let [_, position] of positions.map) {
+                minLeft = Math.min(position.x, minLeft);
+                minTop = Math.min(position.y, minTop);
+                maxRight = Math.max(position.x + position.width, maxRight);
+                maxBottom = Math.max(position.y + position.height, maxBottom);
+            }
+
+            const pad = document.body.querySelector("#pad").getBoundingClientRect();
+
+            const scaleX = pad.width / (maxRight - minLeft);
+            const scaleY = pad.height / (maxBottom - minTop);
+            const scale = Math.min(1, scaleX, scaleY) * 0.9;
+
+            const centerX = (maxRight + minLeft) / 2;
+            const centerY = (maxBottom + minTop) / 2;
+
+            let x = pad.width / 2 - centerX * scale;
+            let y = pad.height / 2 - centerY * scale;
+
+            Events.send(padViewChange, {x, y, scale});
+        }
+    })(navigationAction, positions, padView);
+
+    const showGraph = Behaviors.collect(
+        true,
+        Events.listener(renkon.querySelector("#showGraph"), "click", (evt) => evt),
+        (now, _click) => !now
+    );
+
+    document.querySelector("#showGraph").textContent = showGraph ? "show graph" : "hide graph";
+
+    const _onRun = ((runRequest, windowContents) => {
+        const id = runRequest.id;
+        const iframe = windowContents.map.get(id);
+        const code = [...windowContents.map.values()]
+            .filter((obj) => obj.state)
+            .map((editor) => editor.state.doc.toString());
+        iframe.dom.contentWindow.postMessage({code: code, path: id});
+    })(runRequest, windowContents);
+
+    const remove = Events.receiver();
+    const titleEditChange = Events.receiver();
+    const runRequest = Events.receiver();
+
+    const rawPadDown = Events.listener(renkon.querySelector("#pad"), "pointerdown", (evt) => {
+        const strId = evt.target.id;
+        if (strId.endsWith("-title") && (evt.target.getAttribute("contenteditable") === "true")) {
+            return evt;
+        }
+        if (strId) {
+            evt.preventDefault();
+            evt.stopPropagation();
+        }
+        return evt;
+    }, {queued: true});
+
+    // this is an odd ball that gets mutated by padDownState and padUp
+    const evCache = new Map();
+
+    const padDown = Events.collect(undefined, rawPadDown, (old, evts) => {
+        let type;
+        let id;
+        if (evts.length <= 2 && evts[0].isPrimary) {
+            let primary = evts[0];
+            const strId = primary.target.id;
+            if (!strId) {return {...old, type: ""};}
+            let x = primary.clientX;
+            let y = primary.clientY;
+            if (strId === "pad") {
+                type = "padDragDown";
+                id = strId;
+            } else {
+                id = \`\${Number.parseInt(strId)}\`;
+                if (strId.endsWith("-titleBar")) {
+                    type = "moveDown";
+                } else if (strId.endsWith("-resize")) {
+                    type = "windowResizeDown";
+                }
+            }
+            if (type) {
+                primary.target.setPointerCapture(primary.pointerId);
+                if (strId === "pad") {
+                    evCache.set("primary", {x, y});
+                }
+                if (evts.length === 1) {
+                    return {
+                        id, target: primary.target, type, x: primary.clientX, y: primary.clientY
+                    };
+                }
+            } else {
+                return {...old, type: ""};
+            }
+        }
+
+        let secondary;
+        if (evCache.get("primary")) {
+            if (evts.length === 1 && evCache.size === 1 && !evts[0].isPrimary) {
+                secondary = evts[0];
+            }
+            if (evts.length === 2 && evCache.size === 1 && !evts[1].isPrimary) {
+                secondary = evts[1];
+            }
+        }
+        if (!secondary) {return old;}
+
+        const strId = secondary.target.id;
+        if (strId !== "pad") {return old;}
+        let primary =  evCache.get("primary");
+        let x = secondary.clientX;
+        let y = secondary.clientY;
+        let dx = primary.x - secondary.clientX;
+        let dy = primary.y - secondary.clientY;
+        let origDiff = Math.sqrt(dx * dx + dy * dy);
+        evCache.set(secondary.pointerId, {origDiff, origScale: padView.scale, x, y});
+        return {type: "pinch", secondary: secondary.pointerId};
+    });
+
+    const padUp = Events.listener(renkon.querySelector("#pad"), "pointerup", (evt) => {
+        // console.log("ev1", evCache);
+        evt.target.releasePointerCapture(evt.pointerId);
+        evCache.clear();
+        // console.log("ev2", evCache);
+        return {type: "pointerup", x: evt.clientX, y: evt.clientY};
+    });
+
+    const downOrUpOrResize = Events.or(padDown, padUp, pointercancel, lostpointercapture, windowResize);
+
+    const _padMove = Events.listener("#pad", "pointermove", moveCompute);
+
+    const windowResize = Events.receiver();
+    const moveOrResize = Events.receiver();
+
+    const moveCompute = ((downOrUpOrResize, positions, padView) => {
+        if (downOrUpOrResize.type === "moveDown" || downOrUpOrResize.type === "windowResizeDown") {
+            const start = positions.map.get(downOrUpOrResize.id);
+            const scale = padView.scale;
+            const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
+            const type = downOrUpOrResize.type === "moveDown" ? "move" : "resize";
+            return (move) => {
+                const diffX = (move.clientX - downPoint.x) / scale;
+                const diffY = (move.clientY - downPoint.y) / scale;
+                const result = {id: downOrUpOrResize.id, type};
+                if (type === "move") {
+                    result.x = start.x + diffX;
+                    result.y = start.y + diffY;
+                } else {
+                    result.width = start.width + diffX;
+                    result.height = start.height + diffY;
+                }
+                Events.send(moveOrResize, result);
+                return move;
+            }
+        } else if (downOrUpOrResize.type === "padDragDown") {
+            const start = padView;
+            const scale = start.scale;
+            const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
+            const type = "padDrag";
+            return (move) => {
+                const diffX = move.clientX - downPoint.x;
+                const diffY = move.clientY - downPoint.y;
+                const result = {id: downOrUpOrResize.id, type, scale};
+                result.x = start.x + diffX;
+                result.y = start.y + diffY;
+                Events.send(padViewChange, result);
+                return move;
+            };
+        } else if (downOrUpOrResize.type === "pinch") {
+            return (move) => {
+                const keys = [...evCache.keys()];
+                const primary = evCache.get("primary");
+                if (!primary) {
+                    // the first finger has been lifted
+                    return move;
+                }
+                const otherKey = keys.find((k) => k !== "primary");
+                const secondary = evCache.get(otherKey);
+                const isPrimary = move.isPrimary;
+
+                if (isPrimary) {
+                    const newRecord = {...primary};
+                    newRecord.x = move.clientX;
+                    newRecord.y = move.clientY;
+                    evCache.set("primary", newRecord);
+                } else {
+                    const newRecord = {...secondary};
+                    newRecord.x = move.clientX;
+                    newRecord.y = move.clientY;
+                    evCache.set(otherKey, newRecord);
+                }
+
+                const origDiff = secondary.origDiff;
+                const origScale = secondary.origScale;
+
+                const pX = isPrimary ? move.clientX : primary.x;
+                const pY = isPrimary ? move.clientY : primary.y;
+
+                const sX = isPrimary ? secondary.x : move.clientX;
+                const sY = isPrimary ? secondary.y : move.clientY;
+
+                const newDiff = Math.sqrt((pX - sX) ** 2 + (pY - sY) ** 2);
+
+                const newScale = (newDiff / origDiff) * origScale;
+
+                const newCenterX = (pX - sX) / 2 + sX;
+                const newCenterY = (pY - sY) / 2 + sY;
+
+                const xInMover = (newCenterX - padView.x) / padView.scale;
+                const newX = newCenterX - xInMover * newScale;
+
+                const yInMover = (newCenterY - padView.y) / padView.scale;
+                const newY = newCenterY - yInMover * newScale;
+
+                Events.send(padViewChange, {x: newX, y: newY, scale: newScale});
+                return move;
+            }
+        } else if (downOrUpOrResize.type === "pointerup" || downOrUpOrResize.type === "lost") {
+            return (move) => move;
+        }
+    })(downOrUpOrResize, positions, padView);
+`],
+[`4`, `    const inputHandler = (evt) => {
+        if (evt.key === "Enter") {
+            evt.preventDefault();
+            evt.stopPropagation();
+            Events.send(titleEditChange, {
+                id: \`\${Number.parseInt(evt.target.id)}\`,
+                title: evt.target.textContent,
+                state: false
+            });
+        }
+    };
+
+    const windowDOM = (id, position, zIndex, title, windowContent, type) => {
+        // console.log("windowDOM");
+        return h("div", {
+            key: \`\${id}\`,
+            id: \`\${id}-win\`,
+            "class": "window",
+            style: {
+                left: \`\${position.x}px\`,
+                top: \`\${position.y}px\`,
+                width: \`\${position.width}px\`,
+                height: \`\${position.height}px\`,
+                zIndex: \`\${zIndex}\`,
+            },
+            ref: (ref) => {
+                if (ref) {
+                    if (ref !== windowContent.dom.parentNode) {
+                        ref.appendChild(windowContent.dom);
+                    }
+                }
+            },
+            onPointerEnter: (evt) => Events.send(hovered, \`\${Number.parseInt(evt.target.id)}\`),
+            onPointerLeave: (_evt) => Events.send(hovered, null)
+        }, [
+            h("div", {
+                id: \`\${id}-titleBar\`,
+                "class": "titleBar",
+            }, [
+                h("div", {
+                    id: \`\${id}-runButton\`,
+                    "class": "titlebarButton runButton",
+                    type,
+                    onClick: (evt) => {
+                        //console.log(evt);
+                        Events.send(runRequest, {id: \`\${Number.parseInt(evt.target.id)}\`});
+                    },
+                }),
+                h("div", {
+                    id: \`\${id}-title\`,
+                    "class": "title",
+                    contentEditable: \`\${title.state}\`,
+                    onKeydown: inputHandler,
+                }, title.title),
+                h("div", {
+                    id: \`\${id}-edit\`,
+                    "class": \`titlebarButton editButton\`,
+                    onClick: (evt) => {
+                        // console.log(evt);
+                        Events.send(titleEditChange, {id: \`\${Number.parseInt(evt.target.id)}\`, state: !title.state});
+                    },
+                }, []),
+                h("div", {
+                    id: \`\${id}-close\`,
+                    "class": "titlebarButton closeButton",
+                    onClick: (evt) => {
+                        Events.send(remove, {id: \`\${Number.parseInt(evt.target.id)}\`, type: "remove"})
+                    }
+                }),
+            ]),
+            h("div", {
+                id: \`\${id}-resize\`,
+                "class": "resizeHandler",
+            }, [])
+        ])
+    };
+
+    const windowElements = ((windows, positions, zIndex, titles, windowContents, windowTypes) => {
+        return h("div", {id: "owner", "class": "owner"}, windows.map((id) => {
+            return windowDOM(id, positions.map.get(id), zIndex.map.get(id), titles.map.get(id), windowContents.map.get(id), windowTypes.map.get(id));
+        }));
+    })(windows, positions, zIndex, titles, windowContents, windowTypes);
+
+    const _windowRender = render(windowElements, document.querySelector("#mover"));
+
+`],
+[`5`, `    const loadRequest = Events.receiver();
+
+    const _saver2 = ((windows, positions, zIndex, titles, windowContents, windowTypes, padTitle) => {
+        const code = new Map([...windowContents.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
+        const data1 = stringify({
+            version: 2,
+            windows,
+            positions,
+            zIndex,
+            titles,
+            windowTypes,
+            padTitle
+        });
+
+        const data2 = stringifyCodeMap(code);
+
+        const div = document.createElement("a");
+        const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(data1) + encodeURIComponent(data2);
+        div.setAttribute("href", dataStr);
+        div.setAttribute("download", \`\${padTitle}.json\`);
+        div.click();
+    })(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, save);
+
+    const _loader = (() => {
+        const input = document.createElement("div");
+        input.innerHTML = \`<input id="imageinput" type="file" accept=".json">\`;
+        const imageInput = input.firstChild;
+
+        imageInput.onchange = () => {
+            const file = imageInput.files[0];
+            if (!file) {imageInput.remove(); return;}
+            new Promise(resolve => {
+                let reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsArrayBuffer(file);
+            }).then((data) => {
+                const result = new TextDecoder("utf-8").decode(data);
+                const index = result.indexOf("{__codeMap: true, value:");
+
+                if (index < 0) {
+                    const loaded = parse(result);
+                    if (loaded.version === 1) {
+                        Events.send(loadRequest, loaded);
+                        imageInput.remove();
+                        return;
+                    }
+                    console.log("unknown type of data");
+                    imageInput.remove();
+                    return;
+                }
+
+                const data1 = result.slice(0, index);
+                const data2 = result.slice(index);
+
+                const loaded = parse(data1);
+
+                if (loaded.version === 2) {
+                    const code = parseCodeMap(data2);
+                    loaded.code = code;
+                    Events.send(loadRequest, loaded);
+                    imageInput.remove();
+                    return;
+                }
+                console.log("unknown type of data");
+                imageInput.remove();
+            });
+            imageInput.value = "";
+        };
+        imageInput.oncancel = () => imageInput.remove();
+        document.body.appendChild(imageInput);
+        imageInput.click();
+    })(load);
+
+    const nameFromUrl = (() => {
+        const maybeUrl = new URL(window.location).searchParams.get("file");
+        if (maybeUrl) {
+            return maybeUrl;
+        }
+        return undefined;
+    })();
+
+    const _loadFromUrl = fetch(nameFromUrl).then((resp) => resp.text()).then((text) => {
+        const data = parse(text);
+        Events.send(loadRequest, data);
+    });
+
+`],
+[`6`, `    const css = \`
+@font-face {
+    font-family: "OpenSans-Regular";
+    src: url("./assets/fonts/open-sans-v17-latin-ext_latin-regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: 'OpenSans-SemiBold';
+  src: url("./assets/fonts/open-sans-v17-latin-ext_latin-600.woff2") format('woff2');
+}
+
+html, body, #renkon {
+    overflow: hidden;
+    height: 100%;
+    margin: 0px;
+}
+
+html, body {
+  overscroll-behavior-x: none;
+  touch-action: none;
+}
+
+#pad {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAjElEQVR4XuXQAQ0AAAgCQfoHpYbOGt5vEODSdgovd3I+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+wIcWxEeefYmM2dAAAAAASUVORK5CYII=);
+}
+
+#mover {
+    pointer-events: none;
+    position:absolute;
+    transform-origin: 0px 0px;
+}
+
+#owner {
+    position: absolute;
+    pointer-events: initial;
+}
+
+.editor {
+    height: calc(100% - 24px);
+    border-radius: 0px 0px 6px 6px;
+}
+
+#overlay {
+    pointer-events: none;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 10000;
+}
+
+.window {
+    position: absolute;
+    background-color: #eee;
+    border-radius: 6px;
+    box-shadow: inset 0 2px 2px 0 rgba(255, 255, 255, 0.8), 1px 1px 8px 0 rgba(0, 35, 46, 0.2);
+}
+
+#buttonBox {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    row-gap: 8px;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    padding-bottom: 8px;
+    padding-top: 8px;
+    border-bottom: 1px solid black;
+    background-color: white;
+    position: absolute;
+    z-index: 200000;
+}
+
+#padTitle {
+    margin-left: 24px;
+}
+
+.spacer {
+    flex-grow: 1;
+}
+
+.menuButton {
+    font-family: 'OpenSans-SemiBold';
+    color: black;
+    margin-left: 4px;
+    margin-right: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 2px solid #555;
+}
+		   
+
+.runnerIframe {
+    width: 100%;
+    height: calc(100% - 24px);
+    border-radius: 0px 0px 6px 6px;
+    border: 2px solid black;
+    box-sizing: border-box;
+    border-radius: 0px 0px 6px 6px;
+    background-color: #fff;
+    user-select: none;
+}
+
+.titleBar {
+    background-color: #bbb;
+    width: 100%;
+    height: 28px;
+    display: flex;
+    border: 2px ridge #ccc;
+    box-sizing: border-box;
+    border-radius: 6px 6px 0px 0px;
+    cursor: -webkit-grab;
+    cursor: grab;
+}
+
+.title {
+    font-family: OpenSans-Regular;
+    pointer-events: none;
+    margin-left: 20px;
+    flex-grow: 1;
+    margin-right: 20px;
+    padding-left: 10px;
+}
+
+.title[contentEditable="true"] {
+    background-color: #eee;
+    pointer-events: all;
+    user-select: all;
+}
+
+.titlebarButton {
+    height: 19px;
+    width: 19px;
+    margin: 2px;
+    margin-top: 2px;
+    pointer-events: all;
+    border-radius: 8px;
+    background-position: center;
+    cursor: pointer;
+}
+
+.titlebarButton:hover {
+    background-color: #eee;
+}
+
+.closeButton {
+    background-image: url("data:image/svg+xml,%3Csvg%20id%3D%22Layer_1%22%20data-name%3D%22Layer%201%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M8.48%2C12.25C6.4%2C10.17%2C4.37%2C8.16%2C2.35%2C6.15c-.34-.34-.68-.69-1-1.05a2.34%2C2.34%2C0%2C0%2C1%2C.17-3.26%2C2.3%2C2.3%2C0%2C0%2C1%2C3.25-.09C7%2C3.93%2C9.23%2C6.14%2C11.45%2C8.34a5.83%2C5.83%2C0%2C0%2C1%2C.43.58c.36-.4.62-.71.9-1%2C2-2%2C4.12-4%2C6.12-6.08a2.51%2C2.51%2C0%2C0%2C1%2C3.41%2C0%2C2.37%2C2.37%2C0%2C0%2C1%2C0%2C3.43c-2.18%2C2.22-4.39%2C4.41-6.58%2C6.62-.11.1-.21.22-.34.35l.44.48L22.09%2C19A2.7%2C2.7%2C0%2C0%2C1%2C23%2C20.56a2.49%2C2.49%2C0%2C0%2C1-1.29%2C2.54A2.36%2C2.36%2C0%2C0%2C1%2C19%2C22.69c-2-2-4-4-6.06-6-.33-.33-.62-.68-1-1.12-1.63%2C1.66-3.17%2C3.25-4.73%2C4.82-.79.8-1.6%2C1.59-2.42%2C2.36a2.32%2C2.32%2C0%2C0%2C1-3.21-.1%2C2.3%2C2.3%2C0%2C0%2C1-.19-3.25c2.14-2.2%2C4.31-4.36%2C6.48-6.54Z%22%20fill%3D%22%234D4D4D%22%2F%3E%3C%2Fsvg%3E");
+}
+
+.editButton {
+    background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3C!--%20Generator%3A%20Sketch%2064%20(93537)%20-%20https%3A%2F%2Fsketch.com%20--%3E%3Ctitle%3Eicon%2Fmaterial%2Fedit%3C%2Ftitle%3E%3Cdesc%3ECreated%20with%20Sketch.%3C%2Fdesc%3E%3Cg%20id%3D%22icon%2Fmaterial%2Fedit%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22ic-round-edit%22%3E%3Cg%20id%3D%22Icon%22%20fill%3D%22%234D4D4D%22%3E%3Cpath%20d%3D%22M3%2C17.46%20L3%2C20.5%20C3%2C20.78%203.22%2C21%203.5%2C21%20L6.54%2C21%20C6.67%2C21%206.8%2C20.95%206.89%2C20.85%20L17.81%2C9.94%20L14.06%2C6.19%20L3.15%2C17.1%20C3.05%2C17.2%203%2C17.32%203%2C17.46%20Z%20M20.71%2C7.04%20C20.8972281%2C6.85315541%2021.002444%2C6.59950947%2021.002444%2C6.335%20C21.002444%2C6.07049053%2020.8972281%2C5.81684459%2020.71%2C5.63%20L18.37%2C3.29%20C18.1831554%2C3.10277191%2017.9295095%2C2.99755597%2017.665%2C2.99755597%20C17.4004905%2C2.99755597%2017.1468446%2C3.10277191%2016.96%2C3.29%20L15.13%2C5.12%20L18.88%2C8.87%20L20.71%2C7.04%20Z%22%20id%3D%22Icon-Shape%22%3E%3C%2Fpath%3E%3C%2Fg%3E%3Crect%20id%3D%22ViewBox%22%20fill-rule%3D%22nonzero%22%20x%3D%220%22%20y%3D%220%22%20width%3D%2224%22%20height%3D%2224%22%3E%3C%2Frect%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+.runButton {
+    background-image: url("data:image/svg+xml,%3Csvg%20id%3D%22Layer_1%22%20data-name%3D%22Layer%201%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M12.32%2C19.94c-2.36-.11-4.67-.17-7-.34-1.91-.14-2.65-.91-2.89-2.91a29.26%2C29.26%2C0%2C0%2C1%2C.09-8.2A2.63%2C2.63%2C0%2C0%2C1%2C5.11%2C6.11%2C102.77%2C102.77%2C0%2C0%2C1%2C18.59%2C6a8.52%2C8.52%2C0%2C0%2C1%2C1.12.12C21.15%2C6.38%2C21.88%2C7.2%2C22.1%2C9A29.32%2C29.32%2C0%2C0%2C1%2C22%2C17.19a2.58%2C2.58%2C0%2C0%2C1-2.59%2C2.4C17%2C19.73%2C14.66%2C19.82%2C12.32%2C19.94Zm-2.06-4.05%2C5.29-3-5.29-3Z%22%20fill%3D%22%234D4D4D%22%2F%3E%3C%2Fsvg%3E");
+    display: none;
+    pointer-events: none;
+}
+
+.runButton[type="runner"] {
+    display: inherit;
+    pointer-events: all;
+}
+
+.resizeHandler {
+    position: absolute;
+    background-color: rgba(0.1, 0.1, 0.1, 0.1);
+    width: 20px;
+    height: 20px;
+    bottom: -10px;
+    right: -10px;
+    border-radius: 6px;
+    z-index: 10000;
+    cursor: se-resize;
+}
+
+.resizeHandler:hover {
+    background-color: rgba(0.1, 0.4, 0.1, 0.3);
+}
+
+#navigationBox {
+    display: flex;
+    flex-direction: column;
+    right: 20px;
+    gap: 10px;
+    bottom: 80px;
+    align-items: center;
+    width: 40px;
+    border: 1px solid black;
+    background-color: #d2d2d2;
+    position: absolute;
+    z-index: 200000;
+    border-radius: 8px;
+    box-shadow: 4px 5px 8px -2px rgba(0,0,0,.15);
+}
+
+.navigationButton {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    cursor: pointer;
+}
+
+.with-border {
+    border: 1px solid #4D4D4D;
+    border-radius: 15px;
+    background-color: white;
+}
+
+.navigationButton:hover {
+    background-color: #eaeaea;
+}
+
+.navigationButton:first-child {
+    margin-top: 10px;
+}
+
+.navigationButton:last-child {
+    margin-bottom: 10px;
+}
+
+.navigationButtonImage {
+    width: 100%;
+    height: 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+#zoomInButton {
+    background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3Ctitle%3Eicon%2Fmaterial%2Fview_zoom-in%3C%2Ftitle%3E%3Cg%20id%3D%22icon%2Fmaterial%2Fview_zoom-in%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22ic-baseline-add%22%3E%3Cg%20id%3D%22Icon%22%20fill%3D%22%234D4D4D%22%3E%3Cpolygon%20id%3D%22Icon-Path%22%20points%3D%2219%2013%2013%2013%2013%2019%2011%2019%2011%2013%205%2013%205%2011%2011%2011%2011%205%2013%205%2013%2011%2019%2011%22%3E%3C%2Fpolygon%3E%3C%2Fg%3E%3Crect%20id%3D%22ViewBox%22%20fill-rule%3D%22nonzero%22%20x%3D%220%22%20y%3D%220%22%20width%3D%2224%22%20height%3D%2224%22%3E%3C%2Frect%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+#zoomOutButton {
+    background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3Ctitle%3Eicon%2Fmaterial%2Fview_zoom-out%3C%2Ftitle%3E%3Cg%20id%3D%22icon%2Fmaterial%2Fview_zoom-out%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22ic-baseline-minus%22%3E%3Cg%20id%3D%22Icon%22%20fill%3D%22%234D4D4D%22%3E%3Cpolygon%20id%3D%22Icon-Path%22%20points%3D%2219%2012.998%205%2012.998%205%2010.998%2019%2010.998%22%3E%3C%2Fpolygon%3E%3C%2Fg%3E%3Crect%20id%3D%22ViewBox%22%20fill-rule%3D%22nonzero%22%20x%3D%220%22%20y%3D%220%22%20width%3D%2224%22%20height%3D%2224%22%3E%3C%2Frect%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+#homeButton {
+    background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3Ctitle%3Eicon%2Fview-centered%3C%2Ftitle%3E%3Cg%20id%3D%22icon%2Fview-centered%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22Group-3%22%20transform%3D%22translate(2.000000%2C%204.000000)%22%20fill%3D%22%234D4D4D%22%3E%3Cpath%20d%3D%22M0%2C9%20L3%2C9%20L3%2C7%20L0%2C7%20L0%2C9%20Z%20M17%2C9%20L20.001%2C9%20L20.001%2C7%20L17%2C7%20L17%2C9%20Z%20M9%2C3%20L11%2C3%20L11%2C0%20L9%2C0%20L9%2C3%20Z%20M13%2C9%20L11%2C9%20L11%2C11%20L9%2C11%20L9%2C9%20L7%2C9%20L7%2C7%20L9%2C7%20L9%2C5%20L11%2C5%20L11%2C7%20L13%2C7%20L13%2C9%20Z%20M9%2C16%20L11%2C16%20L11%2C13%20L9%2C13%20L9%2C16%20Z%20M13%2C0%20L13%2C2%20L18%2C2%20L18%2C5%20L20%2C5%20L20%2C0%20L13%2C0%20Z%20M18%2C14%20L13%2C14%20L13%2C16%20L20%2C16%20L20%2C11%20L18%2C11%20L18%2C14%20Z%20M0%2C5%20L2%2C5%20L2%2C2%20L7%2C2%20L7%2C0%20L0%2C0%20L0%2C5%20Z%20M2%2C11%20L0%2C11%20L0%2C16%20L7%2C16%20L7%2C14%20L2%2C14%20L2%2C11%20Z%22%20id%3D%22Fill-1%22%3E%3C%2Fpath%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+.cm-tooltip-lint {
+   font-size: 12px;
+}
+
+\`;
+
+    ((css) => {
+        const renkon = document.querySelector("#renkon");
+        const style = document.createElement("style");
+        style.id = "pad-css";
+        style.textContent = css;
+        renkon.querySelector("#pad-css")?.remove();
+        renkon.appendChild(style);
+    })(css);
+`],
+[`7`, `    const analyzed = ((windowContents, trigger, showGraph) => {
+        if (!showGraph) {return new Map()}
+        if (trigger === null) {return new Map()}
+        if (typeof trigger === "object" && trigger.id) {return new Map();}
+        const programState = new Renkon.constructor(0);
+        programState.setLog(() => {});
+
+        const code = [...windowContents.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
+        try {
+            programState.setupProgram(code);
+        } catch(e) {
+            console.log("Graph analyzer encountered an error in source code:");
+            return new Map();
+        }
+
+        const nodes = new Map();
+        for (let jsNode of programState.nodes.values()) {
+            let ary = nodes.get(jsNode.blockId);
+            if (!ary) {
+                ary = [];
+                nodes.set(jsNode.blockId, ary);
+            }
+            ary.push({inputs: jsNode.inputs, outputs: jsNode.outputs});
+        }
+
+        const exportedNames = new Map();
+        const importedNames = new Map();
+        for (let [id, subNodes] of nodes) {
+            const exSet = new Set();
+            exportedNames.set(id, exSet);
+
+            const inSet = new Set();
+            importedNames.set(id, inSet);
+
+            for (let subNode of subNodes) {
+                let outputs = subNode.outputs;
+                if (outputs.length > 0 && !/^_[0-9]/.exec(outputs)) {
+                    exSet.add(outputs);
+                }
+                for (let inString of subNode.inputs) {
+                    if (!/^_[0-9]/.exec(inString)) {
+                        inSet.add(inString);
+                    }
+                }
+            }
+        }
+
+        // {edgesOut: [{id: "defined name", dest: '2'}, ...],
+        //  edgesIn: [{id: "defined name", origin: '2'}, ...]}
+        const edges = new Map();
+
+        for (let [id, _] of nodes) {
+            const exporteds = exportedNames.get(id);
+            const importeds = importedNames.get(id);
+
+            const edgesOut = [];
+            const edgesIn = [];
+            const exports = new Set();
+
+            for (let exported of exporteds) {
+                for (let [destId, destSet] of importedNames) {
+                    if (destSet.has(exported) && id !== destId) {
+                        edgesOut.push({id: exported, dest: destId});
+                        exports.add(exported);
+                    }
+                }
+            }
+            for (let imported of importeds) {
+                for (let [sourceId, sourceSet] of exportedNames) {
+                    if (sourceSet.has(imported) && id !== sourceId) {
+                        edgesIn.push({id: imported, origin: sourceId});
+                    }
+                }
+            }
+            edges.set(id, {edgesOut, edgesIn, exports: [...exports]});
+        }
+
+        return edges;
+    })(windowContents, Events.or(remove, hovered), showGraph);
+
+    const line = (p1, p2, color, label) => {
+        let pl;
+        let pr;
+        if (p1.x < p2.x) {
+            pl = p1;
+            pr = p2;
+        } else {
+            pl = p2;
+            pr = p1;
+        }
+        const c0 = \`\${pl.x} \${pl.y}\`;
+        const c1 = \`\${pl.x + (pr.x - pl.x) * 0.5} \${pl.y + (pr.y - pl.y) * 0.2}\`;
+        const c2 = \`\${pr.x - (pr.x - pl.x) * 0.2} \${pl.y + (pr.y - pl.y) * 0.6}\`;
+        const c3 = \`\${pr.x} \${pr.y}\`;
+        return html\`<path d="M \${c0} C \${c1} \${c2} \${c3}" stroke="\${color}" fill="transparent" stroke-width="2" stroke-linecap="round"></path><text x="\${p1.x + 5}" y="\${p1.y}">\${label}</text>\`;
+    };
+
+    const hovered = Events.receiver();
+    const hoveredB = Behaviors.keep(hovered);
+
+    const graph = ((positions, padView, analyzed, hoveredB, showGraph) => {
+        if (hoveredB === null) {return [];}
+        if (!showGraph) {return [];}
+
+        const edges = analyzed.get(hoveredB);
+
+        if (!edges) {return [];} // runner does not have edges
+
+        const outEdges = edges.edgesOut.map((edge) => {
+            const ind = edges.exports.indexOf(edge.id);
+            let p1 = positions.map.get(hoveredB);
+            p1 = {x: p1.x + p1.width, y: p1.y};
+            p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
+            p1 = {x: p1.x * padView.scale + padView.x, y: p1.y * padView.scale + padView.y};
+            let p2 = positions.map.get(edge.dest);
+            p2 = {x: p2.x, y: p2.y + 10};
+            p2 = {x: p2.x * padView.scale + padView.x, y: p2.y * padView.scale + padView.y};
+            return line(p1, p2, "#d88", edge.id);
+        });
+
+        const inEdges = edges.edgesIn.map((edge) => {
+            const exporter = analyzed.get(edge.origin);
+            const ind = exporter.exports.indexOf(edge.id);
+            let p1 = positions.map.get(edge.origin);
+            p1 = {x: p1.x + p1.width, y: p1.y};
+            p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
+            p1 = {x: p1.x * padView.scale + padView.x, y: p1.y * padView.scale + padView.y};
+            let p2 = positions.map.get(hoveredB);
+            p2 = {x: p2.x, y: p2.y + 10};
+            p2 = {x: p2.x * padView.scale + padView.x, y: p2.y * padView.scale + padView.y};
+            return line(p1, p2, "#88d", edge.id);
+        });
+
+        return html\`<svg viewBox="0 0 \${window.innerWidth} \${window.innerHeight}" xmlns="http://www.w3.org/2000/svg">\${outEdges}\${inEdges}</svg>\`;
+    })(positions, padView, analyzed, hoveredB, showGraph);
+
+    const _graphRender = render(graph, document.querySelector("#overlay"));
+
+`],
+[`9`, `    // [id:string]
+    const windows = Behaviors.select(
+        [],
+        loadRequest, (now, data) => {
+            console.log("windows loaded");
+            return data.windows
+        },
+        newWindowRequest, (now, spec) => [...now, \`\${spec.id}\`],
+        remove, (now, removeCommand) => now.filter((e) => e != removeCommand.id),
+    );
+
+    // {map: Map<id, type:"code"|"runner">
+    const windowTypes = Behaviors.select(
+        {map: new Map()},
+        loadRequest, (now, data) => {
+            console.log("windowTypes loaded");
+            return data.windowTypes;
+        },
+        newWindowRequest, (now, spec) => {
+            now.map.set(\`\${spec.id}\`, spec.type);
+            return {map: now.map};
+        },
+        Events.change(windows), (now, windows) => {
+            const keys = [...now.map.keys()];
+            const news = windows.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !windows.includes(e));
+
+            olds.forEach((id) => now.map.delete(\`\${id}\`));
+            news.forEach((id) => now.map.set(\`\${id}\`, "code"));
+            return {map: now.map};
+        }
+    );
+
+    // {id, x: number, y: number, width: number, height: number}
+    const positions = Behaviors.select(
+        {map: new Map()},
+        loadRequest, (now, data) => {
+            console.log("positions loaded");
+            return data.positions
+        },
+        Events.change(windowTypes), (now, types) => {
+            const keys = [...now.map.keys()];
+            const typeKeys = [...types.map.keys()];
+            const news = typeKeys.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !typeKeys.includes(e));
+
+            const newX = (-padView.x + typeKeys.length * 5 + 40) / padView.scale;
+            const newY = (-padView.y + typeKeys.length * 5 + 45) / padView.scale;
+
+            const newWindow = (id, type) => {
+                return {
+                    id,
+                    x: newX,
+                    y: newY,
+                    width: type === "code" ? 300 : 800,
+                    height: type === "code" ? 200 : 400
+                }
+            };
+            olds.forEach((id) => now.map.delete(\`\${id}\`));
+            news.forEach((id) => now.map.set(\`\${id}\`, newWindow(id, types.map.get(id))));
+            return {map: now.map};
+        },
+        moveOrResize, (now, command) => {
+            if (command.type === "move" || command.type === "resize") {
+                const v = {...now.map.get(command.id), ...command};
+                v.width = Math.max(120, v.width);
+                v.height = Math.max(120, v.height);
+                now.map.set(command.id, v);
+                return {map: now.map};
+            }
+            return now;
+        },
+    );
+
+    const findMax = (map)  => {
+        let maxId = -1;
+        let max = -1;
+        for (let [id, value] of map) {
+            if (value > max) {
+                maxId = id;
+                max = value;
+            }
+        }
+        return {maxId, max};
+    };
+
+    const zIndex = Behaviors.select(
+        {map: new Map()},
+        loadRequest, (now, data) => {
+            console.log("zIndex loaded");
+            if (data.zIndex) return data.zIndex;
+            return {map: new Map(data.windows.map((w, i) => [w, i + 100]))};
+        },
+        Events.change(windows), (now, command) => {
+            const keys = [...now.map.keys()];
+            const news = command.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !command.includes(e));
+
+            const {maxId:_maxId, max} = findMax(now.map);
+            let z = max < 0 ? 100 : max + 1;
+            olds.forEach((id) => now.map.delete(id));
+            news.forEach((id) => now.map.set(id, z++));
+            return {map: now.map};
+        },
+        moveOrResize, (now, command) => {
+            if (command.type === "move") {
+                const z = now.map.get(command.id);
+
+                const {maxId, max} = findMax(now.map);
+                if (maxId !== command.id) {
+                    now.map.set(maxId, z);
+                    now.map.set(command.id, max);
+                }
+                return {map: now.map};
+            }
+            return now
+        },
+    );
+
+    const titles = Behaviors.select(
+        {map: new Map()},
+        loadRequest, (now, loaded) => {
+            console.log("titles loaded");
+            return loaded.titles || {map: new Map()};
+        },
+        Events.change(windows), (now, command) => {
+            const keys = [...now.map.keys()];
+            const news = command.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !command.includes(e));
+
+            olds.forEach((id) => now.map.delete(id));
+            news.forEach((id) => now.map.set(id, {id, state: false, title: "untitled"}));
+            return {map: now.map};
+        },
+        titleEditChange, (now, change) => {
+            const id = change.id;
+            const v = {...now.map.get(id), ...change};
+            now.map.set(id, v);
+            return {map: now.map};
+        }
+    );
+
+    const windowContents = Behaviors.select(
+        {map: new Map()},
+        loadRequest, (now, loaded) => {
+            for (let editor of now.map.values()) {
+                editor.dom.remove();
+            }
+            now.map.clear();
+
+            for (let [id, type] of loaded.windowTypes.map) {
+                let elem;
+                if (type === "code") {
+                    elem = newEditor(id, loaded.code.get(id));
+                } else {
+                    elem = newRunner(id);
+                }
+                now.map.set(id, elem);
+            }
+            return {map: now.map};
+        },
+        Events.change(windowTypes), (now, types) => {
+            const keys = [...now.map.keys()];
+            const typeKeys = [...types.map.keys()];
+            const news = typeKeys.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !typeKeys.includes(e));
+            olds.forEach((id) => {
+                const editor = now.map.get(id);
+                editor.dom.remove();
+                now.map.delete(id)
+            });
+            news.forEach((id) => {
+                const type = types.map.get(id);
+                now.map.set(id, type === "code" ? newEditor(id) : newRunner(id));
+            });
+            return {map: now.map};
+        }
+    );
+
+    const init = Events.once("code");
+
+    const newId = Events.select(
+        0,
+        loadRequest, (now, request) => {
+            const max = Math.max(...request.windows.map((w) => Number.parseInt(w)));
+            return max;
+        },
+        Events.or(addCode, addRunner, init), (now, _type) => now + 1
+    );
+
+    const newWindowRequest = Events.change({id: newId, type: Events.or(addCode, addRunner, init), padView});
+
+    const newEditor = (id, doc) => {
+        const mirror = window.CodeMirror;
+
+        const config = {
+	    // eslint configuration
+            languageOptions: {
+                globals: mirror.globals,
+                parserOptions: {
+                    ecmaVersion: 2022,
+                    sourceType: "module",
+                },
+            },
+            rules: {
+	    },
+        };
+        
+        const editor = new mirror.EditorView({
+            doc: doc || \`console.log("hello")\`,
+            extensions: [
+                mirror.basicSetup,
+                mirror.javascript({typescript: true}),
+                mirror.EditorView.lineWrapping,
+                mirror.EditorView.editorAttributes.of({"class": "editor"}),
+                mirror.keymap.of([mirror.indentWithTab]),
+                mirror.linter(mirror.esLint(new mirror.eslint.Linter(), config))
+            ],
+        });
+        editor.dom.id = \`\${id}-editor\`;
+        return editor;
+    };
+
+    const newRunner = (id) => {
+        const runnerIframe = document.createElement("iframe");
+        runnerIframe.srcdoc = \`
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script type="module">
+            import {ProgramState, CodeMirror} from "./renkon-web.js";
+            window.thisProgramState = new ProgramState(0);
+            window.CodeMirror = CodeMirror;
+
+            window.onmessage = (evt) => {
+                if (evt.data && Array.isArray(evt.data.code)) {
+                    window.thisProgramState.updateProgram(evt.data.code, evt.data.path);
+                    if (window.thisProgramState.evaluatorRunning === 0) {
+                        window.thisProgramState.evaluator();
+                    }
+                }
+            };
+        </script>
+    </head>
+    <body></body>
+</html>\`;
+        runnerIframe.classList = "runnerIframe";
+        runnerIframe.id = \`runner-\${id}\`;
+        return {dom: runnerIframe};
+    };
+
+    const padView = Behaviors.select(
+        {x: 0, y: 0, scale: 1},
+        padViewChange, (now, view) => {
+            let {x, y, scale} = view;
+
+            if (scale < 0.1) {scale = 0.1;}
+            if (scale > 20) {scale = 20;}
+            return {...now, ...{x, y, scale}};
+        }
+    );
+
+    const padTitle = Behaviors.select(
+        "untitled",
+        loadRequest, (now, data) => {
+            console.log("padTitle loaded");
+            return data.padTitle || "untitled"
+        },
+        titleChange, (now, request) => request
+    );
+
+    const titleChange = Events.observe((notify) => {
+        const change = (evt) => {
+            notify(evt.target.value);
+        };
+
+        renkon.querySelector("#padTitle").addEventListener("input", change);
+        return () => {renkon.querySelector("#padtitle").removeEventListener("change", change);}
+    });
+
+    const _padTitleUpdater = ((padTitle) => {
+        if (renkon.querySelector("#padTitle").value !== padTitle) {
+            renkon.querySelector("#padTitle").value = padTitle;
+        }
+    })(padTitle);
+`],
+[`11`, `    const {h, html, render} = import("./preact.standalone.module.js");
+    const {stringify, parse, stringifyCodeMap, parseCodeMap} = import ("./stable-stringify.js");
+
+    const renkon = (() => {
+        const renkon = document.createElement("div");
+        renkon.id = "renkon";
+        renkon.innerHTML = \`
+<div id="buttonBox">
+   <input class="menuButton" id="padTitle"></input>
+   <button class="menuButton" id="addCodeButton">code</button>
+   <button class="menuButton" id="addRunnerButton">runner</button>
+   <div class="spacer"></div>
+   <button class="menuButton" id="showGraph">show graph</button>
+   <button class="menuButton" id="saveButton">save</button>
+   <button class="menuButton" id="loadButton">load</button>
+</div>
+<div id="pad"><div id="mover"></div></div>
+<div id="overlay"></div>
+<div id="navigationBox">
+   <div class="navigationButton"><div id="homeButton" class="navigationButtonImage"></div></div>
+   <div class="navigationButton with-border"><div id="zoomInButton" class="navigationButtonImage"></div></div>
+   <div class="navigationButton with-border"><div id="zoomOutButton" class="navigationButtonImage"></div></div>
+</div>
+
+\`.trim();
+
+        document.body.querySelector("#renkon")?.remove();
+        document.body.appendChild(renkon);
+        return renkon;
+    })();
+
+`]]}
