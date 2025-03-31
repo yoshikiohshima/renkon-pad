@@ -789,34 +789,7 @@ export function pad() {
                 reader.readAsArrayBuffer(file);
             }).then((data) => {
                 const result = new TextDecoder("utf-8").decode(data);
-                const index = result.indexOf("{__codeMap: true, value:");
-
-                if (index < 0) {
-                    const loaded = parse(result);
-                    if (loaded.version === 1) {
-                        Events.send(loadRequest, loaded);
-                        imageInput.remove();
-                        return;
-                    }
-                    console.log("unknown type of data");
-                    imageInput.remove();
-                    return;
-                }
-
-                const data1 = result.slice(0, index);
-                const data2 = result.slice(index);
-
-                const loaded = parse(data1);
-
-                if (loaded.version === 2) {
-                    const code = parseCodeMap(data2);
-                    loaded.code = code;
-                    Events.send(loadRequest, loaded);
-                    imageInput.remove();
-                    return;
-                }
-                console.log("unknown type of data");
-                imageInput.remove();
+                loadData(result, imageInput);
             });
             imageInput.value = "";
         };
@@ -833,15 +806,17 @@ export function pad() {
         return undefined;
     })();
 
-    const _loadFromUrl = fetch(nameFromUrl).then((resp) => resp.text()).then((result) => {
+    const loadData = (result, maybeImageInput) => {
         const index = result.indexOf("{__codeMap: true, value:");
         if (index < 0) {
             const loaded = parse(result);
             if (loaded.version === 1) {
                 Events.send(loadRequest, loaded);
+                maybeImageInput?.remvoe();
                 return;
             }
             console.log("unknown type of data");
+            maybeImageInput?.remvoe();
             return;
         }
 
@@ -854,9 +829,15 @@ export function pad() {
             const code = parseCodeMap(data2);
             loaded.code = code;
             Events.send(loadRequest, loaded);
+            maybeImageInput?.remove();
             return;
         }
         console.log("unknown type of data");
+        maybeImageInput.remove();
+    }
+
+    const _loadFromUrl = fetch(nameFromUrl).then((resp) => resp.text()).then((result) => {
+        loadData(result, null);
     });
 
     // Graph Visualization
