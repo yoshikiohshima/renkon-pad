@@ -809,7 +809,6 @@ export function pad() {
                 const loaded = parse(data1);
 
                 if (loaded.version === 2) {
-                    debugger;
                     const code = parseCodeMap(data2);
                     loaded.code = code;
                     Events.send(loadRequest, loaded);

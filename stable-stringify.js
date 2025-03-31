@@ -17,7 +17,7 @@ limitations under the License.
 function stringifyInner(node, seen) {
     if (node === undefined) return undefined;
     if (typeof node === 'number') return Number.isFinite(node) ? `${node}` : 'null';
-    if (typeof node !== 'object') return JSON.stringify(node);
+    if (typeof node !== 'object') return JSON.stringify(node, null, 4);
 
     let out;
     if (Array.isArray(node)) {
@@ -78,7 +78,7 @@ export function parse(string) {
 
 export function stringifyCodeMap(map) {
     function replace(str) {
-        return str.replaceAll("`", "\\`");
+        return str.replaceAll("`", "\\`").replaceAll("$", "\\$");
     }
 
     return "\n{__codeMap: true, value: " + "[" + 
