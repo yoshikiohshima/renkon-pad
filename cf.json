@@ -1,1 +1,71 @@
-{"code":{"__map":true,"values":[["1","const renkon = (() => {\n      const renkon = document.createElement(\"div\");\n      renkon.id = \"renkon\";\n      renkon.innerHTML = `\n<div id=\"container\" style=\"display: flex; flex-direction: column; width: 200px\">\n  <div>Celcius:</div>\n  <input id=\"celciusReadout\" style=\"margin-left: 5px\"></input>\n  <div>Fahrenheit:</div>\n  <input id=\"fahrenheitReadout\"style=\"margin-left: 5px\"></input>\n</div>\n`.trim();\n\n      document.body.querySelector(\"#renkon\")?.remove();\n      document.body.appendChild(renkon);\n      return renkon;\n  })();\n\n"],["3","  const f = Behaviors.collect(\n    32,\n    Events.or(Events.change($c), cChange),\n    (old, c) => updater(old, c, (v) => v * 1.8 + 32));\n                \n  const c = Behaviors.collect(\n    0,\n    Events.or(Events.change($f), fChange),\n    (old, f) => updater(old, f, v => (v - 32) / 1.8));\n\n  const updater = (old, value, formula) => {\n    const result = formula(value);\n    if (Number.isNaN(result)) {return old;}\n    return result;\n  };\n            \n  const set = (value, n) => {\n    const elem = document.querySelector(n);\n    if (Math.abs(parseFloat(elem.value) - value) < 0.001) {return;}\n    elem.value = `${value}`;\n  };\n\n  const _c_setter = ((value, n) => set(value, n))(c, \"#celciusReadout\");\n  const _f_setter = ((value, n) => set(value, n))(f, \"#fahrenheitReadout\");\n\n  const cChange = Events.listener(renkon.querySelector(\"#celciusReadout\"), \"input\", evt => evt.target.value);\n  const fChange = Events.listener(renkon.querySelector(\"#fahrenheitReadout\"), \"input\", evt => evt.target.value);\n"]]},"padTitle":"untitled","positions":{"map":{"__map":true,"values":[["1",{"height":349.63671875,"id":"1","type":"resize","width":568.17578125,"x":26.84375,"y":30.14453125}],["3",{"height":542.16796875,"id":"3","type":"resize","width":774.95703125,"x":609.49609375,"y":24.8671875}]]}},"titles":{"map":{"__map":true,"values":[["1",{"id":"1","state":false,"title":"DOM creation"}],["3",{"id":"3","state":false,"title":"Logic"}]]}},"version":1,"windowTypes":{"map":{"__map":true,"values":[["1","code"],["3","code"]]}},"windows":["1","3"],"zIndex":{"map":{"__map":true,"values":[["1",100],["3",103]]}}}
+{"padTitle":"CF",
+"positions":{"map":{"__map":true,
+"values":[["1",{"height":349.63671875,
+"id":"1",
+"type":"resize",
+"width":568.17578125,
+"x":26.84375,
+"y":30.14453125}],["3",{"height":542.16796875,
+"id":"3",
+"type":"resize",
+"width":774.95703125,
+"x":609.49609375,
+"y":24.8671875}]]}},
+"titles":{"map":{"__map":true,
+"values":[["1",{"id":"1",
+"state":false,
+"title":"DOM creation"}],["3",{"id":"3",
+"state":false,
+"title":"Logic"}]]}},
+"version":2,
+"windowTypes":{"map":{"__map":true,
+"values":[["1","code"],["3","code"]]}},
+"windows":["1","3"],
+"zIndex":{"map":{"__map":true,
+"values":[["1",100],["3",103]]}}}
+{__codeMap: true, value: [[`1`, `const renkon = (() => {
+      const renkon = document.createElement("div");
+      renkon.id = "renkon";
+      renkon.innerHTML = \`
+<div id="container" style="display: flex; flex-direction: column; width: 200px">
+  <div>Celcius:</div>
+  <input id="celciusReadout" style="margin-left: 5px"></input>
+  <div>Fahrenheit:</div>
+  <input id="fahrenheitReadout"style="margin-left: 5px"></input>
+</div>
+\`.trim();
+
+      document.body.querySelector("#renkon")?.remove();
+      document.body.appendChild(renkon);
+      return renkon;
+  })();
+
+`],
+[`3`, `  const f = Behaviors.collect(
+    32,
+    Events.or(Events.change(\$c), cChange),
+    (old, c) => updater(old, c, (v) => v * 1.8 + 32));
+                
+  const c = Behaviors.collect(
+    0,
+    Events.or(Events.change(\$f), fChange),
+    (old, f) => updater(old, f, v => (v - 32) / 1.8));
+
+  const updater = (old, value, formula) => {
+    const result = formula(value);
+    if (Number.isNaN(result)) {return old;}
+    return result;
+  };
+            
+  const set = (value, n) => {
+    const elem = document.querySelector(n);
+    if (Math.abs(parseFloat(elem.value) - value) < 0.001) {return;}
+    elem.value = \`\${value}\`;
+  };
+
+  const _c_setter = ((value, n) => set(value, n))(c, "#celciusReadout");
+  const _f_setter = ((value, n) => set(value, n))(f, "#fahrenheitReadout");
+
+  const cChange = Events.listener(renkon.querySelector("#celciusReadout"), "input", evt => evt.target.value);
+  const fChange = Events.listener(renkon.querySelector("#fahrenheitReadout"), "input", evt => evt.target.value);
+`]]}

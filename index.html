@@ -44,9 +44,22 @@
                     }
                 }
 
-                if (docName) {
-                    fetch(docName).then((resp) => resp.json()).then((json) => {
-                        programState.setupProgram(json.code.values.map((pair) => ({blockId: pair[0], code: pair[1]})), docName);
+            if (docName) {
+                fetch(docName).then((resp) => resp.text()).then((result) => {
+                    const index = result.indexOf("{__codeMap: true, value:");
+                    let code;
+                    if (index < 0) {
+                        const json = JSON.parse(result);
+                        if (json.version !== 1) {
+                            console.log("unknown type of data");
+                        }
+                        code = JSON.parse(result).code.values;
+                    } else {
+                        const data2 = result.slice(index);
+                        const array = eval("(" + data2 + ")");
+                        code = array.value;
+                    }
+                    programState.setupProgram(code.map((pair) => ({blockId: pair[0], code: pair[1]})), docName);
                         if (programState.evaluatorRunning === 0) {
                             programState.evaluator();
                         }
