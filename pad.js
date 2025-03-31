@@ -833,9 +833,30 @@ export function pad() {
         return undefined;
     })();
 
-    const _loadFromUrl = fetch(nameFromUrl).then((resp) => resp.text()).then((text) => {
-        const data = parse(text);
-        Events.send(loadRequest, data);
+    const _loadFromUrl = fetch(nameFromUrl).then((resp) => resp.text()).then((result) => {
+        const index = result.indexOf("{__codeMap: true, value:");
+        if (index < 0) {
+            const loaded = parse(result);
+            if (loaded.version === 1) {
+                Events.send(loadRequest, loaded);
+                return;
+            }
+            console.log("unknown type of data");
+            return;
+        }
+
+        const data1 = result.slice(0, index);
+        const data2 = result.slice(index);
+
+        const loaded = parse(data1);
+
+        if (loaded.version === 2) {
+            const code = parseCodeMap(data2);
+            loaded.code = code;
+            Events.send(loadRequest, loaded);
+            return;
+        }
+        console.log("unknown type of data");
     });
 
     // Graph Visualization
