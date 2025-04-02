@@ -1184,7 +1184,7 @@ html, body {
 }
 
 .runButton {
-    background-image: url("data:image/svg+xml,%3Csvg%20id%3D%22Layer_1%22%20data-name%3D%22Layer%201%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M12.32%2C19.94c-2.36-.11-4.67-.17-7-.34-1.91-.14-2.65-.91-2.89-2.91a29.26%2C29.26%2C0%2C0%2C1%2C.09-8.2A2.63%2C2.63%2C0%2C0%2C1%2C5.11%2C6.11%2C102.77%2C102.77%2C0%2C0%2C1%2C18.59%2C6a8.52%2C8.52%2C0%2C0%2C1%2C1.12.12C21.15%2C6.38%2C21.88%2C7.2%2C22.1%2C9A29.32%2C29.32%2C0%2C0%2C1%2C22%2C17.19a2.58%2C2.58%2C0%2C0%2C1-2.59%2C2.4C17%2C19.73%2C14.66%2C19.82%2C12.32%2C19.94Zm-2.06-4.05%2C5.29-3-5.29-3Z%22%20fill%3D%22%234D4D4D%22%2F%3E%3C%2Fsvg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3C!--%20Box%20outline%20--%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2218%22%20height%3D%2218%22%20rx%3D%222%22%20ry%3D%222%22%2F%3E%3C!--%20Right-pointing%20triangle%20(play%20icon)%20--%3E%3Cpath%20d%3D%22M9%207L17%2012L9%2017Z%22%20fill%3D%22%234D4D4D%22%20stroke%3D%22none%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
     display: none;
     pointer-events: none;
 }
@@ -1279,11 +1279,11 @@ html, body {
 }
 
 .enabledButton {
-    background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3C!--%20Outlined%20box%20--%3E%3Cpath%20d%3D%22M19%2C3%20L5%2C3%20C3.9%2C3%203%2C3.9%203%2C5%20L3%2C19%20C3%2C20.1%203.9%2C21%205%2C21%20L19%2C21%20C20.1%2C21%2021%2C20.1%2021%2C19%20L21%2C5%20C21%2C3.9%2020.1%2C3%2019%2C3%20Z%20M19%2C19%20L5%2C19%20L5%2C5%20L19%2C5%20L19%2C19%20Z%22%20fill%3D%22%234D4D4D%22%2F%3E%3C!--%20Checkmark%20--%3E%3Cpath%20d%3D%22M9%2016.17L5.83%2013L4.41%2014.41L9%2019L20%208L18.59%206.59L9%2016.17Z%22%20fill%3D%22%234D4D4D%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3C!--%20Box%20outline%20--%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2218%22%20height%3D%2218%22%20rx%3D%222%22%20ry%3D%222%22%20stroke-width%3D%222%22%2F%3E%3C!--%20Thicker%20checkmark%20--%3E%3Cpath%20d%3D%22M5.5%2012.5L10.5%2017.5L18.5%207.5%22%20stroke-width%3D%223%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
 }
 
 .enabledButton[disabled="true"] {
-    background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%234D4D4D%22%20fill-rule%3D%22evenodd%22%3E%3Cpath%20d%3D%22M19%2C3%20L5%2C3%20C3.9%2C3%203%2C3.9%203%2C5%20L3%2C19%20C3%2C20.1%203.9%2C21%205%2C21%20L19%2C21%20C20.1%2C21%2021%2C20.1%2021%2C19%20L21%2C5%20C21%2C3.9%2020.1%2C3%2019%2C3%20Z%20M19%2C19%20L5%2C19%20L5%2C5%20L19%2C5%20L19%2C19%20Z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2218%22%20height%3D%2218%22%20rx%3D%222%22%20ry%3D%222%22%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
 }
 
 .cm-tooltip-lint {
