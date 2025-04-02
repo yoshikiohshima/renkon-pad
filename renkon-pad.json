@@ -53,6 +53,15 @@
 "state":false,
 "title":"Initialization"}]]}},
 "version":2,
+"windowEnabled":{"map":{"__map":true,
+"values":[["3",{"enabled":true,
+"id":"3"}],["4",{"enabled":true,
+"id":"4"}],["5",{"enabled":true,
+"id":"5"}],["6",{"enabled":true,
+"id":"6"}],["7",{"enabled":true,
+"id":"7"}],["9",{"enabled":true,
+"id":"9"}],["11",{"enabled":true,
+"id":"11"}]]}},
 "windowTypes":{"map":{"__map":true,
 "values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"]]}},
 "windows":["3","4","5","6","7","9","11"],
@@ -503,7 +512,7 @@
 `],
 [`5`, `    const loadRequest = Events.receiver();
 
-    const _saver2 = ((windows, positions, zIndex, titles, windowContents, windowTypes, padTitle) => {
+    const _saver2 = ((windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
         const code = new Map([...windowContents.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
         const data1 = stringify({
             version: 2,
@@ -512,7 +521,8 @@
             zIndex,
             titles,
             windowTypes,
-            padTitle
+            padTitle,
+            windowEnabled
         });
 
         const data2 = stringifyCodeMap(code);
@@ -522,7 +532,7 @@
         div.setAttribute("href", dataStr);
         div.setAttribute("download", \`\${padTitle}.json\`);
         div.click();
-    })(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, save);
+    })(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled, save);
 
     const _loader = (() => {
         const input = document.createElement("div");
