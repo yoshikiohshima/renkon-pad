@@ -192,7 +192,7 @@ export function pad() {
             return {map: now.map};
         },
         enabledChange, (now, change) => {
-            console.log("enabledChange", change);
+            // console.log("enabledChange", change);
             const id = change.id;
             const v = {...now.map.get(id), ...change};
             now.map.set(id, v);
@@ -730,6 +730,7 @@ export function pad() {
             }, [
                 h("div", {
                     id: `${id}-enabledButton`,
+                    disabled: !!(windowEnabled && !windowEnabled.enabled),
                     style: {
                         display: `${type !== "code" ? "none" : "inheirt"}`
                     },
@@ -1164,7 +1165,7 @@ html, body {
     margin: 2px;
     margin-top: 2px;
     pointer-events: all;
-    border-radius: 8px;
+    border-radius: 4px;
     background-position: center;
     cursor: pointer;
 }
@@ -1274,6 +1275,14 @@ html, body {
 
 #homeButton {
     background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3Ctitle%3Eicon%2Fview-centered%3C%2Ftitle%3E%3Cg%20id%3D%22icon%2Fview-centered%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22Group-3%22%20transform%3D%22translate(2.000000%2C%204.000000)%22%20fill%3D%22%234D4D4D%22%3E%3Cpath%20d%3D%22M0%2C9%20L3%2C9%20L3%2C7%20L0%2C7%20L0%2C9%20Z%20M17%2C9%20L20.001%2C9%20L20.001%2C7%20L17%2C7%20L17%2C9%20Z%20M9%2C3%20L11%2C3%20L11%2C0%20L9%2C0%20L9%2C3%20Z%20M13%2C9%20L11%2C9%20L11%2C11%20L9%2C11%20L9%2C9%20L7%2C9%20L7%2C7%20L9%2C7%20L9%2C5%20L11%2C5%20L11%2C7%20L13%2C7%20L13%2C9%20Z%20M9%2C16%20L11%2C16%20L11%2C13%20L9%2C13%20L9%2C16%20Z%20M13%2C0%20L13%2C2%20L18%2C2%20L18%2C5%20L20%2C5%20L20%2C0%20L13%2C0%20Z%20M18%2C14%20L13%2C14%20L13%2C16%20L20%2C16%20L20%2C11%20L18%2C11%20L18%2C14%20Z%20M0%2C5%20L2%2C5%20L2%2C2%20L7%2C2%20L7%2C0%20L0%2C0%20L0%2C5%20Z%20M2%2C11%20L0%2C11%20L0%2C16%20L7%2C16%20L7%2C14%20L2%2C14%20L2%2C11%20Z%22%20id%3D%22Fill-1%22%3E%3C%2Fpath%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+.enabledButton {
+    background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3C!--%20Outlined%20box%20--%3E%3Cpath%20d%3D%22M19%2C3%20L5%2C3%20C3.9%2C3%203%2C3.9%203%2C5%20L3%2C19%20C3%2C20.1%203.9%2C21%205%2C21%20L19%2C21%20C20.1%2C21%2021%2C20.1%2021%2C19%20L21%2C5%20C21%2C3.9%2020.1%2C3%2019%2C3%20Z%20M19%2C19%20L5%2C19%20L5%2C5%20L19%2C5%20L19%2C19%20Z%22%20fill%3D%22%234D4D4D%22%2F%3E%3C!--%20Checkmark%20--%3E%3Cpath%20d%3D%22M9%2016.17L5.83%2013L4.41%2014.41L9%2019L20%208L18.59%206.59L9%2016.17Z%22%20fill%3D%22%234D4D4D%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+.enabledButton[disabled="true"] {
+    background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%234D4D4D%22%20fill-rule%3D%22evenodd%22%3E%3Cpath%20d%3D%22M19%2C3%20L5%2C3%20C3.9%2C3%203%2C3.9%203%2C5%20L3%2C19%20C3%2C20.1%203.9%2C21%205%2C21%20L19%2C21%20C20.1%2C21%2021%2C20.1%2021%2C19%20L21%2C5%20C21%2C3.9%2020.1%2C3%2019%2C3%20Z%20M19%2C19%20L5%2C19%20L5%2C5%20L19%2C5%20L19%2C19%20Z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
 }
 
 .cm-tooltip-lint {
