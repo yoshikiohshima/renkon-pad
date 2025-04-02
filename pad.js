@@ -795,7 +795,7 @@ export function pad() {
 
     const loadRequest = Events.receiver();
 
-    const _saver2 = ((windows, positions, zIndex, titles, windowContents, windowTypes, padTitle) => {
+    const _saver2 = ((windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
         const code = new Map([...windowContents.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
         const data1 = stringify({
             version: 2,
@@ -804,7 +804,8 @@ export function pad() {
             zIndex,
             titles,
             windowTypes,
-            padTitle
+            padTitle,
+            windowEnabled
         });
 
         const data2 = stringifyCodeMap(code);
@@ -814,7 +815,7 @@ export function pad() {
         div.setAttribute("href", dataStr);
         div.setAttribute("download", `${padTitle}.json`);
         div.click();
-    })(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, save);
+    })(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled, save);
 
     const _loader = (() => {
         const input = document.createElement("div");
