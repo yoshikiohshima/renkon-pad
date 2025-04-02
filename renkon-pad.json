@@ -4,38 +4,38 @@
 "id":"3",
 "type":"move",
 "width":639.1328125,
-"x":569.4909011108825,
-"y":281.78515625}],["4",{"height":156.05859375,
+"x":725.1447604906326,
+"y":787.598787607528}],["4",{"height":345.4516930334715,
 "id":"4",
 "type":"move",
-"width":422.49609375,
-"x":1263.0629476736149,
-"y":56.15330921358563}],["5",{"height":222.1761186226843,
+"width":721.731992894,
+"x":1602.230420289683,
+"y":256.333072806876}],["5",{"height":250.3783509993504,
 "id":"5",
 "type":"move",
-"width":423.40083434258537,
-"x":1256.4765361525328,
-"y":230.57815758403288}],["6",{"height":120.2578125,
+"width":721.5561464058198,
+"x":1601.2132363513158,
+"y":651.572235343266}],["6",{"height":411.64059036642834,
 "id":"6",
 "type":"move",
-"width":428.8203125,
-"x":1257.7621465460402,
-"y":723.25390625}],["7",{"height":229.41796875,
+"width":736.7184666793163,
+"x":1601.1548224378387,
+"y":1256.4548987351468}],["7",{"height":250.13315268279314,
 "id":"7",
 "type":"move",
-"width":432.4375,
-"x":1253.192414704304,
-"y":471.7458687049746}],["9",{"height":200.41796875,
+"width":712.8358509371855,
+"x":1606.5886681067773,
+"y":953.8425994063871}],["9",{"height":481.6400293226243,
 "id":"9",
-"type":"move",
-"width":488.5546875,
-"x":604.1508643538015,
-"y":53.695262221501494}],["11",{"height":425.50390625,
+"type":"resize",
+"width":632.5380333224966,
+"x":729.8145015089767,
+"y":246.50548704920294}],["11",{"height":425.50390625,
 "id":"11",
 "type":"move",
 "width":574.8828125,
-"x":-17.4453125,
-"y":42.3125}]]}},
+"x":-60.14356475878803,
+"y":250.9394792496133}]]}},
 "titles":{"map":{"__map":true,
 "values":[["3",{"id":"3",
 "state":false,
@@ -57,7 +57,7 @@
 "values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"]]}},
 "windows":["3","4","5","6","7","9","11"],
 "zIndex":{"map":{"__map":true,
-"values":[["3",109],["4",107],["5",105],["6",108],["7",100],["9",103],["11",104]]}}}
+"values":[["3",110],["4",104],["5",109],["6",107],["7",100],["9",103],["11",105]]}}}
 {__codeMap: true, value: [[`3`, `    const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
     const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
     const save = Events.listener(renkon.querySelector("#saveButton"), "click", (evt) => evt);
@@ -209,17 +209,18 @@
 
     document.querySelector("#showGraph").textContent = showGraph ? "show graph" : "hide graph";
 
-    const _onRun = ((runRequest, windowContents) => {
+    const _onRun = ((runRequest, windowContents, windowEnabled) => {
         const id = runRequest.id;
         const iframe = windowContents.map.get(id);
-        const code = [...windowContents.map.values()]
-            .filter((obj) => obj.state)
-            .map((editor) => editor.state.doc.toString());
+        const code = [...windowContents.map]
+            .filter(([id, obj]) => obj.state && windowEnabled.map.get(id).enabled)
+            .map(([_id, editor]) => editor.state.doc.toString());
         iframe.dom.contentWindow.postMessage({code: code, path: id});
-    })(runRequest, windowContents);
+    })(runRequest, windowContents, windowEnabled);
 
     const remove = Events.receiver();
     const titleEditChange = Events.receiver();
+    const enabledChange = Events.receiver();
     const runRequest = Events.receiver();
 
     const rawPadDown = Events.listener(renkon.querySelector("#pad"), "pointerdown", (evt) => {
@@ -410,7 +411,7 @@
         }
     };
 
-    const windowDOM = (id, position, zIndex, title, windowContent, type) => {
+    const windowDOM = (id, position, zIndex, title, windowContent, type, windowEnabled) => {
         // console.log("windowDOM");
         return h("div", {
             key: \`\${id}\`,
@@ -425,8 +426,8 @@
             },
             ref: (ref) => {
                 if (ref) {
-                    if (ref !== windowContent.dom.parentNode) {
-                        ref.appendChild(windowContent.dom);
+                    if (ref.querySelector(".windowHolder") !== windowContent.dom.parentNode) {
+                        ref.querySelector(".windowHolder").appendChild(windowContent.dom);
                     }
                 }
             },
@@ -437,6 +438,17 @@
                 id: \`\${id}-titleBar\`,
                 "class": "titleBar",
             }, [
+                h("div", {
+                    id: \`\${id}-enabledButton\`,
+                    style: {
+                      display: \`\${type !== "code" ? "none" : "inheirt"}\`
+                    },
+                    "class": "titlebarButton enabledButton",
+                    onClick: (evt) => {
+                        //console.log(evt);
+                        Events.send(enabledChange, {id: \`\${Number.parseInt(evt.target.id)}\`, enabled: !windowEnabled || !windowEnabled.enabled});
+                    },
+                }),
                 h("div", {
                     id: \`\${id}-runButton\`,
                     "class": "titlebarButton runButton",
@@ -471,15 +483,20 @@
             h("div", {
                 id: \`\${id}-resize\`,
                 "class": "resizeHandler",
+            }, []),
+            h("div", {
+                id: \`\${id}-windowHolder\`,
+                blurred: \`\${type !== "code" ? false : (windowEnabled ? !windowEnabled.enabled : false)}\`,
+                "class": "windowHolder",
             }, [])
         ])
     };
 
-    const windowElements = ((windows, positions, zIndex, titles, windowContents, windowTypes) => {
+    const windowElements = ((windows, positions, zIndex, titles, windowContents, windowTypes, windowEnabled) => {
         return h("div", {id: "owner", "class": "owner"}, windows.map((id) => {
-            return windowDOM(id, positions.map.get(id), zIndex.map.get(id), titles.map.get(id), windowContents.map.get(id), windowTypes.map.get(id));
+            return windowDOM(id, positions.map.get(id), zIndex.map.get(id), titles.map.get(id), windowContents.map.get(id), windowTypes.map.get(id), windowEnabled.map.get(id));
         }));
-    })(windows, positions, zIndex, titles, windowContents, windowTypes);
+    })(windows, positions, zIndex, titles, windowContents, windowTypes, windowEnabled);
 
     const _windowRender = render(windowElements, document.querySelector("#mover"));
 
@@ -674,7 +691,6 @@ html, body {
 .runnerIframe {
     width: 100%;
     height: calc(100% - 24px);
-    border-radius: 0px 0px 6px 6px;
     border: 2px solid black;
     box-sizing: border-box;
     border-radius: 0px 0px 6px 6px;
@@ -757,6 +773,14 @@ html, body {
 
 .resizeHandler:hover {
     background-color: rgba(0.1, 0.4, 0.1, 0.3);
+}
+
+.windowHolder {
+    height:100%;
+}
+
+.windowHolder[blurred="true"] {
+    filter: blur(4px)
 }
 
 #navigationBox {
@@ -1108,6 +1132,29 @@ html, body {
             return {map: now.map};
         },
         titleEditChange, (now, change) => {
+            const id = change.id;
+            const v = {...now.map.get(id), ...change};
+            now.map.set(id, v);
+            return {map: now.map};
+        }
+    );
+
+    const windowEnabled = Behaviors.select(
+        {map: new Map()},
+        loadRequest, (now, loaded) => {
+            console.log("windowEnabled loaded");
+            return loaded.windowEnabled || {map: new Map()};
+        },
+        Events.change(windows), (now, command) => {
+            const keys = [...now.map.keys()];
+            const news = command.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !command.includes(e));
+
+            olds.forEach((id) => now.map.delete(id));
+            news.forEach((id) => now.map.set(id, {id, enabled: true}));
+            return {map: now.map};
+        },
+        enabledChange, (now, change) => {
             const id = change.id;
             const v = {...now.map.get(id), ...change};
             now.map.set(id, v);

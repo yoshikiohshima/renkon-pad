@@ -176,6 +176,30 @@ export function pad() {
         }
     );
 
+    const windowEnabled = Behaviors.select(
+        {map: new Map()},
+        loadRequest, (now, loaded) => {
+            console.log("windowEnabled loaded");
+            return loaded.windowEnabled || {map: new Map()};
+        },
+        Events.change(windows), (now, command) => {
+            const keys = [...now.map.keys()];
+            const news = command.filter((e) => !keys.includes(e));
+            const olds = keys.filter((e) => !command.includes(e));
+
+            olds.forEach((id) => now.map.delete(id));
+            news.forEach((id) => now.map.set(id, {id, enabled: true}));
+            return {map: now.map};
+        },
+        enabledChange, (now, change) => {
+            console.log("enabledChange", change);
+            const id = change.id;
+            const v = {...now.map.get(id), ...change};
+            now.map.set(id, v);
+            return {map: now.map};
+        }
+    );
+
     const windowContents = Behaviors.select(
         {map: new Map()},
         loadRequest, (now, loaded) => {
@@ -241,7 +265,7 @@ export function pad() {
             rules: {
 	    },
         };
-        
+
         const editor = new mirror.EditorView({
             doc: doc || `console.log("hello")`,
             extensions: [
@@ -474,17 +498,18 @@ export function pad() {
 
     document.querySelector("#showGraph").textContent = showGraph ? "show graph" : "hide graph";
 
-    const _onRun = ((runRequest, windowContents) => {
+    const _onRun = ((runRequest, windowContents, windowEnabled) => {
         const id = runRequest.id;
         const iframe = windowContents.map.get(id);
-        const code = [...windowContents.map.values()]
-            .filter((obj) => obj.state)
-            .map((editor) => editor.state.doc.toString());
+        const code = [...windowContents.map]
+            .filter(([id, obj]) => obj.state && windowEnabled.map.get(id).enabled)
+            .map(([_id, editor]) => editor.state.doc.toString());
         iframe.dom.contentWindow.postMessage({code: code, path: id});
-    })(runRequest, windowContents);
+    })(runRequest, windowContents, windowEnabled);
 
     const remove = Events.receiver();
     const titleEditChange = Events.receiver();
+    const enabledChange = Events.receiver();
     const runRequest = Events.receiver();
 
     const rawPadDown = Events.listener(renkon.querySelector("#pad"), "pointerdown", (evt) => {
@@ -677,8 +702,7 @@ export function pad() {
         }
     };
 
-    const windowDOM = (id, position, zIndex, title, windowContent, type) => {
-        // console.log("windowDOM");
+    const windowDOM = (id, position, zIndex, title, windowContent, type, windowEnabled) => {
         return h("div", {
             key: `${id}`,
             id: `${id}-win`,
@@ -692,8 +716,8 @@ export function pad() {
             },
             ref: (ref) => {
                 if (ref) {
-                    if (ref !== windowContent.dom.parentNode) {
-                        ref.appendChild(windowContent.dom);
+                    if (ref.querySelector(".windowHolder") !== windowContent.dom.parentNode) {
+                        ref.querySelector(".windowHolder").appendChild(windowContent.dom);
                     }
                 }
             },
@@ -704,6 +728,17 @@ export function pad() {
                 id: `${id}-titleBar`,
                 "class": "titleBar",
             }, [
+                h("div", {
+                    id: `${id}-enabledButton`,
+                    style: {
+                        display: `${type !== "code" ? "none" : "inheirt"}`
+                    },
+                    "class": "titlebarButton enabledButton",
+                    onClick: (evt) => {
+                        //console.log(evt);
+                        Events.send(enabledChange, {id: `${Number.parseInt(evt.target.id)}`, enabled: !windowEnabled || !windowEnabled.enabled});
+                    },
+                }),
                 h("div", {
                     id: `${id}-runButton`,
                     "class": "titlebarButton runButton",
@@ -738,15 +773,20 @@ export function pad() {
             h("div", {
                 id: `${id}-resize`,
                 "class": "resizeHandler",
+            }, []),
+            h("div", {
+                id: `${id}-windowHolder`,
+                blurred: `${type !== "code" ? false : (windowEnabled ? !windowEnabled.enabled : false)}`,
+                "class": "windowHolder",
             }, [])
         ])
     };
 
-    const windowElements = ((windows, positions, zIndex, titles, windowContents, windowTypes) => {
+    const windowElements = ((windows, positions, zIndex, titles, windowContents, windowTypes, windowEnabled) => {
         return h("div", {id: "owner", "class": "owner"}, windows.map((id) => {
-            return windowDOM(id, positions.map.get(id), zIndex.map.get(id), titles.map.get(id), windowContents.map.get(id), windowTypes.map.get(id));
+            return windowDOM(id, positions.map.get(id), zIndex.map.get(id), titles.map.get(id), windowContents.map.get(id), windowTypes.map.get(id), windowEnabled.map.get(id));
         }));
-    })(windows, positions, zIndex, titles, windowContents, windowTypes);
+    })(windows, positions, zIndex, titles, windowContents, windowTypes, windowEnabled);
 
     const _windowRender = render(windowElements, document.querySelector("#mover"));
 
@@ -841,6 +881,7 @@ export function pad() {
     });
 
     // Graph Visualization
+
     const analyzed = ((windowContents, trigger, showGraph) => {
         if (!showGraph) {return new Map()}
         if (trigger === null) {return new Map()}
@@ -1083,7 +1124,6 @@ html, body {
 .runnerIframe {
     width: 100%;
     height: calc(100% - 24px);
-    border-radius: 0px 0px 6px 6px;
     border: 2px solid black;
     box-sizing: border-box;
     border-radius: 0px 0px 6px 6px;
@@ -1106,7 +1146,7 @@ html, body {
 .title {
     font-family: OpenSans-Regular;
     pointer-events: none;
-    margin-left: 20px;
+    margin-left: 10px;
     flex-grow: 1;
     margin-right: 20px;
     padding-left: 10px;
@@ -1166,6 +1206,14 @@ html, body {
 
 .resizeHandler:hover {
     background-color: rgba(0.1, 0.4, 0.1, 0.3);
+}
+
+.windowHolder {
+    height:100%;
+}
+
+.windowHolder[blurred="true"] {
+    filter: blur(4px)
 }
 
 #navigationBox {
@@ -1242,7 +1290,6 @@ html, body {
         renkon.querySelector("#pad-css")?.remove();
         renkon.appendChild(style);
     })(css);
-
     return [];
 }
 

@@ -1,5 +1,6 @@
 /*
-Copyright 2020 Croquet Corporation.
+  Copyright 2020 Croquet Corporation.
+  Copyright 2025 Yoshiki Ohshima
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
