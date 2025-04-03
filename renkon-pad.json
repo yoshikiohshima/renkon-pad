@@ -30,10 +30,10 @@
 "type":"resize",
 "width":632.5380333224966,
 "x":729.8145015089767,
-"y":246.50548704920294}],["11",{"height":425.50390625,
+"y":246.50548704920294}],["11",{"height":860.7920504731766,
 "id":"11",
-"type":"move",
-"width":574.8828125,
+"type":"resize",
+"width":649.2438217550074,
 "x":-60.14356475878803,
 "y":250.9394792496133}]]}},
 "titles":{"map":{"__map":true,
@@ -150,6 +150,7 @@
     Events.listener(document.body, "gestureend", preventDefaultSafari);
 
     const isSafari = window.navigator.userAgent.includes("Safari") && !window.navigator.userAgent.includes("Chrome");
+    const isMobile = !!("ontouchstart" in window);
 
     const pointercancel = Events.listener(renkon.querySelector("#pad"), "pointercancel", pointerLost);
     const lostpointercapture = Events.listener(renkon.querySelector("#pad"), "lostpointercapture", pointerLost);
@@ -160,7 +161,7 @@
     };
 
     const preventDefaultSafari = (evt) => {
-        if (!isSafari) {
+        if (!isSafari || isMobile) {
             evt.preventDefault();
         }
         return evt;
@@ -294,7 +295,7 @@
         if (!secondary) {return old;}
 
         const strId = secondary.target.id;
-        if (strId !== "pad") {return old;}
+        if (strId !== "pad") {return {type: "stuck", secondary: secondary.pointerId};}
         let primary =  evCache.get("primary");
         let x = secondary.clientX;
         let y = secondary.clientY;
@@ -403,11 +404,10 @@
                 Events.send(padViewChange, {x: newX, y: newY, scale: newScale});
                 return move;
             }
-        } else if (downOrUpOrResize.type === "pointerup" || downOrUpOrResize.type === "lost") {
+        } else if (["pointerup", "lost", "stuck"].includes(downOrUpOrResize.type)) {
             return (move) => move;
         }
     })(downOrUpOrResize, positions, padView);
-
 `],
 [`4`, `    const inputHandler = (evt) => {
         if (evt.key === "Enter") {
@@ -598,7 +598,6 @@
     const _loadFromUrl = fetch(nameFromUrl).then((resp) => resp.text()).then((result) => {
         loadData(result, null);
     });
-
 `],
 [`6`, `    const css = \`
 @font-face {
@@ -1357,5 +1356,4 @@ html, body {
         document.body.appendChild(renkon);
         return renkon;
     })();
-
 `]]}
