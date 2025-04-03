@@ -430,6 +430,7 @@ export function pad() {
     Events.listener(document.body, "gestureend", preventDefaultSafari);
 
     const isSafari = window.navigator.userAgent.includes("Safari") && !window.navigator.userAgent.includes("Chrome");
+    const isMobile = !!("ontouchstart" in window);
 
     const pointercancel = Events.listener(renkon.querySelector("#pad"), "pointercancel", pointerLost);
     const lostpointercapture = Events.listener(renkon.querySelector("#pad"), "lostpointercapture", pointerLost);
@@ -440,7 +441,7 @@ export function pad() {
     };
 
     const preventDefaultSafari = (evt) => {
-        if (!isSafari) {
+        if (!isSafari || isMobile) {
             evt.preventDefault();
         }
         return evt;
@@ -574,7 +575,7 @@ export function pad() {
         if (!secondary) {return old;}
 
         const strId = secondary.target.id;
-        if (strId !== "pad") {return old;}
+        if (strId !== "pad") {return {type: "stuck", secondary: secondary.pointerId};}
         let primary =  evCache.get("primary");
         let x = secondary.clientX;
         let y = secondary.clientY;
@@ -683,7 +684,7 @@ export function pad() {
                 Events.send(padViewChange, {x: newX, y: newY, scale: newScale});
                 return move;
             }
-        } else if (downOrUpOrResize.type === "pointerup" || downOrUpOrResize.type === "lost") {
+        } else if (["pointerup", "lost", "stuck"].includes(downOrUpOrResize.type)) {
             return (move) => move;
         }
     })(downOrUpOrResize, positions, padView);
