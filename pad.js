@@ -904,14 +904,14 @@ export function pad() {
 
     // Graph Visualization
 
-    const analyzed = ((windowContents, trigger, showGraph) => {
+    const analyzed = ((windowContents, windowEnabled, trigger, showGraph) => {
         if (!showGraph) {return new Map()}
         if (trigger === null) {return new Map()}
         if (typeof trigger === "object" && trigger.id) {return new Map();}
         const programState = new Renkon.constructor(0);
         programState.setLog(() => {});
 
-        const code = [...windowContents.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
+        const code = [...windowContents.map].filter(([id, editor]) => editor.state && windowEnabled.map.get(id)?.enabled).map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
         try {
             programState.setupProgram(code);
         } catch(e) {
@@ -982,7 +982,7 @@ export function pad() {
         }
 
         return edges;
-    })(windowContents, Events.or(remove, hovered), showGraph);
+    })(windowContents, windowEnabled, Events.or(remove, hovered), showGraph);
 
     const line = (p1, p2, color, label) => {
         let pl;
