@@ -336,7 +336,7 @@ export function pad() {
         };
 
         renkon.querySelector("#padTitle").addEventListener("input", change);
-        return () => {renkon.querySelector("#padtitle").removeEventListener("change", change);}
+        return () => {renkon.querySelector("#padTitle").removeEventListener("change", change);}
     });
 
     const _padTitleUpdater = ((padTitle) => {
@@ -512,6 +512,25 @@ export function pad() {
     const titleEditChange = Events.receiver();
     const enabledChange = Events.receiver();
     const runRequest = Events.receiver();
+
+    const dblClick = Events.listener(renkon.querySelector("#pad"), "dblclick", (evt) => evt);
+
+    const _goTo = ((padView, positions, dblClick) => {
+        const strId = dblClick.target.id;
+        if (!strId.endsWith("-titleBar")) {return;}
+        const id = Number.parseInt(strId);
+        const position = positions.map.get(`${id}`);
+
+        const pad = document.body.querySelector("#pad").getBoundingClientRect();
+
+        const scaleX = pad.width / position.width;
+        const scaleY = pad.height / position.height;
+        const scale = Math.min(scaleX, scaleY) * 0.95;
+        const x = pad.width / 2 - (position.x + position.width / 2) * scale;
+        const y = pad.height / 2 - (position.y + position.height / 2) * scale;
+
+        Events.send(padViewChange, {x, y, scale});
+    })(padView, positions, dblClick);
 
     const rawPadDown = Events.listener(renkon.querySelector("#pad"), "pointerdown", (evt) => {
         const strId = evt.target.id;
