@@ -1087,7 +1087,7 @@ html, body {
 }
 
 .editor {
-    height: calc(100% - 24px);
+    height: 100%;
     border-radius: 0px 0px 6px 6px;
 }
 
@@ -1145,7 +1145,7 @@ html, body {
 
 .runnerIframe {
     width: 100%;
-    height: calc(100% - 24px);
+    height: 100%;
     border: 2px solid black;
     box-sizing: border-box;
     border-radius: 0px 0px 6px 6px;
@@ -1231,7 +1231,7 @@ html, body {
 }
 
 .windowHolder {
-    height:100%;
+    height: calc(100% - 24px);
 }
 
 .windowHolder[blurred="true"] {
