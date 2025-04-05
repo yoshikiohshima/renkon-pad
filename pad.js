@@ -255,7 +255,7 @@ export function pad() {
         const mirror = window.CodeMirror;
 
         const config = {
-	    // eslint configuration
+            // eslint configuration
             languageOptions: {
                 globals: mirror.globals,
                 parserOptions: {
@@ -264,38 +264,44 @@ export function pad() {
                 },
             },
             rules: {
-    	    },
+            },
         };
 
         const getDecl = (state, pos) => {
-          const decls = Renkon.findDecls(state.doc.toString());
-          const showDependency = Renkon.resolved.get("showDependency")?.value;
-          if (!showDependency) {return;}
-          const head = pos !== undefined ? pos : state.selection.ranges[0]?.head;
-          if (typeof head !== "number") {return;}
-          const decl = decls.find((d) => d.start <= head && head < d.end);
-          if (!decl) {return;}
-          const programState = new Renkon.constructor(0);
-          programState.setLog(() => {});
-          programState.setupProgram([decl.code]);
-          const keys = [...programState.nodes.keys()];
-          const last = keys[keys.length - 1];
-          return programState.nodes.get(last);
+            const decls = Renkon.findDecls(state.doc.toString());
+            const showDependency = Renkon.resolved.get("showDependency")?.value;
+            if (!showDependency) {return;}
+            const head = pos !== undefined ? pos : state.selection.ranges[0]?.head;
+            if (typeof head !== "number") {return;}
+            const decl = decls.find((d) => d.start <= head && head < d.end);
+            if (!decl) {return;}
+            const programState = new Renkon.constructor(0);
+            programState.setLog(() => {});
+            programState.setupProgram([decl.code]);
+            const keys = [...programState.nodes.keys()];
+            const last = keys[keys.length - 1];
+            const deps = [];
+            for (const k of keys) {
+                const is = programState.nodes.get(k).inputs;
+                deps.push(...is.filter((n) => !/_[0-9]/.exec(n)));
+            }
+            return {deps, name: last}
         }
 
-        const wordHover = mirror.hoverTooltip((view, pos, side) => {
-          let node = getDecl(view.state, pos);
-          if (!node) return null;
-          return {
-            pos,
-            above: true,
-            create() {
-              let dom = document.createElement("div");
-              dom.textContent = `${node.inputs} -> ${node.id}`;
-              dom.className = "cm-tooltip-dependency cm-tooltip-cursor-wide";
-              return {dom};
-            }
-          };
+        const wordHover = mirror.hoverTooltip((view, pos, _side) => {
+            let node = getDecl(view.state, pos);
+            if (!node) return null;
+            const {deps, name} = node;
+            return {
+                pos,
+                above: true,
+                create() {
+                    let dom = document.createElement("div");
+                    dom.textContent = `${deps} -> ${name}`;
+                    dom.className = "cm-tooltip-dependency cm-tooltip-cursor-wide";
+                    return {dom};
+                }
+            };
         });
 
         const editor = new mirror.EditorView({
@@ -1183,7 +1189,7 @@ html, body {
     cursor: pointer;
     border: 2px solid #555;
 }
-		   
+                   
 
 .runnerIframe {
     width: 100%;
