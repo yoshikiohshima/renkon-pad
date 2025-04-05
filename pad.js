@@ -13,7 +13,6 @@ export function pad() {
    <button class="menuButton" id="addCodeButton">code</button>
    <button class="menuButton" id="addRunnerButton">runner</button>
    <div class="spacer"></div>
-   <button class="menuButton" id="showDependency">show deps</button>
    <button class="menuButton" id="showGraph">show graph</button>
    <button class="menuButton" id="saveButton">save</button>
    <button class="menuButton" id="loadButton">load</button>
@@ -269,8 +268,8 @@ export function pad() {
 
         const getDecl = (state, pos) => {
             const decls = Renkon.findDecls(state.doc.toString());
-            const showDependency = Renkon.resolved.get("showDependency")?.value;
-            if (!showDependency) {return;}
+            const showDependency = Renkon.resolved.get("showGraph")?.value;
+            if (!showDependency || showDependency !== "showDeps") {return;}
             const head = pos !== undefined ? pos : state.selection.ranges[0]?.head;
             if (typeof head !== "number") {return;}
             const decl = decls.find((d) => d.start <= head && head < d.end);
@@ -531,21 +530,23 @@ export function pad() {
     })(navigationAction, positions, padView);
 
     const showGraph = Behaviors.collect(
-        true,
+        "showGraph",
         Events.listener(renkon.querySelector("#showGraph"), "click", (evt) => evt),
-        (now, _click) => !now
+        (now, _click) => {
+            if (now === "showGraph") {return "showDeps";}
+            if (now === "showDeps") {return "hide";}
+            if (now === "hide") {return "showGraph"}
+            return now;
+        }
     );
 
-    document.querySelector("#showGraph").textContent = showGraph ? "show graph" : "hide graph";
-
-    const showDependency = Behaviors.collect(
-        false,
-        Events.listener(renkon.querySelector("#showDependency"), "click", (evt) => evt),
-        (now, _click) => !now
-    );
-
-    document.querySelector("#showDependency").textContent = showDependency ? "show deps" : "hide deps";
-
+    ((showGraph) => {
+      let str;
+      if (showGraph === "showGraph") {str = "show graph";}
+      if (showGraph === "showDeps") {str = "show deps";}
+      if (showGraph === "hide") {str = "hide graph"}
+      document.querySelector("#showGraph").textContent = str;
+    })(showGraph);
 
     const _onRun = ((runRequest, windowContents, windowEnabled) => {
         const id = runRequest.id;
@@ -1030,7 +1031,7 @@ export function pad() {
         }
 
         return edges;
-    })(windowContents, windowEnabled, Events.or(remove, hovered), showGraph);
+    })(windowContents, windowEnabled, Events.or(remove, hovered), showGraph === "showGraph");
 
     const line = (p1, p2, color, label) => {
         let pl;
@@ -1086,7 +1087,7 @@ export function pad() {
         });
 
         return html`<svg viewBox="0 0 ${window.innerWidth} ${window.innerHeight}" xmlns="http://www.w3.org/2000/svg">${outEdges}${inEdges}</svg>`;
-    })(positions, padView, analyzed, hoveredB, showGraph);
+    })(positions, padView, analyzed, hoveredB, showGraph === "showGraph");
 
     const _graphRender = render(graph, document.querySelector("#overlay"));
 
