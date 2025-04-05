@@ -13,6 +13,7 @@ export function pad() {
    <button class="menuButton" id="addCodeButton">code</button>
    <button class="menuButton" id="addRunnerButton">runner</button>
    <div class="spacer"></div>
+   <button class="menuButton" id="showDependency">show deps</button>
    <button class="menuButton" id="showGraph">show graph</button>
    <button class="menuButton" id="saveButton">save</button>
    <button class="menuButton" id="loadButton">load</button>
@@ -263,8 +264,39 @@ export function pad() {
                 },
             },
             rules: {
-	    },
+    	    },
         };
+
+        const getDecl = (state, pos) => {
+          const decls = Renkon.findDecls(state.doc.toString());
+          const showDependency = Renkon.resolved.get("showDependency")?.value;
+          if (!showDependency) {return;}
+          const head = pos !== undefined ? pos : state.selection.ranges[0]?.head;
+          if (typeof head !== "number") {return;}
+          const decl = decls.find((d) => d.start <= head && head < d.end);
+          if (!decl) {return;}
+          const programState = new Renkon.constructor(0);
+          programState.setLog(() => {});
+          programState.setupProgram([decl.code]);
+          const keys = [...programState.nodes.keys()];
+          const last = keys[keys.length - 1];
+          return programState.nodes.get(last);
+        }
+
+        const wordHover = mirror.hoverTooltip((view, pos, side) => {
+          let node = getDecl(view.state, pos);
+          if (!node) return null;
+          return {
+            pos,
+            above: true,
+            create() {
+              let dom = document.createElement("div");
+              dom.textContent = `${node.inputs} -> ${node.id}`;
+              dom.className = "cm-tooltip-dependency cm-tooltip-cursor-wide";
+              return {dom};
+            }
+          };
+        });
 
         const editor = new mirror.EditorView({
             doc: doc || `console.log("hello")`,
@@ -274,7 +306,8 @@ export function pad() {
                 mirror.EditorView.lineWrapping,
                 mirror.EditorView.editorAttributes.of({"class": "editor"}),
                 mirror.keymap.of([mirror.indentWithTab]),
-                mirror.linter(mirror.esLint(new mirror.eslint.Linter(), config))
+                mirror.linter(mirror.esLint(new mirror.eslint.Linter(), config)),
+                wordHover,
             ],
         });
         editor.dom.id = `${id}-editor`;
@@ -498,6 +531,15 @@ export function pad() {
     );
 
     document.querySelector("#showGraph").textContent = showGraph ? "show graph" : "hide graph";
+
+    const showDependency = Behaviors.collect(
+        false,
+        Events.listener(renkon.querySelector("#showDependency"), "click", (evt) => evt),
+        (now, _click) => !now
+    );
+
+    document.querySelector("#showDependency").textContent = showDependency ? "show deps" : "hide deps";
+
 
     const _onRun = ((runRequest, windowContents, windowEnabled) => {
         const id = runRequest.id;
@@ -1310,6 +1352,17 @@ html, body {
    font-size: 12px;
 }
 
+.cm-tooltip-dependency {
+    background-color: #66b;
+    color: white;
+    border: none;
+    padding: 2px 7px;
+    border-radius: 4px;
+}
+
+.cm-tooltip-cursor-wide {
+   text-wrap: nowrap;
+}
 `;
 
     ((css) => {

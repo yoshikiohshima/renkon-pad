@@ -15,20 +15,20 @@
 "type":"move",
 "width":721.5561464058198,
 "x":1601.2132363513158,
-"y":651.572235343266}],["6",{"height":411.1931593863167,
+"y":651.572235343266}],["6",{"height":632.5876906363167,
 "id":"6",
-"type":"resize",
-"width":729.4680510243255,
-"x":1601.1548224378387,
-"y":1256.4548987351468}],["7",{"height":268.3776405315301,
+"type":"move",
+"width":803.1946135243255,
+"x":1341.4712286878387,
+"y":1260.3220862351468}],["7",{"height":268.3776405315301,
 "id":"7",
 "type":"resize",
 "width":714.8462837202457,
 "x":1612.7161017096385,
-"y":953.8425994063871}],["9",{"height":481.6400293226243,
+"y":953.8425994063871}],["9",{"height":488.2298730726243,
 "id":"9",
 "type":"resize",
-"width":632.5380333224966,
+"width":635.9013145724966,
 "x":729.8145015089767,
 "y":246.50548704920294}],["11",{"height":694.0172370795224,
 "id":"11",
@@ -66,7 +66,7 @@
 "values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"]]}},
 "windows":["3","4","5","6","7","9","11"],
 "zIndex":{"map":{"__map":true,
-"values":[["3",100],["4",104],["5",109],["6",107],["7",110],["9",103],["11",105]]}}}
+"values":[["3",100],["4",104],["5",109],["6",111],["7",110],["9",103],["11",105]]}}}
 {__codeMap: true, value: [[`3`, `    const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
     const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
     const save = Events.listener(renkon.querySelector("#saveButton"), "click", (evt) => evt);
@@ -218,6 +218,15 @@
     );
 
     document.querySelector("#showGraph").textContent = showGraph ? "show graph" : "hide graph";
+
+    const showDependency = Behaviors.collect(
+        false,
+        Events.listener(renkon.querySelector("#showDependency"), "click", (evt) => evt),
+        (now, _click) => !now
+    );
+
+    document.querySelector("#showDependency").textContent = showDependency ? "show deps" : "hide deps";
+
 
     const _onRun = ((runRequest, windowContents, windowEnabled) => {
         const id = runRequest.id;
@@ -884,6 +893,17 @@ html, body {
    font-size: 12px;
 }
 
+.cm-tooltip-dependency {
+    background-color: #66b;
+    color: white;
+    border: none;
+    padding: 2px 7px;
+    border-radius: 4px;
+}
+
+.cm-tooltip-cursor-wide {
+   text-wrap: nowrap;
+}
 \`;
 
     ((css) => {
@@ -1034,7 +1054,8 @@ html, body {
     const _graphRender = render(graph, document.querySelector("#overlay"));
 
 `],
-[`9`, `    const windows = Behaviors.select(
+[`9`, `    // [id:string]
+    const windows = Behaviors.select(
         [],
         loadRequest, (now, data) => {
             console.log("windows loaded");
@@ -1262,8 +1283,39 @@ html, body {
                 },
             },
             rules: {
-	    },
+    	    },
         };
+
+        const getDecl = (state, pos) => {
+          const decls = Renkon.findDecls(state.doc.toString());
+          const showDependency = Renkon.resolved.get("showDependency")?.value;
+          if (!showDependency) {return;}
+          const head = pos !== undefined ? pos : state.selection.ranges[0]?.head;
+          if (typeof head !== "number") {return;}
+          const decl = decls.find((d) => d.start <= head && head < d.end);
+          if (!decl) {return;}
+          const programState = new Renkon.constructor(0);
+          programState.setLog(() => {});
+          programState.setupProgram([decl.code]);
+          const keys = [...programState.nodes.keys()];
+          const last = keys[keys.length - 1];
+          return programState.nodes.get(last);
+        }
+
+        const wordHover = mirror.hoverTooltip((view, pos, side) => {
+          let node = getDecl(view.state, pos);
+          if (!node) return null;
+          return {
+            pos,
+            above: true,
+            create() {
+              let dom = document.createElement("div");
+              dom.textContent = \`\${node.inputs} -> \${node.id}\`;
+              dom.className = "cm-tooltip-dependency cm-tooltip-cursor-wide";
+              return {dom};
+            }
+          };
+        });
 
         const editor = new mirror.EditorView({
             doc: doc || \`console.log("hello")\`,
@@ -1273,7 +1325,8 @@ html, body {
                 mirror.EditorView.lineWrapping,
                 mirror.EditorView.editorAttributes.of({"class": "editor"}),
                 mirror.keymap.of([mirror.indentWithTab]),
-                mirror.linter(mirror.esLint(new mirror.eslint.Linter(), config))
+                mirror.linter(mirror.esLint(new mirror.eslint.Linter(), config)),
+                wordHover,
             ],
         });
         editor.dom.id = \`\${id}-editor\`;
@@ -1357,6 +1410,7 @@ html, body {
    <button class="menuButton" id="addCodeButton">code</button>
    <button class="menuButton" id="addRunnerButton">runner</button>
    <div class="spacer"></div>
+   <button class="menuButton" id="showDependency">show deps</button>
    <button class="menuButton" id="showGraph">show graph</button>
    <button class="menuButton" id="saveButton">save</button>
    <button class="menuButton" id="loadButton">load</button>
