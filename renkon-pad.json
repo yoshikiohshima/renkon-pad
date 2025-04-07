@@ -223,11 +223,11 @@
     );
 
     ((showGraph) => {
-      let str;
-      if (showGraph === "showGraph") {str = "show graph";}
-      if (showGraph === "showDeps") {str = "show deps";}
-      if (showGraph === "hide") {str = "hide graph"}
-      document.querySelector("#showGraph").textContent = str;
+        let str;
+        if (showGraph === "showGraph") {str = "show graph";}
+        if (showGraph === "showDeps") {str = "show deps";}
+        if (showGraph === "hide") {str = "hide graph"}
+        document.querySelector("#showGraph").textContent = str;
     })(showGraph);
 
     const _onRun = ((runRequest, windowContents, windowEnabled) => {
@@ -239,10 +239,17 @@
         iframe.dom.contentWindow.postMessage({code: code, path: id});
     })(runRequest, windowContents, windowEnabled);
 
+    const _onInspect = ((inspectRequest) => {
+        const id = inspectRequest.id;
+        const iframe = windowContents.map.get(id);
+        iframe.dom.contentWindow.postMessage({inspector: true, path: id});
+    })(inspectRequest);
+
     const remove = Events.receiver();
     const titleEditChange = Events.receiver();
     const enabledChange = Events.receiver();
     const runRequest = Events.receiver();
+    const inspectRequest = Events.receiver();
 
     const dblClick = Events.listener(renkon.querySelector("#pad"), "dblclick", (evt) => evt);
 
@@ -499,6 +506,15 @@
                     },
                 }),
                 h("div", {
+                    id: \`\${id}-inspectorButton\`,
+                    "class": "titlebarButton inspectorButton",
+                    type,
+                    onClick: (evt) => {
+                        //console.log(evt);
+                        Events.send(inspectRequest, {id: \`\${Number.parseInt(evt.target.id)}\`});
+                    },
+                }),
+                h("div", {
                     id: \`\${id}-title\`,
                     "class": "title",
                     contentEditable: \`\${title.state}\`,
@@ -539,6 +555,7 @@
     })(windows, positions, zIndex, titles, windowContents, windowTypes, windowEnabled);
 
     const _windowRender = render(windowElements, document.querySelector("#mover"));
+
 `],
 [`5`, `    const loadRequest = Events.receiver();
 
@@ -628,6 +645,7 @@
     const _loadFromUrl = fetch(nameFromUrl).then((resp) => resp.text()).then((result) => {
         loadData(result, null);
     });
+
 `],
 [`6`, `    const css = \`
 @font-face {
@@ -726,7 +744,7 @@ html, body {
     cursor: pointer;
     border: 2px solid #555;
 }
-		   
+                   
 
 .runnerIframe {
     width: 100%;
@@ -889,6 +907,17 @@ html, body {
 
 .enabledButton[disabled="true"] {
     background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2218%22%20height%3D%2218%22%20rx%3D%222%22%20ry%3D%222%22%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+}
+
+.inspectorButton {
+    background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3C!--%20Line%201%20--%3E%3Ccircle%20cx%3D%225%22%20cy%3D%227%22%20r%3D%221.5%22%20fill%3D%22%234D4D4D%22%20stroke%3D%22none%22%2F%3E%3Cline%20x1%3D%228%22%20y1%3D%227%22%20x2%3D%2219%22%20y2%3D%227%22%2F%3E%3C!--%20Line%202%20--%3E%3Ccircle%20cx%3D%225%22%20cy%3D%2212%22%20r%3D%221.5%22%20fill%3D%22%234D4D4D%22%20stroke%3D%22none%22%2F%3E%3Cline%20x1%3D%228%22%20y1%3D%2212%22%20x2%3D%2219%22%20y2%3D%2212%22%2F%3E%3C!--%20Line%203%20--%3E%3Ccircle%20cx%3D%225%22%20cy%3D%2217%22%20r%3D%221.5%22%20fill%3D%22%234D4D4D%22%20stroke%3D%22none%22%2F%3E%3Cline%20x1%3D%228%22%20y1%3D%2217%22%20x2%3D%2219%22%20y2%3D%2217%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+    display: none;
+    pointer-events: none;
+}
+
+.inspectorButton[type="runner"] {
+    display: inherit;
+    pointer-events: all;
 }
 
 .cm-tooltip-lint {
@@ -1054,7 +1083,6 @@ html, body {
     })(positions, padView, analyzed, hoveredB, showGraph === "showGraph");
 
     const _graphRender = render(graph, document.querySelector("#overlay"));
-
 `],
 [`9`, `    // [id:string]
     const windows = Behaviors.select(
@@ -1348,10 +1376,34 @@ html, body {
 <html>
     <head>
         <meta charset="utf-8">
+        <style>
+.dock {
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    width: 30%;
+    height: 80%;
+    display: flex;
+    box-shadow: 10px 10px 5px #4d4d4d, -10px -10px 5px #dddddd;
+    transition: left 0.5s;
+    background-color: white;
+    z-index: 1000000;
+    overflow-y: scroll;
+}
+
+.dock #inspector {
+    flex-grow: 1;
+    margin: 0px 20px 0px 20px;
+    background-color: #ffffff;
+    border: 1px solid black;
+}
+
+</style>
         <script type="module">
-            import {ProgramState, CodeMirror} from "./renkon-web.js";
+            import {ProgramState, CodeMirror, newInspector} from "./renkon-web.js";
             window.thisProgramState = new ProgramState(0);
             window.CodeMirror = CodeMirror;
+            window.newInspector = newInspector;
 
             window.onmessage = (evt) => {
                 if (evt.data && Array.isArray(evt.data.code)) {
@@ -1359,6 +1411,25 @@ html, body {
                     if (window.thisProgramState.evaluatorRunning === 0) {
                         window.thisProgramState.evaluator();
                     }
+                }
+                if (evt.data && typeof evt.data.inspector === "boolean") {
+                    if (window.thisProgramState) {
+                        if (document.body.querySelector(".dock")) {
+                            document.body.querySelector(".dock").remove();
+                            return;
+                        }
+                        const dock = document.createElement("div");
+                        dock.classList.add("dock");
+                        const dom = document.createElement("div");
+                        dom.id = "renkonInspector";
+
+                        dock.appendChild(dom);
+                        document.body.appendChild(dock);
+                        const result = thisProgramState.order.map((id) => {
+                            return [id, thisProgramState.resolved.get(id)]
+                        });
+                        newInspector(Object.fromEntries(result), dom);
+                   }
                 }
             };
         </script>
@@ -1435,4 +1506,17 @@ html, body {
         document.body.appendChild(renkon);
         return renkon;
     })();
+
+    // Data Structure
+
+    // [id:string]
+    const windows = Behaviors.select(
+        [],
+        loadRequest, (now, data) => {
+            console.log("windows loaded");
+            return data.windows
+        },
+        newWindowRequest, (now, spec) => [...now, \`\${spec.id}\`],
+        remove, (now, removeCommand) => now.filter((e) => e != removeCommand.id),
+    );
 `]]}
