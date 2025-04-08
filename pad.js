@@ -267,9 +267,15 @@ export function pad() {
         };
 
         const getDecl = (state, pos) => {
-            const decls = Renkon.findDecls(state.doc.toString());
             const showDependency = Renkon.resolved.get("showGraph")?.value;
             if (!showDependency || showDependency !== "showDeps") {return;}
+            let decls;
+            try {
+              decls = Renkon.findDecls(state.doc.toString());
+            } catch(e) {
+              console.log("Dependency analyzer encountered an error in source code:");
+              return;
+            }
             const head = pos !== undefined ? pos : state.selection.ranges[0]?.head;
             if (typeof head !== "number") {return;}
             const decl = decls.find((d) => d.start <= head && head < d.end);
