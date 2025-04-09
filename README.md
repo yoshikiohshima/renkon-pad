@@ -2,59 +2,78 @@
 
 ## Introduction
 
-**Renkon-pad** is a live programming environment that allows you to create graphical, web-based applications interactively. The language used is called **Renkon**—see the [`renkon-core`](https://github.com/your-org/renkon-core) repository for more information.
+**Renkon-pad** is a live programming environment that allows you to create graphical, web-based applications interactively. The language used is called **Renkon**—see the [`renkon-core`](https://github.com/yoshikiohshima/renkon) repository for more information.
 
-Renkon-pad lets you create multiple text boxes and "runner" iframes, where the code in the text boxes can be executed. The image below shows an example interface:
+Renkon-pad lets you create multiple text boxes and "runner" iframes where the code in the text boxes can be executed. Renkon-pad is powerful enough to create large applications, including the environment itself. One might think of the environment as a typical boxes-and-wires dataflow visual programming environment, but you can simply write text-based code in the dataflow semantics to build large projects.
 
-<img src="./doc/renkon-pad2.png">
+The initial screen looks like this:
+
+<img style="border: 6px solid #eee" src="./doc/initial.png"></img>
+
+As the very first step, press the "runner" button near the top-left corner to create a runner window, then press the "play" button in the runner's title bar. You will see "hello" logged in the developer console.
+
+The screenshot below shows a Renkon-pad session that is editing and running a nested Renkon-pad:
+
+<img style="border: 6px solid #eee" src="./doc/renkon-pad.png"></img>
 
 ## The Interface
 
-Renkon-pad includes several buttons and controls for interacting with the environment.
+Renkon-pad has several buttons and controls for interacting with the environment.
 
-### The Menu
+### The Top Bar
 
-The top menu bar includes one text field and five buttons:
+<img style="border: 6px solid #eee" src="./doc/topbar.png"></img>
 
-- The **text field** lets you enter the name of your project.
-- The first two buttons, **"code"** and **"runner"**, create a new text box and a new runner, respectively.
+The top bar includes one text field and five buttons:
+
+- The text field lets you enter the name of your project.
+- The first two buttons, **code** and **runner**, create a new text box and a new runner, respectively.
 - The third button cycles through three states: **"show graph"**, **"show deps"**, and **"hide graph"**:
   - **Show graph**: Hovering over a text box displays its imports and exports.
   - **Show deps**: Hovering over a node definition shows its dependencies.
   - **Hide graph**: Disables both overlays.
 
-- The **"save"** button saves window positions and contents to a file named after the project with a `.json` suffix. *Note: The saved file is not a valid JSON file. This suffix may change in the future.*
+- The **"save"** button saves window positions and contents to a file named after the project with a `.json` suffix. *Note: The saved file is not valid JSON. The file format and suffix may change in the near future.*
 
 ### Text Box
 
+<img style="border: 6px solid #eee" src="./doc/textbox.png"></img>
+
 Each text area uses CodeMirror for editing. The title bar contains:
 
-- A **close** button,
+- A **checkmark** button in the top-left corner to enable or disable the box (this affects runners; see below),
 - An **edit** button that lets you change the label in the title bar,
-- A **checkmark** button in the top-left corner to enable or disable the box (this affects runners; see below).
+- A **close** button.
+
+You can resize the box using the resize handle at the bottom right. To bring a box to the front, drag the title bar.
 
 ### Runner
 
-A runner includes:
+<img style="border: 6px solid #eee" src="./doc/runner.png"></img>
 
-- A **close** button,
+A runner is a separate Renkon execution context in an iframe. A runner has:
+
+- A **play** button,
 - An **inspector** toggle button,
-- A **play** button.
+- An **edit** button that lets you change the label in the title bar,
+- A **close** button.
 
-The **play** button gathers the contents of all enabled text boxes and runs them in the runner iframe as a Renkon program. The **inspector** button toggles visibility of the resolved stream values.
+The **play** button gathers the contents of all enabled text boxes and runs them in the runner iframe as a Renkon program. The **inspector** button toggles the visibility of the resolved stream values.
 
-### Navigation Box
+You can resize the runner using the resize handle at the bottom right. To bring a runner to the front, drag the title bar.
+
+### Navigation Box and Pan and Zoom
+
+<img src="./doc/navigation.png"></img>
 
 A floating widget at the bottom right includes:
 
-- **Zoom in** and **zoom out** buttons,
-- A **home** button, which repositions the view so all windows are visible.
+- A **home** button, which repositions the view so all windows are visible,
+- **Zoom in** and **zoom out** buttons.
 
 You can also zoom using a pinch gesture on a touchpad or by holding **Ctrl** and scrolling with the mouse. *Note: These gestures must be performed on the background, not within a window.* You can also pan by dragging the background.
 
-### Pan and Zoom
-
-By default, runners do not handle gestures so user programs have full control. However, this means pinch gestures on a runner will trigger the browser's default zoom behavior, potentially zooming the entire page. If the navigation box disappears from view, use the browser's **View > Actual Size** menu or zoom back in on a runner.
+By default, runners do not handle gestures so that user programs have full control. However, this means pinch gestures on a runner will trigger the browser's default zoom behavior, potentially zooming the entire page. If the navigation box disappears from view, use the browser's **View > Actual Size** menu or zoom back in on a runner.
 
 Double-clicking a window’s title bar centers that window in the view.
 
@@ -76,9 +95,11 @@ Unless you've customized `index.html`, the body of the document is empty—you'l
 
 The IIFE should return either the created DOM element or a promise that resolves when all required resources are ready. Other nodes can then depend on this node to initialize consistently.
 
-You can create multiple runners—useful for comparing different versions of your code. Pressing a runner’s **play** button re-runs the code, although subtle rules determine which nodes are re-evaluated. When in doubt, create a fresh runner.
+It is good practice to create several text boxes and group your Renkon nodes within them. You can usually make the text box tall enough so that you don't need to scroll within it. Instead, use Renkon-pad’s pan and zoom features to navigate different parts of the text.
 
-Be sure to save your project regularly, though Renkon-pad is quite robust.
+You can create multiple runners. This is useful for comparing different versions of your code. Pressing a runner’s **play** button re-runs the code, although subtle rules determine which nodes are re-evaluated. When in doubt, create a fresh runner.
+
+Be sure to save your project regularly, although Renkon-pad is quite robust.
 
 ### Development Tips
 
