@@ -1,11 +1,11 @@
 {"padTitle":"Renkon-Pad",
 "positions":{"map":{"__map":true,
-"values":[["3",{"height":459.06722601643196,
+"values":[["3",{"height":459.4790628931128,
 "id":"3",
 "type":"resize",
-"width":634.3039242782731,
-"x":731.5328933371144,
-"y":773.089341081385}],["4",{"height":345.4516930334715,
+"width":644.4261025129456,
+"x":713.1997173736166,
+"y":1342.4345182391196}],["4",{"height":345.4516930334715,
 "id":"4",
 "type":"move",
 "width":721.731992894,
@@ -25,17 +25,27 @@
 "type":"resize",
 "width":714.8462837202457,
 "x":1612.7161017096385,
-"y":953.8425994063871}],["9",{"height":488.2298730726243,
+"y":953.8425994063871}],["9",{"height":490.4885409431711,
 "id":"9",
 "type":"resize",
-"width":635.9013145724966,
+"width":632.1883477311706,
 "x":729.8145015089767,
 "y":246.50548704920294}],["11",{"height":647.3023933295224,
 "id":"11",
 "type":"resize",
 "width":642.2876636827772,
 "x":-60.14356475878803,
-"y":250.9394792496133}]]}},
+"y":250.9394792496133}],["12",{"height":546.6015741411982,
+"id":"12",
+"type":"resize",
+"width":635.329507568296,
+"x":-58.03774699722814,
+"y":921.3815650761907}],["15",{"height":512.2173971825007,
+"id":"15",
+"type":"resize",
+"width":643.9610114429199,
+"x":717.9624706904868,
+"y":792.4052450923455}]]}},
 "titles":{"map":{"__map":true,
 "values":[["3",{"id":"3",
 "state":false,
@@ -51,7 +61,11 @@
 "state":false,
 "title":"Data Structure"}],["11",{"id":"11",
 "state":false,
-"title":"Initialization"}]]}},
+"title":"Initialization"}],["12",{"id":"12",
+"state":false,
+"title":"Stringify"}],["15",{"id":"15",
+"state":false,
+"title":"New Component"}]]}},
 "version":2,
 "windowEnabled":{"map":{"__map":true,
 "values":[["3",{"enabled":true,
@@ -61,12 +75,14 @@
 "id":"6"}],["7",{"enabled":true,
 "id":"7"}],["9",{"enabled":true,
 "id":"9"}],["11",{"enabled":true,
-"id":"11"}]]}},
+"id":"11"}],["12",{"enabled":true,
+"id":"12"}],["15",{"enabled":true,
+"id":"15"}]]}},
 "windowTypes":{"map":{"__map":true,
-"values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"]]}},
-"windows":["3","4","5","6","7","9","11"],
+"values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["12","code"],["15","code"]]}},
+"windows":["3","4","5","6","7","9","11","12","15"],
 "zIndex":{"map":{"__map":true,
-"values":[["3",100],["4",104],["5",109],["6",111],["7",110],["9",103],["11",105]]}}}
+"values":[["3",113],["4",104],["5",109],["6",111],["7",110],["9",103],["11",105],["12",112],["15",100]]}}}
 {__codeMap: true, value: [[`3`, `    const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
     const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
     const save = Events.listener(renkon.querySelector("#saveButton"), "click", (evt) => evt);
@@ -1300,6 +1316,166 @@ html, body {
 
     const newWindowRequest = Events.change({id: newId, type: Events.or(addCode, addRunner, init), padView});
 
+    const padView = Behaviors.select(
+        {x: 0, y: 0, scale: 1},
+        padViewChange, (now, view) => {
+            let {x, y, scale} = view;
+
+            if (scale < 0.1) {scale = 0.1;}
+            if (scale > 20) {scale = 20;}
+            return {...now, ...{x, y, scale}};
+        }
+    );
+
+    const padTitle = Behaviors.select(
+        "untitled",
+        loadRequest, (now, data) => {
+            console.log("padTitle loaded");
+            return data.padTitle || "untitled"
+        },
+        titleChange, (now, request) => request
+    );
+
+    const titleChange = Events.observe((notify) => {
+        const change = (evt) => {
+            notify(evt.target.value);
+        };
+
+        renkon.querySelector("#padTitle").addEventListener("input", change);
+        return () => {renkon.querySelector("#padTitle").removeEventListener("change", change);}
+    });
+
+    const _padTitleUpdater = ((padTitle) => {
+        if (renkon.querySelector("#padTitle").value !== padTitle) {
+            renkon.querySelector("#padTitle").value = padTitle;
+        }
+    })(padTitle);
+`],
+[`11`, `    const {h, html, render} = import("./preact.standalone.module.js");
+
+    const renkon = (() => {
+        const renkon = document.createElement("div");
+        renkon.id = "renkon";
+        renkon.innerHTML = \`
+<div id="buttonBox">
+   <input class="menuButton" id="padTitle"></input>
+   <button class="menuButton" id="addCodeButton">code</button>
+   <button class="menuButton" id="addRunnerButton">runner</button>
+   <div class="spacer"></div>
+   <button class="menuButton" id="showGraph">show graph</button>
+   <button class="menuButton" id="saveButton">save</button>
+   <button class="menuButton" id="loadButton">load</button>
+</div>
+<div id="pad"><div id="mover"></div></div>
+<div id="overlay"></div>
+<div id="navigationBox">
+   <div class="navigationButton"><div id="homeButton" class="navigationButtonImage"></div></div>
+   <div class="navigationButton with-border"><div id="zoomInButton" class="navigationButtonImage"></div></div>
+   <div class="navigationButton with-border"><div id="zoomOutButton" class="navigationButtonImage"></div></div>
+</div>
+
+\`.trim();
+
+        document.body.querySelector("#renkon")?.remove();
+        document.body.appendChild(renkon);
+        return renkon;
+    })();
+`],
+[`12`, `    /*
+  Copyright 2020 Croquet Corporation.
+  Copyright 2025 Yoshiki Ohshima
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+    function stringifyInner(node, seen) {
+        if (node === undefined) return undefined;
+        if (typeof node === 'number') return Number.isFinite(node) ? \`\${node}\` : 'null';
+        if (typeof node !== 'object') return JSON.stringify(node, null, 4);
+
+        let out;
+        if (Array.isArray(node)) {
+            out = '[';
+            for (let i = 0; i < node.length; i++) {
+                if (i > 0) out += ',';
+                out += stringifyInner(node[i], seen) || 'null';
+            }
+            return out + ']';
+        }
+
+        if (node === null) return 'null';
+
+        if (seen.has(node)) {
+            throw new TypeError('Converting circular structure to JSON');
+        }
+
+        seen.add(node);
+
+        if (node.constructor === window.Map) {
+            let replacement = {__map: true, values: [...node]};
+            return stringifyInner(replacement, seen);
+        }
+
+        if (node.constructor === window.Set) {
+            let replacement = {__set: true, values: [...node]};
+            return stringifyInner(replacement, seen);
+        }
+
+        let keys = Object.keys(node).sort();
+        out = '';
+        for (let i = 0; i < keys.length; i++) {
+            let key = keys[i];
+            let value = stringifyInner(node[key], seen, out);
+            if (!value) continue;
+            if (out !== '') out += ',\\n';
+            out += JSON.stringify(key) + ':' + value;
+        }
+        seen.delete(node);
+        return '{' + out + '}';
+    }
+
+    function stringify(obj) {
+        let seen = new Set();
+        return stringifyInner(obj, seen);
+    }
+
+    function parse(string) {
+        return JSON.parse(string, (_key, value) => {
+            if (typeof value === "object" && value !== null && value.__map) {
+                return new Map(value.values);
+            } else if (typeof value === "object" && value !== null && value.__set) {
+                return new Set(value.values);
+            }
+            return value;
+        });
+    }
+
+    function stringifyCodeMap(map) {
+
+        function replace(str) {
+            return str.replaceAll("\\\\", "\\\\\\\\").replaceAll("\`", "\\\\\`").replaceAll("\$", "\\\\\$");
+        }
+
+        return "\\n{__codeMap: true, value: " + "[" +
+            [...map].map(([key, value]) => ("[" + "\`" + replace(key) + "\`" + ", " + "\`" +  replace(value) + "\`" + "]")).join(",\\n") + "]" + "}"
+    }
+
+    function parseCodeMap(string) {
+        const array = eval("(" + string + ")");
+        return new Map(array.value);
+    }
+`],
+[`15`, `
     const newEditor = (id, doc) => {
         const mirror = window.CodeMirror;
 
@@ -1321,10 +1497,10 @@ html, body {
             if (!showDependency || showDependency !== "showDeps") {return;}
             let decls;
             try {
-              decls = Renkon.findDecls(state.doc.toString());
+                decls = Renkon.findDecls(state.doc.toString());
             } catch(e) {
-              console.log("Dependency analyzer encountered an error in source code:");
-              return;
+                console.log("Dependency analyzer encountered an error in source code:");
+                return;
             }
             const head = pos !== undefined ? pos : state.selection.ranges[0]?.head;
             if (typeof head !== "number") {return;}
@@ -1446,70 +1622,4 @@ html, body {
         runnerIframe.id = \`runner-\${id}\`;
         return {dom: runnerIframe};
     };
-
-    const padView = Behaviors.select(
-        {x: 0, y: 0, scale: 1},
-        padViewChange, (now, view) => {
-            let {x, y, scale} = view;
-
-            if (scale < 0.1) {scale = 0.1;}
-            if (scale > 20) {scale = 20;}
-            return {...now, ...{x, y, scale}};
-        }
-    );
-
-    const padTitle = Behaviors.select(
-        "untitled",
-        loadRequest, (now, data) => {
-            console.log("padTitle loaded");
-            return data.padTitle || "untitled"
-        },
-        titleChange, (now, request) => request
-    );
-
-    const titleChange = Events.observe((notify) => {
-        const change = (evt) => {
-            notify(evt.target.value);
-        };
-
-        renkon.querySelector("#padTitle").addEventListener("input", change);
-        return () => {renkon.querySelector("#padTitle").removeEventListener("change", change);}
-    });
-
-    const _padTitleUpdater = ((padTitle) => {
-        if (renkon.querySelector("#padTitle").value !== padTitle) {
-            renkon.querySelector("#padTitle").value = padTitle;
-        }
-    })(padTitle);
-`],
-[`11`, `    const {h, html, render} = import("./preact.standalone.module.js");
-    const {stringify, parse, stringifyCodeMap, parseCodeMap} = import ("./stable-stringify.js");
-
-    const renkon = (() => {
-        const renkon = document.createElement("div");
-        renkon.id = "renkon";
-        renkon.innerHTML = \`
-<div id="buttonBox">
-   <input class="menuButton" id="padTitle"></input>
-   <button class="menuButton" id="addCodeButton">code</button>
-   <button class="menuButton" id="addRunnerButton">runner</button>
-   <div class="spacer"></div>
-   <button class="menuButton" id="showGraph">show graph</button>
-   <button class="menuButton" id="saveButton">save</button>
-   <button class="menuButton" id="loadButton">load</button>
-</div>
-<div id="pad"><div id="mover"></div></div>
-<div id="overlay"></div>
-<div id="navigationBox">
-   <div class="navigationButton"><div id="homeButton" class="navigationButtonImage"></div></div>
-   <div class="navigationButton with-border"><div id="zoomInButton" class="navigationButtonImage"></div></div>
-   <div class="navigationButton with-border"><div id="zoomOutButton" class="navigationButtonImage"></div></div>
-</div>
-
-\`.trim();
-
-        document.body.querySelector("#renkon")?.remove();
-        document.body.appendChild(renkon);
-        return renkon;
-    })();
 `]]}
