@@ -30,10 +30,10 @@
 "type":"resize",
 "width":635.9013145724966,
 "x":729.8145015089767,
-"y":246.50548704920294}],["11",{"height":694.0172370795224,
+"y":246.50548704920294}],["11",{"height":647.3023933295224,
 "id":"11",
 "type":"resize",
-"width":652.1470386827772,
+"width":642.2876636827772,
 "x":-60.14356475878803,
 "y":250.9394792496133}]]}},
 "titles":{"map":{"__map":true,
@@ -1512,17 +1512,4 @@ html, body {
         document.body.appendChild(renkon);
         return renkon;
     })();
-
-    // Data Structure
-
-    // [id:string]
-    const windows = Behaviors.select(
-        [],
-        loadRequest, (now, data) => {
-            console.log("windows loaded");
-            return data.windows
-        },
-        newWindowRequest, (now, spec) => [...now, \`\${spec.id}\`],
-        remove, (now, removeCommand) => now.filter((e) => e != removeCommand.id),
-    );
 `]]}
