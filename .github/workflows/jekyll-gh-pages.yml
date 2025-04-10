@@ -31,7 +31,7 @@ jobs:
       - name: Build main branch
         run: |
           mkdir -p output/main
-          cp -r index.html pad.js preact.standalone.module.js renkon-pad.renkon renkon-web.js cf.json llama.json assets output
+          cp -r index.html pad.js preact.standalone.module.js renkon-pad.renkon renkon-web.js cf.renkon llama.renkon assets output
 
       - name: Checkout px25 branch
         uses: actions/checkout@v4
