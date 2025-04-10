@@ -6,10 +6,10 @@
         <script type="module">
             // this part of code identifies what renkon application, including renkon-pad as default,
             // to load.
-            // 1) When there is a ?pad= option, and the option ends with ".json" and
-            //    the (partial) URL, that .json is used as the top level app.
+            // 1) When there is a ?pad= option, and the option ends with ".json" or ".renkon" and
+            //    the (partial) URL, that .json or .renkon is used as the top level app.
             // 2) When the .html file name is other than "index.html", the basename for the .html file
-            //    is used to construct a path "./${basename}.json", and it is used as the top-level app.
+            //    is used to construct a path "./${basename}.renkon", and it is used as the top-level app.
             // 3) otherwise (no ?pad=, or the HTML is named "index.html"), the bootstrap version of renkon-pad
             //    in pad.js is loaded.
 
@@ -32,15 +32,15 @@
 
                 let docName;
                 if (option) {
-                    if (option.endsWith(".json")) {
+                    if (option.endsWith(".json") || option.endsWith(".renkon")) {
                         docName = option;
                     } else {
-                        console.log("pad option does not have .json suffix.")
+                        console.log("pad option does not have .json or .renkon suffix.")
                         return;
                     }
                 } else {
                     if (basename !== "index") {
-                        docName = `${basename}.json`;
+                        docName = `${basename}.renkon`;
                     }
                 }
 
