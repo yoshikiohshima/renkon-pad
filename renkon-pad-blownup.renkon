@@ -45,10 +45,10 @@
 "type":"move",
 "width":346.20942323749864,
 "x":-2051.573408104204,
-"y":-1564.5310140932665}],["9",{"height":269.54992764980466,
+"y":-1564.5310140932665}],["9",{"height":192.72779030671936,
 "id":"9",
 "type":"resize",
-"width":815.0628453131088,
+"width":785.1704412767738,
 "x":-1128.3316828964796,
 "y":-1883.062269243949}],["10",{"height":325.5379287983593,
 "id":"10",
@@ -719,7 +719,7 @@
 [`9`, `const _padViewUpdate = ((padView) => {
     const mover = document.querySelector("#mover");
     const pad = document.querySelector("#pad");
-    mover.style.setProperty("transform", \`scale(\${padView.scale}) translate(\${padView.x}px, \${padView.y}px)\`);
+    mover.style.setProperty("transform", \`translate(\${padView.x}px, \${padView.y}px) scale(\${padView.scale})\`);
 
     pad.style.setProperty("background-position", \`\${padView.x}px \${padView.y}px\`);
     pad.style.setProperty("background-size", \`\${64 * padView.scale}px \${64 * padView.scale}px\`);
