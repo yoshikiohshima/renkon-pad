@@ -33,7 +33,7 @@ The top bar includes one text field and five buttons:
   - **Show deps**: Hovering over a node definition shows its dependencies.
   - **Hide graph**: Disables both overlays.
 
-- The **"save"** button saves window positions and contents to a file named after the project with a `.json` suffix. *Note: The saved file is not valid JSON. The file format and suffix may change in the near future.*
+- The **"save"** button saves window positions and contents to a file named after the project with a `.renkon` suffix. *Note: Older versions of Renkon-pad saved a file with a `.json` suffix. You can still load them. *
 
 ### Text Box
 
@@ -79,17 +79,17 @@ Double-clicking a window’s title bar centers that window in the view.
 
 ### Other Ways to Start Renkon-pad
 
-You can launch a saved `.json` file as a standalone app without loading the full Renkon-pad UI:
+You can launch a saved `.renkon` file as a standalone app without loading the full Renkon-pad UI:
 
-- Use `index.html?pad=some.json`.
-- Alternatively, copy `index.html` to a new file (e.g., `abc.html`) and load it in the browser. If the HTML filename is not `index`, the startup code will look for a `.json` file with the same base name and load it automatically.
+- Use `index.html?pad=some.renkon`.
+- Alternatively, copy `index.html` to a new file (e.g., `abc.html`) and load it in the browser. If the HTML filename is not `index`, the startup code will look for a `.renkon` file with the same base name and load it automatically.
 
 To start Renkon-pad and immediately load a file for editing, use:  
-`index.html?file=abc.json`
+`index.html?file=abc.renon`
 
 ### Typical Idioms and Workflow
 
-Check out `renkon-pad.json`, `llama.json`, and `cf.json` for examples.
+Check out `renkon-pad.renkon`, `llama.renkon`, and `cf.renon` for examples.
 
 Unless you've customized `index.html`, the body of the document is empty—you'll need to set up your app’s DOM elements manually. The typical pattern is to use an immediately invoked function expression (IIFE) that creates DOM elements via `createElement`, `appendChild`, etc.
 
