@@ -18,6 +18,8 @@
 "state":false,
 "title":"Logic"}]]}},
 "version":2,
+"windowEnabled":{"map":{"__map":true,
+"values":[]}},
 "windowTypes":{"map":{"__map":true,
 "values":[["1","code"],["3","code"]]}},
 "windows":["1","3"],
