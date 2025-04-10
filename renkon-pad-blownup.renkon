@@ -45,15 +45,15 @@
 "type":"move",
 "width":346.20942323749864,
 "x":-2051.573408104204,
-"y":-1564.5310140932665}],["9",{"height":272.1868953342143,
+"y":-1564.5310140932665}],["9",{"height":269.54992764980466,
 "id":"9",
 "type":"resize",
-"width":746.9304607516959,
+"width":815.0628453131088,
 "x":-1128.3316828964796,
-"y":-1883.062269243949}],["10",{"height":327.4571500925231,
+"y":-1883.062269243949}],["10",{"height":325.5379287983593,
 "id":"10",
-"type":"move",
-"width":736.8662613614234,
+"type":"resize",
+"width":684.641817131502,
 "x":-1123.3252517498963,
 "y":-1577.5511670346955}],["11",{"height":645.1141692143291,
 "id":"11",
@@ -719,11 +719,7 @@
 [`9`, `const _padViewUpdate = ((padView) => {
     const mover = document.querySelector("#mover");
     const pad = document.querySelector("#pad");
-    mover.style.setProperty("left", \`\${padView.x}px\`);
-    mover.style.setProperty("top", \`\${padView.y}px\`);
-    mover.style.setProperty("transform", \`scale(\${padView.scale})\`);
-    mover.style.setProperty("width", \`\${padView.width}px\`);
-    mover.style.setProperty("height", \`\${padView.height}px\`);
+    mover.style.setProperty("transform", \`scale(\${padView.scale}) translate(\${padView.x}px, \${padView.y}px)\`);
 
     pad.style.setProperty("background-position", \`\${padView.x}px \${padView.y}px\`);
     pad.style.setProperty("background-size", \`\${64 * padView.scale}px \${64 * padView.scale}px\`);
