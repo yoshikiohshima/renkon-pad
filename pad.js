@@ -528,11 +528,7 @@ export function pad() {
     const _padViewUpdate = ((padView) => {
         const mover = document.querySelector("#mover");
         const pad = document.querySelector("#pad");
-        mover.style.setProperty("left", `${padView.x}px`);
-        mover.style.setProperty("top", `${padView.y}px`);
-        mover.style.setProperty("transform", `scale(${padView.scale})`);
-        mover.style.setProperty("width", `${padView.width}px`);
-        mover.style.setProperty("height", `${padView.height}px`);
+        mover.style.setProperty("transform", `scale(${padView.scale}) translate(${padView.x}px, ${padView.y}px)`);
 
         pad.style.setProperty("background-position", `${padView.x}px ${padView.y}px`);
         pad.style.setProperty("background-size", `${64 * padView.scale}px ${64 * padView.scale}px`);
