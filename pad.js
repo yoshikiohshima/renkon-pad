@@ -113,7 +113,6 @@ limitations under the License.
     }
 
     function stringifyCodeMap(map) {
-
         function replace(str) {
             return str.replaceAll("\\", "\\\\").replaceAll("`", "\\`").replaceAll("$", "\\$");
         }
