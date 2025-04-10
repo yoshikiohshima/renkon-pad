@@ -10,12 +10,12 @@
 "type":"move",
 "width":721.731992894,
 "x":1602.230420289683,
-"y":256.333072806876}],["5",{"height":250.3783509993504,
+"y":256.333072806876}],["5",{"height":276.69475724935046,
 "id":"5",
-"type":"move",
-"width":721.5561464058198,
-"x":1601.2132363513158,
-"y":651.572235343266}],["6",{"height":479.0610768359994,
+"type":"resize",
+"width":728.7241151558198,
+"x":1601.4983926013158,
+"y":637.205047843266}],["6",{"height":479.0610768359994,
 "id":"6",
 "type":"move",
 "width":732.1123828269741,
@@ -82,7 +82,7 @@
 "values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["12","code"],["15","code"]]}},
 "windows":["3","4","5","6","7","9","11","12","15"],
 "zIndex":{"map":{"__map":true,
-"values":[["3",113],["4",104],["5",109],["6",111],["7",110],["9",103],["11",105],["12",112],["15",100]]}}}
+"values":[["3",109],["4",104],["5",113],["6",111],["7",110],["9",103],["11",105],["12",112],["15",100]]}}}
 {__codeMap: true, value: [[`3`, `    const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
     const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
     const save = Events.listener(renkon.querySelector("#saveButton"), "click", (evt) => evt);
@@ -577,12 +577,13 @@
 
     const _saver2 = ((windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
         const code = new Map([...windowContents.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
+        const myTitles = new Map([...titles.map].map(([id, obj]) => ([id, {...obj, state: false}])));
         const data1 = stringify({
             version: 2,
             windows,
             positions,
             zIndex,
-            titles,
+            titles: {map: myTitles},
             windowTypes,
             padTitle,
             windowEnabled
@@ -593,13 +594,13 @@
         const div = document.createElement("a");
         const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(data1) + encodeURIComponent(data2);
         div.setAttribute("href", dataStr);
-        div.setAttribute("download", \`\${padTitle}.json\`);
+        div.setAttribute("download", \`\${padTitle}.renkon\`);
         div.click();
     })(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled, save);
 
     const _loader = (() => {
         const input = document.createElement("div");
-        input.innerHTML = \`<input id="imageinput" type="file" accept=".json">\`;
+        input.innerHTML = \`<input id="imageinput" type="file" accept=".json .renkon">\`;
         const imageInput = input.firstChild;
 
         imageInput.onchange = () => {

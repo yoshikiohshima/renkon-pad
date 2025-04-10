@@ -1028,12 +1028,13 @@ limitations under the License.
 
     const _saver2 = ((windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
         const code = new Map([...windowContents.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
+        const myTitles = new Map([...titles.map].map(([id, obj]) => ([id, {...obj, state: false}])));
         const data1 = stringify({
             version: 2,
             windows,
             positions,
             zIndex,
-            titles,
+            titles: {map: myTitles},
             windowTypes,
             padTitle,
             windowEnabled
@@ -1044,13 +1045,13 @@ limitations under the License.
         const div = document.createElement("a");
         const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(data1) + encodeURIComponent(data2);
         div.setAttribute("href", dataStr);
-        div.setAttribute("download", `${padTitle}.json`);
+        div.setAttribute("download", `${padTitle}.renkon`);
         div.click();
     })(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled, save);
 
     const _loader = (() => {
         const input = document.createElement("div");
-        input.innerHTML = `<input id="imageinput" type="file" accept=".json">`;
+        input.innerHTML = `<input id="imageinput" type="file" accept=".json .renkon">`;
         const imageInput = input.firstChild;
 
         imageInput.onchange = () => {
