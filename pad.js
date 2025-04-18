@@ -1004,7 +1004,7 @@ export function pad() {
 
     const loadRequest = Events.receiver();
 
-    const _saver2 = ((windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
+    const saveData = ((windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
         const code = new Map([...windowContents.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
         const myTitles = new Map([...titles.map].map(([id, obj]) => ([id, {...obj, state: false}])));
         const data1 = stringify({
@@ -1020,12 +1020,16 @@ export function pad() {
 
         const data2 = stringifyCodeMap(code);
 
+        return encodeURIComponent(data1) + encodeURIComponent(data2);
+    })(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled, save);
+
+    const _saver2 = ((saveData) => {
+        const dataStr = "data:text/plain;charset=utf-8," + saveData;
         const div = document.createElement("a");
-        const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(data1) + encodeURIComponent(data2);
         div.setAttribute("href", dataStr);
         div.setAttribute("download", `${padTitle}.renkon`);
         div.click();
-    })(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled, save);
+    })(Events.change(saveData));
 
     const _loader = (() => {
         const input = document.createElement("div");
