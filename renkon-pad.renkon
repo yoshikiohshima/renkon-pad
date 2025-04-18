@@ -10,10 +10,10 @@
 "type":"move",
 "width":1082.422413499183,
 "x":3990.679065016715,
-"y":268.142623392748}],["5",{"height":1749.6956057755192,
+"y":268.142623392748}],["5",{"height":1782.5381614495082,
 "id":"5",
 "type":"resize",
-"width":1089.155394490044,
+"width":1094.4533370898453,
 "x":3960.3760733413956,
 "y":2477.4607582771464}],["6",{"height":6725.506740621644,
 "id":"6",
@@ -25,7 +25,7 @@
 "type":"move",
 "width":1447.000750026495,
 "x":3690.9928604231,
-"y":4277.2224957042035}],["9",{"height":4590.032824007109,
+"y":4345.705045770071}],["9",{"height":4590.032824007109,
 "id":"9",
 "type":"move",
 "width":832.9323009500854,
@@ -82,7 +82,7 @@
 "values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["12","code"],["15","code"]]}},
 "windows":["3","4","5","6","7","9","11","12","15"],
 "zIndex":{"map":{"__map":true,
-"values":[["3",105],["4",104],["5",103],["6",110],["7",100],["9",113],["11",112],["12",109],["15",111]]}}}
+"values":[["3",105],["4",104],["5",103],["6",110],["7",113],["9",100],["11",112],["12",109],["15",111]]}}}
 {__codeMap: true, value: [[`3`, `    const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
     const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
     const save = Events.listener(renkon.querySelector("#saveButton"), "click", (evt) => evt);
@@ -571,7 +571,7 @@
 `],
 [`5`, `    const loadRequest = Events.receiver();
 
-    const saveData = ((windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
+    const saveData = (windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
         const code = new Map([...windowContents.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
         const myTitles = new Map([...titles.map].map(([id, obj]) => ([id, {...obj, state: false}])));
         const data1 = stringify({
@@ -588,15 +588,17 @@
         const data2 = stringifyCodeMap(code);
 
         return encodeURIComponent(data1) + encodeURIComponent(data2);
-    })(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled, save);
+    };
 
-    const _saver2 = ((saveData) => {
-        const dataStr = "data:text/plain;charset=utf-8," + saveData;
+    const _saver2 = ((windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
+        const data = saveData(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled);
+
+        const dataStr = "data:text/plain;charset=utf-8," + data;
         const div = document.createElement("a");
         div.setAttribute("href", dataStr);
         div.setAttribute("download", \`\${padTitle}.renkon\`);
         div.click();
-    })(Events.change(saveData));
+    })(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled, save);
 
     const _loader = (() => {
         const input = document.createElement("div");
