@@ -325,7 +325,7 @@ export function pad() {
         Events.or(addCode, addRunner, init), (now, _type) => now + 1
     );
 
-    const newWindowRequest = Events.change({id: newId, type: Events.or(addCode, addRunner, init), padView});
+    const newWindowRequest = {id: newId, type: Events.or(addCode, addRunner, init), padView};
 
     const padView = Behaviors.select(
         {x: 0, y: 0, scale: 1},
@@ -451,7 +451,7 @@ export function pad() {
     position: fixed;
     top: 0px;
     right: 0px;
-    width: 30%;
+    width: 35%;
     height: 80%;
     display: flex;
     box-shadow: 10px 10px 5px #4d4d4d, -10px -10px 5px #dddddd;
@@ -496,7 +496,10 @@ export function pad() {
                         dock.appendChild(dom);
                         document.body.appendChild(dock);
                         const result = thisProgramState.order.map((id) => {
-                            return [id, thisProgramState.resolved.get(id)]
+                            return [
+                                id + " (" + thisProgramState.types.get(id) + ")",
+                                thisProgramState.resolved.get(id)
+                            ];
                         });
                         newInspector(Object.fromEntries(result), dom);
                    }
