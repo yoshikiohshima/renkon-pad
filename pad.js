@@ -1103,7 +1103,7 @@ export function pad() {
 
     // Graph Visualization
 
-    const analyzed = ((windowContents, windowEnabled, trigger, showGraph) => {
+    const analyzed = Behaviors.keep(((windowContents, windowEnabled, trigger, showGraph) => {
         if (!showGraph) {return new Map()}
         if (trigger === null) {return new Map()}
         if (typeof trigger === "object" && trigger.id) {return new Map();}
@@ -1181,7 +1181,7 @@ export function pad() {
         }
 
         return edges;
-    })(windowContents, windowEnabled, Events.or(remove, hovered), showGraph === "showGraph");
+    })(windowContents, windowEnabled, Events.or(remove, hovered), showGraph === "showGraph"));
 
     const line = (p1, p2, color, label) => {
         let pl;

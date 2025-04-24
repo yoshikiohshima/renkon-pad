@@ -1539,7 +1539,7 @@ html, body {
         renkon.querySelector("#pad-css")?.remove();
         renkon.appendChild(style);
     })(css);`],
-[`57`, `const analyzed = ((windowContents, windowEnabled, trigger, showGraph) => {
+[`57`, `const analyzed = Behaviors.keep(((windowContents, windowEnabled, trigger, showGraph) => {
     if (!showGraph) {return new Map()}
     if (trigger === null) {return new Map()}
     if (typeof trigger === "object" && trigger.id) {return new Map();}
@@ -1617,7 +1617,7 @@ html, body {
     }
 
     return edges;
-})(windowContents, windowEnabled, Events.or(remove, hovered), showGraph === "showGraph");`],
+})(windowContents, windowEnabled, Events.or(remove, hovered), showGraph === "showGraph"));`],
 [`58`, `const line = (p1, p2, color, label) => {
     let pl;
     let pr;
