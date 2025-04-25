@@ -6,6 +6,8 @@
 
 Renkon-pad lets you create multiple text boxes and "runner" iframes where the code in the text boxes can be executed. Renkon-pad is powerful enough to create large applications, including the environment itself. One might think of the environment as a typical boxes-and-wires dataflow visual programming environment, but you can simply write text-based code in the dataflow semantics to build large projects.
 
+Try Renkon-pad on the [GitHub Pages](https://yoshikiohshima.github.io/renkon-pad/).
+
 The initial screen looks like this:
 
 <img style="border: 6px solid #eee" src="./doc/initial.png"></img>
