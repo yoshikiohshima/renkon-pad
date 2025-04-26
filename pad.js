@@ -133,7 +133,7 @@ export function pad() {
             now.map.set(`${spec.id}`, spec.type);
             return {map: now.map};
         },
-        Events.change(windows), (now, windows) => {
+        windows, (now, windows) => {
             const keys = [...now.map.keys()];
             const news = windows.filter((e) => !keys.includes(e));
             const olds = keys.filter((e) => !windows.includes(e));
@@ -151,7 +151,7 @@ export function pad() {
             console.log("positions loaded");
             return data.positions
         },
-        Events.change(windowTypes), (now, types) => {
+        windowTypes, (now, types) => {
             const keys = [...now.map.keys()];
             const typeKeys = [...types.map.keys()];
             const news = typeKeys.filter((e) => !keys.includes(e));
@@ -204,7 +204,7 @@ export function pad() {
             if (data.zIndex) return data.zIndex;
             return {map: new Map(data.windows.map((w, i) => [w, i + 100]))};
         },
-        Events.change(windows), (now, command) => {
+        windows, (now, command) => {
             const keys = [...now.map.keys()];
             const news = command.filter((e) => !keys.includes(e));
             const olds = keys.filter((e) => !command.includes(e));
@@ -236,7 +236,7 @@ export function pad() {
             console.log("titles loaded");
             return loaded.titles || {map: new Map()};
         },
-        Events.change(windows), (now, command) => {
+        windows, (now, command) => {
             const keys = [...now.map.keys()];
             const news = command.filter((e) => !keys.includes(e));
             const olds = keys.filter((e) => !command.includes(e));
@@ -259,7 +259,7 @@ export function pad() {
             console.log("windowEnabled loaded");
             return loaded.windowEnabled || {map: new Map()};
         },
-        Events.change(windows), (now, command) => {
+        windows, (now, command) => {
             const keys = [...now.map.keys()];
             const news = command.filter((e) => !keys.includes(e));
             const olds = keys.filter((e) => !command.includes(e));
@@ -296,7 +296,7 @@ export function pad() {
             }
             return {map: now.map};
         },
-        Events.change(windowTypes), (now, types) => {
+        windowTypes, (now, types) => {
             const keys = [...now.map.keys()];
             const typeKeys = [...types.map.keys()];
             const news = typeKeys.filter((e) => !keys.includes(e));
@@ -1103,7 +1103,7 @@ export function pad() {
 
     // Graph Visualization
 
-    const analyzed = Behaviors.keep(((windowContents, windowEnabled, trigger, showGraph) => {
+    const analyzed = ((windowContents, windowEnabled, trigger, showGraph) => {
         if (!showGraph) {return new Map()}
         if (trigger === null) {return new Map()}
         if (typeof trigger === "object" && trigger.id) {return new Map();}
@@ -1181,7 +1181,7 @@ export function pad() {
         }
 
         return edges;
-    })(windowContents, windowEnabled, Events.or(remove, hovered), showGraph === "showGraph"));
+    })(windowContents, windowEnabled, Events.or(remove, hovered), showGraph === "showGraph");
 
     const line = (p1, p2, color, label) => {
         let pl;
@@ -1237,7 +1237,7 @@ export function pad() {
         });
 
         return html`<svg viewBox="0 0 ${window.innerWidth} ${window.innerHeight}" xmlns="http://www.w3.org/2000/svg">${outEdges}${inEdges}</svg>`;
-    })(positions, padView, analyzed, hoveredB, showGraph === "showGraph");
+    })(positions, padView, Behaviors.keep(analyzed), hoveredB, showGraph === "showGraph");
 
     const _graphRender = render(graph, document.querySelector("#overlay"));
 
