@@ -637,11 +637,11 @@
             const loaded = parse(result);
             if (loaded.version === 1) {
                 Events.send(loadRequest, loaded);
-                maybeImageInput?.remvoe();
+                maybeImageInput?.remove();
                 return;
             }
             console.log("unknown type of data");
-            maybeImageInput?.remvoe();
+            maybeImageInput?.remove();
             return;
         }
 
