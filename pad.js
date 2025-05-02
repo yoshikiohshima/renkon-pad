@@ -1110,7 +1110,9 @@ export function pad() {
         const programState = new Renkon.constructor(0);
         programState.setLog(() => {});
 
-        const code = [...windowContents.map].filter(([id, editor]) => editor.state && windowEnabled.map.get(id)?.enabled).map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
+        const code = [...windowContents.map].filter(
+          ([id, editor]) => editor.state && windowEnabled.map.get(id)?.enabled)
+          .map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
         try {
             programState.setupProgram(code);
         } catch(e) {
@@ -1211,16 +1213,24 @@ export function pad() {
 
         if (!edges) {return [];} // runner does not have edges
 
+        const exportEdges = new Set();
+        const importEdges = new Set();
+
         const outEdges = edges.edgesOut.map((edge) => {
             const ind = edges.exports.indexOf(edge.id);
             let p1 = positions.map.get(hoveredB);
             p1 = {x: p1.x + p1.width, y: p1.y};
-            p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
             p1 = {x: p1.x * padView.scale + padView.x, y: p1.y * padView.scale + padView.y};
+            p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
             let p2 = positions.map.get(edge.dest);
-            p2 = {x: p2.x, y: p2.y + 10};
             p2 = {x: p2.x * padView.scale + padView.x, y: p2.y * padView.scale + padView.y};
-            return line(p1, p2, "#d88", edge.id);
+            p2 = {x: p2.x, y: p2.y + 10};
+            let e = "";
+            if (!exportEdges.has(edge.id)) {
+              exportEdges.add(edge.id);
+              e = edge.id;
+            }
+            return line(p1, p2, "#d88", e);
         });
 
         const inEdges = edges.edgesIn.map((edge) => {
@@ -1228,12 +1238,17 @@ export function pad() {
             const ind = exporter.exports.indexOf(edge.id);
             let p1 = positions.map.get(edge.origin);
             p1 = {x: p1.x + p1.width, y: p1.y};
-            p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
             p1 = {x: p1.x * padView.scale + padView.x, y: p1.y * padView.scale + padView.y};
+            p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
             let p2 = positions.map.get(hoveredB);
-            p2 = {x: p2.x, y: p2.y + 10};
             p2 = {x: p2.x * padView.scale + padView.x, y: p2.y * padView.scale + padView.y};
-            return line(p1, p2, "#88d", edge.id);
+            p2 = {x: p2.x, y: p2.y + 10};
+            let e = "";
+            if (!importEdges.has(edge.id)) {
+              importEdges.add(edge.id);
+              e = edge.id;
+            }
+            return line(p1, p2, "#88d", e);
         });
 
         return html`<svg viewBox="0 0 ${window.innerWidth} ${window.innerHeight}" xmlns="http://www.w3.org/2000/svg">${outEdges}${inEdges}</svg>`;

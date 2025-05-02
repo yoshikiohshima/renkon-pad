@@ -55,9 +55,15 @@
                         }
                         code = JSON.parse(result).code.values;
                     } else {
+                        let data1 = JSON.parse(result.slice(0, index));
+                        let map = new Map();
+                        if (data1?.windowEnabled?.map?.values) {
+                            map = new Map(data1?.windowEnabled?.map?.values);
+                        }
                         const data2 = result.slice(index);
                         const array = eval("(" + data2 + ")");
                         code = array.value;
+                        code = code.filter((pair) => (!map.get(pair[0]) || map.get(pair[0]).enabled));
                     }
                     programState.setupProgram(code.map((pair) => ({blockId: pair[0], code: pair[1]})), docName);
                         if (programState.evaluatorRunning === 0) {
