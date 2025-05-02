@@ -1,1 +1,299 @@
-{"code":{"__map":true,"values":[["1","(() => {\n    const div = document.createElement(\"div\");\n    div.id = \"renkon\";\n    div.innerHTML = `<div id=\"top-level\">\n      <div id=\"words\" style=\"height:0px;\"></div>\n      <div style=\"height: 20px;\"></div>\n      <div id=\"out\"></div>\n      <div id=\"output\"></div>\n      <div id=\"inputRow\">\n        <div id=\"input\" contenteditable></div>\n        <button id=\"abort\">X</button>\n      </div>\n      <style>\n        #inputRow {\n            display:flex;\n            align-items: center;\n        }\n        #input {\n            border: 1px solid #aaa;\n            border-radius: 24px;\n            background-color: #eee;\n            width:600px;\n            min-height: 48px;\n            height: fit-content;\n            padding: 10px;\n            padding-right: 40px;\n            margin-top: 20px;\n        }\n\n        #abort {\n            border-radius: 50%;\n            border: 1px outset #888;\n            width: 24px;\n            height: 24px;\n            position: relative;\n            left: -36px;\n        }\n\n        #output {\n            border: 1px solid #eee;\n            border-radius: 24px;\n            width: 600px;\n            min-height: 48px;\n            height: fit-content;\n            padding: 10px;\n            padding-right: 40px;\n        }\n\n        #out {\n            width: 600px;\n            height: fit-content;\n            padding-top: 10px;\n        }\n\n        #responses:empty {\n          min-height: 0px;\n        }\n\n        .log {\n            border: 1px solid #eee;\n            border-radius: 24px;\n            background-color:#e8e8e8;\n            width: 600px;\n            min-height: 48px;\n            height: fit-content;\n            padding: 10px;\n            padding-right: 40px;\n            margin-top: 5px;\n        }\n        \n        .fly {\n          position: absolute;\n          top: 0px;\n          left: 0px;\n        }\n      </style>\n  </div>\n`.trim();\n    document.body.querySelector(\"#renkon\")?.remove();\n    document.body.appendChild(div);\n})();\n\nconst {html, render} = import('https://unpkg.com/htm/preact/standalone.module.js');\nconst output = document.querySelector(\"#output\");\n\n        const abortHandler = Events.listener(\"#abort\", \"click\", (evt) => evt);\n        const abortController = Behaviors.collect(new AbortController(), Events.or(abortHandler, Events.change($responses)), (a, b) => {\n          a.abort(); \n          return new AbortController();\n        });\n\n        const config = {\n            params: {model: '/res/model/huggingface/local', max_tokens: 1000, stop: [\"</s>\", \"Llama:\", \"User:\"], stream: true, n_predict: 500, temperature: 0},\n          // url: \"https://substrate.home.arpa/llama-3-8b-instruct/v1/completions\",\n          url: \"http://localhost:8080/completion\",\n          controller: abortController\n        };\n\n        const gen = llama(enter, {...config.params}, config);\n        const v = Events.next(gen);\n\n        const responses = Behaviors.collect([], Events.or(v, abortHandler), (a, b) => {\n          if (b.done === undefined) {\n            return a;\n          }\n          if (b.done) return [...a, b.value];\n          return a;\n        });\n\n        const delayedChunks = Behaviors.delay(responses, 1000);\n\n        const pointer = Events.observe((change) => {\n          const pointerMoved = (evt) => {\n            change([evt.clientX, evt.clientY + window.scrollY]);\n          };\n          document.addEventListener(\"pointermove\", pointerMoved);\n          return () => {document.removeEventListener(\"pointermove\", pointerMoved)};\n        });\n\n        const tokenId = Behaviors.collect(0, v, (old, v) => old + 1);\n\n        const startPosition = Behaviors.keep(pointer);\n        const wordsTrigger = Events.or(v, Events.timer(16));\n        const lerp = (pe, ps, r) => {\n          return [(pe[0] - ps[0]) * r + ps[0], (pe[1] - ps[1]) * r + ps[1]]; \n        }\n        const words = ((startPosition, output, tokenId) => Behaviors.collect([], wordsTrigger, (acc, v) => {\n          if (typeof v === \"number\") {\n            return acc.filter((elem) => elem.targetTime > v).map((elem) => {\n              const ratio = (v - elem.startTime) / 1000;\n              const currentPosition = lerp(elem.targetPosition, elem.startPosition,ratio);\n              return {\n                ...elem,\n                currentPosition,\n              }\n            });\n          }\n\n          if (v.done) {return acc;}\n          const time = Renkon.time;\n          const targetTime = time + 1000;\n\n          const rect = output.getBoundingClientRect();\n          const targetPosition = [rect.left, rect.bottom + window.scrollY];\n          const result = [...acc, {startTime: time, targetTime, startPosition, currentPosition: startPosition, targetPosition, word: v.value.data.content, tokenId}];\n          return result;\n        }))(startPosition, document.querySelector(\"#output\"), tokenId);\n\n        const flies = words.map((w) => html`<div key=\"${w.tokenId}\" class=\"fly\" style=\"transform: translate(${w.currentPosition[0]}px, ${w.currentPosition[1]}px)\">${w.word}</div>`);\n\n        ((html, render, flies) => {render(html`<div>${flies}</div>`, document.querySelector(\"#words\"));})(html, render, flies)\n\n        render(\n          html`<div id=\"responses\" style=\"display: flex; flex-direction: column\">\n            ${delayedChunks.map((c) => html`<div class=\"log\">${c}</div>`)}\n            </div>`, document.querySelector(\"#out\"));\n\n        const logged = Behaviors.collect(\"\", Events.or(v, abortHandler), (a, b) => {\n          if (b.done === undefined) {\n            // abortHandler case\n            return \"\";\n          }\n          if (b.done) return \"\";\n          return a + b.value.data.content});\n\n        document.querySelector(\"#output\").textContent = Events.delay(Events.change(logged), 1000);  \n\n        const enter = Events.observe((notify) => {\n          const keyDown = (evt) => {\n            if (evt.key === \"Enter\") {\n              evt.preventDefault();\n              evt.stopPropagation();\n              console.log(\"enter\");\n              // const prompt = `You are a part of a natural language command system. The system is supposed to find a phrase that is a command for an application. You recognize equivalent phrases to one of \"open a frame\", \"move a frame by some amount\", \"delete a frame named something\", and \"bring a frame named something to front\". When you recognize a phrase that looks like a command, output \"COMMAND\" with the phrase, where \"something\" or \"some amount\" was replaced with the values from the sentence.`;\n              const prompt = `You are a helpful assistant. You answer to a question truthfully and faithfully.`;\n\n              notify(prompt + \"\\n\\nUser: \" + evt.target.textContent + \"\\nLlama:\");\n            }\n          };\n          document.querySelector(\"#input\").addEventListener(\"keydown\", keyDown);\n          return () => {document.querySelector(\"#input\").removeEventListener(\"keydown\", keyDown)}\n              });\n\nasync function* llama(prompt, params = {}, config = {}) {\n  console.log(\"llama\");\n    let controller = config.controller;\n  \n    if (!controller) {\n      controller = new AbortController();\n    }\n  \n    const completionParams = {...params, prompt };\n  \n    const response = await fetch(config.url || \"/completion\", {\n      method: 'POST',\n      body: JSON.stringify(completionParams),\n      headers: {\n        'Connection': 'keep-alive',\n        'Content-Type': 'application/json',\n        'Accept': 'text/event-stream',\n        ...(params.api_key ? {'Authorization': `Bearer ${params.api_key}`} : {})\n      },\n      signal: controller.signal,\n    });\n  \n    const reader = response.body.getReader();\n    const decoder = new TextDecoder();\n  \n    let content = \"\";\n    let leftover = \"\"; // Buffer for partially read lines\n  \n    try {\n      let cont = true;\n  \n      while (cont) {\n        const result = await reader.read();\n        if (result.done) {\n          break;\n        }\n  \n        // Add any leftover data to the current chunk of data\n        const text = leftover + decoder.decode(result.value);\n  \n        // Check if the last character is a line break\n        const endsWithLineBreak = text.endsWith('\\n');\n  \n        // Split the text into lines\n        let lines = text.split('\\n');\n  \n        // If the text doesn't end with a line break, then the last line is incomplete\n        // Store it in leftover to be added to the next chunk of data\n        if (!endsWithLineBreak) {\n          leftover = lines.pop();\n        } else {\n          leftover = \"\"; // Reset leftover if we have a line break at the end\n        }\n  \n        // Parse all sse events and add them to result\n        const regex = /^(\\S+):\\s(.*)$/gm;\n        for (const line of lines) {\n          const match = regex.exec(line);\n          if (match) {\n            result[match[1]] = match[2]\n            // since we know this is llama.cpp, let's just decode the json in data\n            if (result.data) {\n              // part of the OpenAI contract\n              if (result.data.startsWith('[DONE]')) {\n                cont = false;\n                break;\n              }\n              result.data = JSON.parse(result.data);\n              content += result.data.content;\n  \n              // yield\n              yield result;\n  \n              // if we got a stop token from server, we will break here\n              if (result.data.stop) {\n                cont = false;\n                break;\n              }\n            }\n          }\n        }\n      }\n    } catch (e) {\n      if (e.name !== 'AbortError') {\n        console.error(\"llama error: \", e);\n      }\n      throw e;\n    }\n    finally {\n      controller.abort();\n    }\n  \n    return content;\n}\n"]]},"positions":{"map":{"__map":true,"values":[["1",{"height":904.0234375,"id":"1","type":"resize","width":1137.15625,"x":30,"y":60}]]}},"titles":{"map":{"__map":true,"values":[["1",{"id":"1","state":false,"title":"LLAMA Client"}]]}},"version":1,"windowTypes":{"map":{"__map":true,"values":[["1","code"]]}},"windows":["1"],"zIndex":{"map":{"__map":true,"values":[["1",100]]}}}
+{"padTitle":"llama",
+"positions":{"map":{"__map":true,
+"values":[["1",{"height":904.0234375,
+"id":"1",
+"type":"resize",
+"width":1137.15625,
+"x":30,
+"y":60}]]}},
+"titles":{"map":{"__map":true,
+"values":[["1",{"id":"1",
+"state":false,
+"title":"LLAMA Client"}]]}},
+"version":2,
+"windowEnabled":{"map":{"__map":true,
+"values":[["1",{"enabled":true,
+"id":"1"}]]}},
+"windowTypes":{"map":{"__map":true,
+"values":[["1","code"]]}},
+"windows":["1"],
+"zIndex":{"map":{"__map":true,
+"values":[["1",100]]}}}
+{__codeMap: true, value: [[`1`, `(() => {
+    const div = document.createElement("div");
+    div.id = "renkon";
+    div.innerHTML = \`<div id="top-level">
+      <div id="words" style="height:0px;"></div>
+      <div style="height: 20px;"></div>
+      <div id="out"></div>
+      <div id="output"></div>
+      <div id="inputRow">
+        <div id="input" contenteditable></div>
+        <button id="abort">X</button>
+      </div>
+      <style>
+        #inputRow {
+            display:flex;
+            align-items: center;
+        }
+        #input {
+            border: 1px solid #aaa;
+            border-radius: 24px;
+            background-color: #eee;
+            width:600px;
+            min-height: 48px;
+            height: fit-content;
+            padding: 10px;
+            padding-right: 40px;
+            margin-top: 20px;
+        }
+
+        #abort {
+            border-radius: 50%;
+            border: 1px outset #888;
+            width: 24px;
+            height: 24px;
+            position: relative;
+            left: -36px;
+        }
+
+        #output {
+            border: 1px solid #eee;
+            border-radius: 24px;
+            width: 600px;
+            min-height: 48px;
+            height: fit-content;
+            padding: 10px;
+            padding-right: 40px;
+        }
+
+        #out {
+            width: 600px;
+            height: fit-content;
+            padding-top: 10px;
+        }
+
+        #responses:empty {
+          min-height: 0px;
+        }
+
+        .log {
+            border: 1px solid #eee;
+            border-radius: 24px;
+            background-color:#e8e8e8;
+            width: 600px;
+            min-height: 48px;
+            height: fit-content;
+            padding: 10px;
+            padding-right: 40px;
+            margin-top: 5px;
+        }
+        
+        .fly {
+          position: absolute;
+          top: 0px;
+          left: 0px;
+        }
+      </style>
+  </div>
+\`.trim();
+    document.body.querySelector("#renkon")?.remove();
+    document.body.appendChild(div);
+})();
+
+const {html, render} = import('https://unpkg.com/htm/preact/standalone.module.js');
+const output = document.querySelector("#output");
+
+        const abortHandler = Events.listener("#abort", "click", (evt) => evt);
+        const abortController = Behaviors.collect(new AbortController(), Events.or(abortHandler, \$responses), (a, b) => {
+          a.abort(); 
+          return new AbortController();
+        });
+
+        const config = {
+            params: {model: '/res/model/huggingface/local', max_tokens: 1000, stop: ["</s>", "Llama:", "User:"], stream: true, n_predict: 500, temperature: 0},
+          // url: "https://substrate.home.arpa/llama-3-8b-instruct/v1/completions",
+          url: "http://localhost:8080/completion",
+          controller: abortController
+        };
+
+        const gen = llama(enter, {...config.params}, config);
+        const v = Events.next(gen);
+
+        const responses = Behaviors.collect([], Events.or(v, abortHandler), (a, b) => {
+          if (b.done === undefined) {
+            return a;
+          }
+          if (b.done) return [...a, b.value];
+          return a;
+        });
+
+        const delayedChunks = Behaviors.delay(responses, 1000);
+
+        const pointer = Events.observe((change) => {
+          const pointerMoved = (evt) => {
+            change([evt.clientX, evt.clientY + window.scrollY]);
+          };
+          document.addEventListener("pointermove", pointerMoved);
+          return () => {document.removeEventListener("pointermove", pointerMoved)};
+        });
+
+        const tokenId = Behaviors.collect(0, v, (old, v) => old + 1);
+
+        const startPosition = Behaviors.keep(pointer);
+        const wordsTrigger = Events.or(v, Events.timer(16));
+        const lerp = (pe, ps, r) => {
+          return [(pe[0] - ps[0]) * r + ps[0], (pe[1] - ps[1]) * r + ps[1]]; 
+        }
+        const words = ((startPosition, output, tokenId) => Behaviors.collect([], wordsTrigger, (acc, v) => {
+          if (typeof v === "number") {
+            return acc.filter((elem) => elem.targetTime > v).map((elem) => {
+              const ratio = (v - elem.startTime) / 1000;
+              const currentPosition = lerp(elem.targetPosition, elem.startPosition,ratio);
+              return {
+                ...elem,
+                currentPosition,
+              }
+            });
+          }
+
+          if (v.done) {return acc;}
+          const time = Renkon.time;
+          const targetTime = time + 1000;
+
+          const rect = output.getBoundingClientRect();
+          const targetPosition = [rect.left, rect.bottom + window.scrollY];
+          const result = [...acc, {startTime: time, targetTime, startPosition, currentPosition: startPosition, targetPosition, word: v.value.data.content, tokenId}];
+          return result;
+        }))(startPosition, document.querySelector("#output"), tokenId);
+
+        const flies = words.map((w) => html\`<div key="\${w.tokenId}" class="fly" style="transform: translate(\${w.currentPosition[0]}px, \${w.currentPosition[1]}px)">\${w.word}</div>\`);
+
+        ((html, render, flies) => {render(html\`<div>\${flies}</div>\`, document.querySelector("#words"));})(html, render, flies)
+
+        render(
+          html\`<div id="responses" style="display: flex; flex-direction: column">
+            \${delayedChunks.map((c) => html\`<div class="log">\${c}</div>\`)}
+            </div>\`, document.querySelector("#out"));
+
+        const logged = Behaviors.collect("", Events.or(v, abortHandler), (a, b) => {
+          if (b.done === undefined) {
+            // abortHandler case
+            return "";
+          }
+          if (b.done) return "";
+          return a + b.value.data.content});
+
+        document.querySelector("#output").textContent = Events.delay(Events.change(logged), 1000);  
+
+        const enter = Events.observe((notify) => {
+          const keyDown = (evt) => {
+            if (evt.key === "Enter") {
+              evt.preventDefault();
+              evt.stopPropagation();
+              console.log("enter");
+              // const prompt = \`You are a part of a natural language command system. The system is supposed to find a phrase that is a command for an application. You recognize equivalent phrases to one of "open a frame", "move a frame by some amount", "delete a frame named something", and "bring a frame named something to front". When you recognize a phrase that looks like a command, output "COMMAND" with the phrase, where "something" or "some amount" was replaced with the values from the sentence.\`;
+              const prompt = \`You are a helpful assistant. You answer to a question truthfully and faithfully.\`;
+
+              notify(prompt + "\\n\\nUser: " + evt.target.textContent + "\\nLlama:");
+            }
+          };
+          document.querySelector("#input").addEventListener("keydown", keyDown);
+          return () => {document.querySelector("#input").removeEventListener("keydown", keyDown)}
+              });
+
+async function* llama(prompt, params = {}, config = {}) {
+  console.log("llama");
+    let controller = config.controller;
+  
+    if (!controller) {
+      controller = new AbortController();
+    }
+  
+    const completionParams = {...params, prompt };
+  
+    const response = await fetch(config.url || "/completion", {
+      method: 'POST',
+      body: JSON.stringify(completionParams),
+      headers: {
+        'Connection': 'keep-alive',
+        'Content-Type': 'application/json',
+        'Accept': 'text/event-stream',
+        ...(params.api_key ? {'Authorization': \`Bearer \${params.api_key}\`} : {})
+      },
+      signal: controller.signal,
+    });
+  
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+  
+    let content = "";
+    let leftover = ""; // Buffer for partially read lines
+  
+    try {
+      let cont = true;
+  
+      while (cont) {
+        const result = await reader.read();
+        if (result.done) {
+          break;
+        }
+  
+        // Add any leftover data to the current chunk of data
+        const text = leftover + decoder.decode(result.value);
+  
+        // Check if the last character is a line break
+        const endsWithLineBreak = text.endsWith('\\n');
+  
+        // Split the text into lines
+        let lines = text.split('\\n');
+  
+        // If the text doesn't end with a line break, then the last line is incomplete
+        // Store it in leftover to be added to the next chunk of data
+        if (!endsWithLineBreak) {
+          leftover = lines.pop();
+        } else {
+          leftover = ""; // Reset leftover if we have a line break at the end
+        }
+  
+        // Parse all sse events and add them to result
+        const regex = /^(\\S+):\\s(.*)\$/gm;
+        for (const line of lines) {
+          const match = regex.exec(line);
+          if (match) {
+            result[match[1]] = match[2]
+            // since we know this is llama.cpp, let's just decode the json in data
+            if (result.data) {
+              // part of the OpenAI contract
+              if (result.data.startsWith('[DONE]')) {
+                cont = false;
+                break;
+              }
+              result.data = JSON.parse(result.data);
+              content += result.data.content;
+  
+              // yield
+              yield result;
+  
+              // if we got a stop token from server, we will break here
+              if (result.data.stop) {
+                cont = false;
+                break;
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        console.error("llama error: ", e);
+      }
+      throw e;
+    }
+    finally {
+      controller.abort();
+    }
+  
+    return content;
+}
+`]]}
