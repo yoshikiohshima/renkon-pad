@@ -471,7 +471,7 @@ export function pad() {
 </style>
         <script type="module">
             import {ProgramState, CodeMirror, newInspector} from "./renkon-web.js";
-            window.thisProgramState = new ProgramState(0);
+            window.thisProgramState = new ProgramState(Date.now());
             window.CodeMirror = CodeMirror;
             window.newInspector = newInspector;
 
