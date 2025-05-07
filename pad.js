@@ -1556,6 +1556,7 @@ html, body {
         renkon.querySelector("#pad-css")?.remove();
         renkon.appendChild(style);
     })(css);
+
     return [];
 }
 

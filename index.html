@@ -18,7 +18,7 @@
             import {view, CodeMirror, ProgramState} from "./renkon-web.js";
             window.CodeMirror = CodeMirror;
             window.ProgramState = ProgramState;
-            const programState = new ProgramState(0);
+            const programState = new ProgramState(Date.now());
 
             // for debugging purpose, store the current programState to window
             window.programState = programState;
