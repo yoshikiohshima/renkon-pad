@@ -45,12 +45,7 @@
 "type":"resize",
 "width":768.9248942559444,
 "x":321.30330790679744,
-"y":267.05204973782674}],["17",{"height":599.5404355083407,
-"id":"17",
-"type":"resize",
-"width":773.6429716276423,
-"x":295.73937984107994,
-"y":4566.863349053622}]]}},
+"y":267.05204973782674}]]}},
 "titles":{"map":{"__map":true,
 "values":[["3",{"id":"3",
 "state":false,
@@ -70,9 +65,7 @@
 "state":false,
 "title":"Stringify"}],["15",{"id":"15",
 "state":false,
-"title":"New Component"}],["17",{"id":"17",
-"state":false,
-"title":"untitled"}]]}},
+"title":"New Component"}]]}},
 "version":2,
 "windowEnabled":{"map":{"__map":true,
 "values":[["3",{"enabled":true,
@@ -84,13 +77,12 @@
 "id":"9"}],["11",{"enabled":true,
 "id":"11"}],["12",{"enabled":true,
 "id":"12"}],["15",{"enabled":true,
-"id":"15"}],["17",{"enabled":true,
-"id":"17"}]]}},
+"id":"15"}]]}},
 "windowTypes":{"map":{"__map":true,
-"values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["12","code"],["15","code"],["17","runner"]]}},
-"windows":["3","4","5","6","7","9","11","12","15","17"],
+"values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["12","code"],["15","code"]]}},
+"windows":["3","4","5","6","7","9","11","12","15"],
 "zIndex":{"map":{"__map":true,
-"values":[["3",105],["4",104],["5",103],["6",110],["7",113],["9",100],["11",112],["12",109],["15",111],["17",114]]}}}
+"values":[["3",105],["4",104],["5",103],["6",110],["7",113],["9",100],["11",112],["12",109],["15",111]]}}}
 {__codeMap: true, value: [[`3`, `    const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
     const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
     const save = Events.listener(renkon.querySelector("#saveButton"), "click", (evt) => evt);
