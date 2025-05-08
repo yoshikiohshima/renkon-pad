@@ -332,8 +332,16 @@ export function pad() {
         padViewChange, (now, view) => {
             let {x, y, scale} = view;
 
-            if (scale < 0.1) {scale = 0.1;}
-            if (scale > 20) {scale = 20;}
+            if (scale < 0.1) {
+                x = now.x;
+                y = now.y;
+                scale = 0.1;
+            }
+            if (scale > 20) {
+                x = now.x;
+                y = now.y;
+                scale = 20;
+            }
             return {...now, ...{x, y, scale}};
         }
     );
