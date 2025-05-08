@@ -1,6 +1,6 @@
 {"padTitle":"Renkon-Pad",
 "positions":{"map":{"__map":true,
-"values":[["3",{"height":6916.737853799514,
+"values":[["3",{"height":6971.732230358902,
 "id":"3",
 "type":"resize",
 "width":976.2962981245943,
@@ -40,10 +40,10 @@
 "type":"move",
 "width":774.2361479570296,
 "x":-742.7864112178643,
-"y":924.8415578565391}],["15",{"height":2809.923427348286,
+"y":924.8415578565391}],["15",{"height":2760.315341619548,
 "id":"15",
 "type":"resize",
-"width":768.9248942559444,
+"width":768.5264842221045,
 "x":321.30330790679744,
 "y":267.05204973782674}]]}},
 "titles":{"map":{"__map":true,
@@ -91,7 +91,10 @@
     const home = Events.listener(renkon.querySelector("#homeButton"), "click", () => "home");
     const zoomIn = Events.listener(renkon.querySelector("#zoomInButton"), "click", () => "zoomIn");
     const zoomOut = Events.listener(renkon.querySelector("#zoomOutButton"), "click", () => "zoomOut");
-    const navigationAction = Events.or(home, zoomIn, zoomOut);
+
+    const homeUponLoad = ((_positions, _loadRequest) => "home")(positions, loadRequest);
+
+    const navigationAction = Events.or(home, zoomIn, zoomOut, homeUponLoad);
 
     const padViewChange = Events.receiver();
 
@@ -186,10 +189,13 @@
     };
 
     const _handleNavigationAction = ((navigationAction, positions, padView) => {
-        if (navigationAction === "zoomIn") {
-            Events.send(padViewChange, {x: padView.x, y: padView.y, scale: padView.scale * 1.1});
-        } else if (navigationAction === "zoomOut") {
-            Events.send(padViewChange, {x: padView.x, y: padView.y, scale: padView.scale * 0.9});
+        if (navigationAction === "zoomIn" || navigationAction === "zoomOut") {
+            const pad = document.body.querySelector("#pad").getBoundingClientRect();
+            const newScale = padView.scale * ( navigationAction === "zoomIn" ? 1.1 : 0.9);
+
+            const newX = (padView.x - (pad.width / 2)) * (newScale / padView.scale) + pad.width / 2;
+            const newY = (padView.y - (pad.height / 2)) * (newScale / padView.scale) + pad.height / 2;
+            Events.send(padViewChange, {x: newX, y: newY, scale: newScale});
         } else if (navigationAction === "home") {
             let minLeft = Number.MAX_VALUE;
             let minTop = Number.MAX_VALUE;
@@ -363,25 +369,23 @@
         return {type: "pointerup", x: evt.clientX, y: evt.clientY};
     });
 
-    const downOrResize = Events.or(padDown, windowResize);
+    const downOrUpOrResize = Events.or(padDown, padUp, pointercancel, lostpointercapture, windowResize);
 
     const _padMove = Events.listener("#pad", "pointermove", moveCompute);
 
     const windowResize = Events.receiver();
     const moveOrResize = Events.receiver();
 
-    const moveCompute = Behaviors.select(
-      (move) => move,
-      downOrResize, (_old, downOrResize) => {
-        if (downOrResize.type === "moveDown" || downOrResize.type === "windowResizeDown") {
-            const start = positions.map.get(downOrResize.id);
+    const moveCompute = ((downOrUpOrResize, positions, padView) => {
+        if (downOrUpOrResize.type === "moveDown" || downOrUpOrResize.type === "windowResizeDown") {
+            const start = positions.map.get(downOrUpOrResize.id);
             const scale = padView.scale;
-            const downPoint = {x: downOrResize.x, y: downOrResize.y};
-            const type = downOrResize.type === "moveDown" ? "move" : "resize";
+            const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
+            const type = downOrUpOrResize.type === "moveDown" ? "move" : "resize";
             return (move) => {
                 const diffX = (move.clientX - downPoint.x) / scale;
                 const diffY = (move.clientY - downPoint.y) / scale;
-                const result = {id: downOrResize.id, type};
+                const result = {id: downOrUpOrResize.id, type};
                 if (type === "move") {
                     result.x = start.x + diffX;
                     result.y = start.y + diffY;
@@ -392,21 +396,21 @@
                 Events.send(moveOrResize, result);
                 return move;
             }
-        } else if (downOrResize.type === "padDragDown") {
+        } else if (downOrUpOrResize.type === "padDragDown") {
             const start = padView;
             const scale = start.scale;
-            const downPoint = {x: downOrResize.x, y: downOrResize.y};
+            const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
             const type = "padDrag";
             return (move) => {
                 const diffX = move.clientX - downPoint.x;
                 const diffY = move.clientY - downPoint.y;
-                const result = {id: downOrResize.id, type, scale};
+                const result = {id: downOrUpOrResize.id, type, scale};
                 result.x = start.x + diffX;
                 result.y = start.y + diffY;
                 Events.send(padViewChange, result);
                 return move;
             };
-        } else if (downOrResize.type === "pinch") {
+        } else if (downOrUpOrResize.type === "pinch") {
             return (move) => {
                 const keys = [...evCache.keys()];
                 const primary = evCache.get("primary");
@@ -455,10 +459,11 @@
                 Events.send(padViewChange, {x: newX, y: newY, scale: newScale});
                 return move;
             }
+        } else if (["pointerup", "lost", "stuck"].includes(downOrUpOrResize.type)) {
+            return (move) => move;
         }
-      },
-      Events.or(padUp, pointercancel, lostpointercapture), (_old, _evt) => (move) => move
-);
+    })(downOrUpOrResize, positions, padView);
+
 `],
 [`4`, `    const inputHandler = (evt) => {
         if (evt.key === "Enter") {
@@ -974,8 +979,8 @@ html, body {
         programState.setLog(() => {});
 
         const code = [...windowContents.map].filter(
-          ([id, editor]) => editor.state && windowEnabled.map.get(id)?.enabled)
-          .map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
+            ([id, editor]) => editor.state && windowEnabled.map.get(id)?.enabled)
+            .map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
         try {
             programState.setupProgram(code);
         } catch(e) {
@@ -1090,8 +1095,8 @@ html, body {
             p2 = {x: p2.x, y: p2.y + 10};
             let e = "";
             if (!exportEdges.has(edge.id)) {
-              exportEdges.add(edge.id);
-              e = edge.id;
+                exportEdges.add(edge.id);
+                e = edge.id;
             }
             return line(p1, p2, "#d88", e);
         });
@@ -1108,8 +1113,8 @@ html, body {
             p2 = {x: p2.x, y: p2.y + 10};
             let e = "";
             if (!importEdges.has(edge.id)) {
-              importEdges.add(edge.id);
-              e = edge.id;
+                importEdges.add(edge.id);
+                e = edge.id;
             }
             return line(p1, p2, "#88d", e);
         });
@@ -1484,8 +1489,7 @@ html, body {
         return new Map(array.value);
     }
 `],
-[`15`, `
-    const newEditor = (id, doc) => {
+[`15`, `    const newEditor = (id, doc) => {
         const mirror = window.CodeMirror;
 
         const config = {
@@ -1618,8 +1622,8 @@ html, body {
                         document.body.appendChild(dock);
                         const result = thisProgramState.order.map((id) => {
                             return [
-                              id + " (" + thisProgramState.types.get(id) + ")",
-                              thisProgramState.resolved.get(id)
+                                id + " (" + thisProgramState.types.get(id) + ")",
+                                thisProgramState.resolved.get(id)
                             ];
                         });
                         newInspector(Object.fromEntries(result), dom);

@@ -532,7 +532,10 @@ export function pad() {
     const home = Events.listener(renkon.querySelector("#homeButton"), "click", () => "home");
     const zoomIn = Events.listener(renkon.querySelector("#zoomInButton"), "click", () => "zoomIn");
     const zoomOut = Events.listener(renkon.querySelector("#zoomOutButton"), "click", () => "zoomOut");
-    const navigationAction = Events.or(home, zoomIn, zoomOut);
+
+    const homeUponLoad = ((_positions, _loadRequest) => "home")(positions, loadRequest);
+
+    const navigationAction = Events.or(home, zoomIn, zoomOut, homeUponLoad);
 
     const padViewChange = Events.receiver();
 
@@ -627,10 +630,13 @@ export function pad() {
     };
 
     const _handleNavigationAction = ((navigationAction, positions, padView) => {
-        if (navigationAction === "zoomIn") {
-            Events.send(padViewChange, {x: padView.x, y: padView.y, scale: padView.scale * 1.1});
-        } else if (navigationAction === "zoomOut") {
-            Events.send(padViewChange, {x: padView.x, y: padView.y, scale: padView.scale * 0.9});
+        if (navigationAction === "zoomIn" || navigationAction === "zoomOut") {
+            const pad = document.body.querySelector("#pad").getBoundingClientRect();
+            const newScale = padView.scale * ( navigationAction === "zoomIn" ? 1.1 : 0.9);
+
+            const newX = (padView.x - (pad.width / 2)) * (newScale / padView.scale) + pad.width / 2;
+            const newY = (padView.y - (pad.height / 2)) * (newScale / padView.scale) + pad.height / 2;
+            Events.send(padViewChange, {x: newX, y: newY, scale: newScale});
         } else if (navigationAction === "home") {
             let minLeft = Number.MAX_VALUE;
             let minTop = Number.MAX_VALUE;
@@ -1119,8 +1125,8 @@ export function pad() {
         programState.setLog(() => {});
 
         const code = [...windowContents.map].filter(
-          ([id, editor]) => editor.state && windowEnabled.map.get(id)?.enabled)
-          .map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
+            ([id, editor]) => editor.state && windowEnabled.map.get(id)?.enabled)
+            .map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
         try {
             programState.setupProgram(code);
         } catch(e) {
@@ -1235,8 +1241,8 @@ export function pad() {
             p2 = {x: p2.x, y: p2.y + 10};
             let e = "";
             if (!exportEdges.has(edge.id)) {
-              exportEdges.add(edge.id);
-              e = edge.id;
+                exportEdges.add(edge.id);
+                e = edge.id;
             }
             return line(p1, p2, "#d88", e);
         });
@@ -1253,8 +1259,8 @@ export function pad() {
             p2 = {x: p2.x, y: p2.y + 10};
             let e = "";
             if (!importEdges.has(edge.id)) {
-              importEdges.add(edge.id);
-              e = edge.id;
+                importEdges.add(edge.id);
+                e = edge.id;
             }
             return line(p1, p2, "#88d", e);
         });
