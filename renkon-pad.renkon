@@ -1,9 +1,9 @@
 {"padTitle":"Renkon-Pad",
 "positions":{"map":{"__map":true,
-"values":[["3",{"height":6918.338402170996,
+"values":[["3",{"height":6916.737853799514,
 "id":"3",
-"type":"move",
-"width":951.7192143773784,
+"type":"resize",
+"width":976.2962981245943,
 "x":1340.4681791330486,
 "y":263.3837537230511}],["4",{"height":2112.3450437672373,
 "id":"4",
@@ -45,7 +45,12 @@
 "type":"resize",
 "width":768.9248942559444,
 "x":321.30330790679744,
-"y":267.05204973782674}]]}},
+"y":267.05204973782674}],["17",{"height":599.5404355083407,
+"id":"17",
+"type":"resize",
+"width":773.6429716276423,
+"x":295.73937984107994,
+"y":4566.863349053622}]]}},
 "titles":{"map":{"__map":true,
 "values":[["3",{"id":"3",
 "state":false,
@@ -65,7 +70,9 @@
 "state":false,
 "title":"Stringify"}],["15",{"id":"15",
 "state":false,
-"title":"New Component"}]]}},
+"title":"New Component"}],["17",{"id":"17",
+"state":false,
+"title":"untitled"}]]}},
 "version":2,
 "windowEnabled":{"map":{"__map":true,
 "values":[["3",{"enabled":true,
@@ -77,12 +84,13 @@
 "id":"9"}],["11",{"enabled":true,
 "id":"11"}],["12",{"enabled":true,
 "id":"12"}],["15",{"enabled":true,
-"id":"15"}]]}},
+"id":"15"}],["17",{"enabled":true,
+"id":"17"}]]}},
 "windowTypes":{"map":{"__map":true,
-"values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["12","code"],["15","code"]]}},
-"windows":["3","4","5","6","7","9","11","12","15"],
+"values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["12","code"],["15","code"],["17","runner"]]}},
+"windows":["3","4","5","6","7","9","11","12","15","17"],
 "zIndex":{"map":{"__map":true,
-"values":[["3",105],["4",104],["5",103],["6",110],["7",113],["9",100],["11",112],["12",109],["15",111]]}}}
+"values":[["3",105],["4",104],["5",103],["6",110],["7",113],["9",100],["11",112],["12",109],["15",111],["17",114]]}}}
 {__codeMap: true, value: [[`3`, `    const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
     const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
     const save = Events.listener(renkon.querySelector("#saveButton"), "click", (evt) => evt);
@@ -363,23 +371,25 @@
         return {type: "pointerup", x: evt.clientX, y: evt.clientY};
     });
 
-    const downOrUpOrResize = Events.or(padDown, padUp, pointercancel, lostpointercapture, windowResize);
+    const downOrResize = Events.or(padDown, windowResize);
 
     const _padMove = Events.listener("#pad", "pointermove", moveCompute);
 
     const windowResize = Events.receiver();
     const moveOrResize = Events.receiver();
 
-    const moveCompute = ((downOrUpOrResize, positions, padView) => {
-        if (downOrUpOrResize.type === "moveDown" || downOrUpOrResize.type === "windowResizeDown") {
-            const start = positions.map.get(downOrUpOrResize.id);
+    const moveCompute = Behaviors.select(
+      (move) => move,
+      downOrResize, (_old, downOrResize) => {
+        if (downOrResize.type === "moveDown" || downOrResize.type === "windowResizeDown") {
+            const start = positions.map.get(downOrResize.id);
             const scale = padView.scale;
-            const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
-            const type = downOrUpOrResize.type === "moveDown" ? "move" : "resize";
+            const downPoint = {x: downOrResize.x, y: downOrResize.y};
+            const type = downOrResize.type === "moveDown" ? "move" : "resize";
             return (move) => {
                 const diffX = (move.clientX - downPoint.x) / scale;
                 const diffY = (move.clientY - downPoint.y) / scale;
-                const result = {id: downOrUpOrResize.id, type};
+                const result = {id: downOrResize.id, type};
                 if (type === "move") {
                     result.x = start.x + diffX;
                     result.y = start.y + diffY;
@@ -390,21 +400,21 @@
                 Events.send(moveOrResize, result);
                 return move;
             }
-        } else if (downOrUpOrResize.type === "padDragDown") {
+        } else if (downOrResize.type === "padDragDown") {
             const start = padView;
             const scale = start.scale;
-            const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
+            const downPoint = {x: downOrResize.x, y: downOrResize.y};
             const type = "padDrag";
             return (move) => {
                 const diffX = move.clientX - downPoint.x;
                 const diffY = move.clientY - downPoint.y;
-                const result = {id: downOrUpOrResize.id, type, scale};
+                const result = {id: downOrResize.id, type, scale};
                 result.x = start.x + diffX;
                 result.y = start.y + diffY;
                 Events.send(padViewChange, result);
                 return move;
             };
-        } else if (downOrUpOrResize.type === "pinch") {
+        } else if (downOrResize.type === "pinch") {
             return (move) => {
                 const keys = [...evCache.keys()];
                 const primary = evCache.get("primary");
@@ -453,10 +463,10 @@
                 Events.send(padViewChange, {x: newX, y: newY, scale: newScale});
                 return move;
             }
-        } else if (["pointerup", "lost", "stuck"].includes(downOrUpOrResize.type)) {
-            return (move) => move;
         }
-    })(downOrUpOrResize, positions, padView);
+      },
+      Events.or(padUp, pointercancel, lostpointercapture), (_old, _evt) => (move) => move
+);
 `],
 [`4`, `    const inputHandler = (evt) => {
         if (evt.key === "Enter") {
@@ -1139,7 +1149,7 @@ html, body {
             now.map.set(\`\${spec.id}\`, spec.type);
             return {map: now.map};
         },
-       windows, (now, windows) => {
+        windows, (now, windows) => {
             const keys = [...now.map.keys()];
             const news = windows.filter((e) => !keys.includes(e));
             const olds = keys.filter((e) => !windows.includes(e));
@@ -1183,7 +1193,7 @@ html, body {
             if (command.type === "move" || command.type === "resize") {
                 const v = {...now.map.get(command.id), ...command};
                 v.width = Math.max(120, v.width);
-                v.height = Math.max(120, v.height);
+                v.height = Math.max(70, v.height);
                 now.map.set(command.id, v);
                 return {map: now.map};
             }
