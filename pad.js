@@ -31,128 +31,47 @@ export function pad() {
         return renkon;
     })();
 
-    // Stringify
-
-    function stringifyInner(node, seen) {
-        if (node === undefined) return undefined;
-        if (typeof node === 'number') return Number.isFinite(node) ? `${node}` : 'null';
-        if (typeof node !== 'object') return JSON.stringify(node, null, 4);
-
-        let out;
-        if (Array.isArray(node)) {
-            out = '[';
-            for (let i = 0; i < node.length; i++) {
-                if (i > 0) out += ',';
-                out += stringifyInner(node[i], seen) || 'null';
-            }
-            return out + ']';
-        }
-
-        if (node === null) return 'null';
-
-        if (seen.has(node)) {
-            throw new TypeError('Converting circular structure to JSON');
-        }
-
-        seen.add(node);
-
-        if (node.constructor === window.Map) {
-            let replacement = {__map: true, values: [...node]};
-            return stringifyInner(replacement, seen);
-        }
-
-        if (node.constructor === window.Set) {
-            let replacement = {__set: true, values: [...node]};
-            return stringifyInner(replacement, seen);
-        }
-
-        let keys = Object.keys(node).sort();
-        out = '';
-        for (let i = 0; i < keys.length; i++) {
-            let key = keys[i];
-            let value = stringifyInner(node[key], seen, out);
-            if (!value) continue;
-            if (out !== '') out += ',\n';
-            out += JSON.stringify(key) + ':' + value;
-        }
-        seen.delete(node);
-        return '{' + out + '}';
-    }
-
-    function stringify(obj) {
-        let seen = new Set();
-        return stringifyInner(obj, seen);
-    }
-
-    function parse(string) {
-        return JSON.parse(string, (_key, value) => {
-            if (typeof value === "object" && value !== null && value.__map) {
-                return new Map(value.values);
-            } else if (typeof value === "object" && value !== null && value.__set) {
-                return new Set(value.values);
-            }
-            return value;
-        });
-    }
-
-    function stringifyCodeMap(map) {
-        function replace(str) {
-            return str.replaceAll("\\", "\\\\").replaceAll("`", "\\`").replaceAll("$", "\\$");
-        }
-
-        return "\n{__codeMap: true, value: " + "[" +
-            [...map].map(([key, value]) => ("[" + "`" + replace(key) + "`" + ", " + "`" +  replace(value) + "`" + "]")).join(",\n") + "]" + "}"
-    }
-
-    function parseCodeMap(string) {
-        const array = eval("(" + string + ")");
-        return new Map(array.value);
-    }
-
     // Data Structure
 
     // [id:string]
     const windows = Behaviors.select(
         [],
-        loadRequest, (now, data) => {
-            console.log("windows loaded");
+        loadRequest, (_prev, data) => {
             return data.windows
         },
-        newWindowRequest, (now, spec) => [...now, `${spec.id}`],
-        remove, (now, removeCommand) => now.filter((e) => e != removeCommand.id),
+        newWindowRequest, (prev, spec) => [...prev, `${spec.id}`],
+        remove, (prev, removeCommand) => prev.filter((e) => e != removeCommand.id),
     );
 
     // {map: Map<id, type:"code"|"runner">
     const windowTypes = Behaviors.select(
         {map: new Map()},
-        loadRequest, (now, data) => {
-            console.log("windowTypes loaded");
+        loadRequest, (_prev, data) => {
             return data.windowTypes;
         },
-        newWindowRequest, (now, spec) => {
-            now.map.set(`${spec.id}`, spec.type);
-            return {map: now.map};
+        newWindowRequest, (prev, spec) => {
+            prev.map.set(`${spec.id}`, spec.type);
+            return {map: prev.map};
         },
-        windows, (now, windows) => {
-            const keys = [...now.map.keys()];
+        windows, (prev, windows) => {
+            const keys = [...prev.map.keys()];
             const news = windows.filter((e) => !keys.includes(e));
             const olds = keys.filter((e) => !windows.includes(e));
 
-            olds.forEach((id) => now.map.delete(`${id}`));
-            news.forEach((id) => now.map.set(`${id}`, "code"));
-            return {map: now.map};
+            olds.forEach((id) => prev.map.delete(`${id}`));
+            news.forEach((id) => prev.map.set(`${id}`, "code"));
+            return {map: prev.map};
         }
     );
 
-    // {id, x: number, y: number, width: number, height: number}
+    // [id, {id, x: number, y: number, width: number, height: number}]
     const positions = Behaviors.select(
         {map: new Map()},
-        loadRequest, (now, data) => {
-            console.log("positions loaded");
-            return data.positions
+        loadRequest, (_prev, data) => {
+            return data.positions;
         },
-        windowTypes, (now, types) => {
-            const keys = [...now.map.keys()];
+        windowTypes, (prev, types) => {
+            const keys = [...prev.map.keys()];
             const typeKeys = [...types.map.keys()];
             const news = typeKeys.filter((e) => !keys.includes(e));
             const olds = keys.filter((e) => !typeKeys.includes(e));
@@ -169,19 +88,19 @@ export function pad() {
                     height: type === "code" ? 200 : 400
                 }
             };
-            olds.forEach((id) => now.map.delete(`${id}`));
-            news.forEach((id) => now.map.set(`${id}`, newWindow(id, types.map.get(id))));
-            return {map: now.map};
+            olds.forEach((id) => prev.map.delete(`${id}`));
+            news.forEach((id) => prev.map.set(`${id}`, newWindow(id, types.map.get(id))));
+            return {map: prev.map};
         },
-        moveOrResize, (now, command) => {
+        moveOrResize, (prev, command) => {
             if (command.type === "move" || command.type === "resize") {
-                const v = {...now.map.get(command.id), ...command};
+                const v = {...prev.map.get(command.id), ...command};
                 v.width = Math.max(120, v.width);
                 v.height = Math.max(70, v.height);
-                now.map.set(command.id, v);
-                return {map: now.map};
+                prev.map.set(command.id, v);
+                return {map: prev.map};
             }
-            return now;
+            return prev;
         },
     );
 
@@ -199,91 +118,87 @@ export function pad() {
 
     const zIndex = Behaviors.select(
         {map: new Map()},
-        loadRequest, (now, data) => {
-            console.log("zIndex loaded");
+        loadRequest, (_prev, data) => {
             if (data.zIndex) return data.zIndex;
             return {map: new Map(data.windows.map((w, i) => [w, i + 100]))};
         },
-        windows, (now, command) => {
-            const keys = [...now.map.keys()];
+        windows, (prev, command) => {
+            const keys = [...prev.map.keys()];
             const news = command.filter((e) => !keys.includes(e));
             const olds = keys.filter((e) => !command.includes(e));
 
-            const {maxId:_maxId, max} = findMax(now.map);
+            const {maxId:_maxId, max} = findMax(prev.map);
             let z = max < 0 ? 100 : max + 1;
-            olds.forEach((id) => now.map.delete(id));
-            news.forEach((id) => now.map.set(id, z++));
-            return {map: now.map};
+            olds.forEach((id) => prev.map.delete(id));
+            news.forEach((id) => prev.map.set(id, z++));
+            return {map: prev.map};
         },
-        moveOrResize, (now, command) => {
+        moveOrResize, (prev, command) => {
             if (command.type === "move") {
-                const z = now.map.get(command.id);
+                const z = prev.map.get(command.id);
 
-                const {maxId, max} = findMax(now.map);
+                const {maxId, max} = findMax(prev.map);
                 if (maxId !== command.id) {
-                    now.map.set(maxId, z);
-                    now.map.set(command.id, max);
+                    prev.map.set(maxId, z);
+                    prev.map.set(command.id, max);
                 }
-                return {map: now.map};
+                return {map: prev.map};
             }
-            return now
+            return prev;
         },
     );
 
     const titles = Behaviors.select(
         {map: new Map()},
-        loadRequest, (now, loaded) => {
-            console.log("titles loaded");
+        loadRequest, (_prev, loaded) => {
             return loaded.titles || {map: new Map()};
         },
-        windows, (now, command) => {
-            const keys = [...now.map.keys()];
+        windows, (prev, command) => {
+            const keys = [...prev.map.keys()];
             const news = command.filter((e) => !keys.includes(e));
             const olds = keys.filter((e) => !command.includes(e));
 
-            olds.forEach((id) => now.map.delete(id));
-            news.forEach((id) => now.map.set(id, {id, state: false, title: "untitled"}));
-            return {map: now.map};
+            olds.forEach((id) => prev.map.delete(id));
+            news.forEach((id) => prev.map.set(id, {id, state: false, title: "untitled"}));
+            return {map: prev.map};
         },
-        titleEditChange, (now, change) => {
+        titleEditChange, (prev, change) => {
             const id = change.id;
-            const v = {...now.map.get(id), ...change};
-            now.map.set(id, v);
-            return {map: now.map};
+            const v = {...prev.map.get(id), ...change};
+            prev.map.set(id, v);
+            return {map: prev.map};
         }
     );
 
     const windowEnabled = Behaviors.select(
         {map: new Map()},
-        loadRequest, (now, loaded) => {
-            console.log("windowEnabled loaded");
+        loadRequest, (_prev, loaded) => {
             return loaded.windowEnabled || {map: new Map()};
         },
-        windows, (now, command) => {
-            const keys = [...now.map.keys()];
+        windows, (prev, command) => {
+            const keys = [...prev.map.keys()];
             const news = command.filter((e) => !keys.includes(e));
             const olds = keys.filter((e) => !command.includes(e));
 
-            olds.forEach((id) => now.map.delete(id));
-            news.forEach((id) => now.map.set(id, {id, enabled: true}));
-            return {map: now.map};
+            olds.forEach((id) => prev.map.delete(id));
+            news.forEach((id) => prev.map.set(id, {id, enabled: true}));
+            return {map: prev.map};
         },
-        enabledChange, (now, change) => {
-            // console.log("enabledChange", change);
+        enabledChange, (prev, change) => {
             const id = change.id;
-            const v = {...now.map.get(id), ...change};
-            now.map.set(id, v);
-            return {map: now.map};
+            const v = {...prev.map.get(id), ...change};
+            prev.map.set(id, v);
+            return {map: prev.map};
         }
     );
 
     const windowContents = Behaviors.select(
         {map: new Map()},
-        loadRequest, (now, loaded) => {
-            for (let editor of now.map.values()) {
+        loadRequest, (prev, loaded) => {
+            for (let editor of prev.map.values()) {
                 editor.dom.remove();
             }
-            now.map.clear();
+            prev.map.clear();
 
             for (let [id, type] of loaded.windowTypes.map) {
                 let elem;
@@ -292,25 +207,25 @@ export function pad() {
                 } else {
                     elem = newRunner(id);
                 }
-                now.map.set(id, elem);
+                prev.map.set(id, elem);
             }
-            return {map: now.map};
+            return {map: prev.map};
         },
-        windowTypes, (now, types) => {
-            const keys = [...now.map.keys()];
+        windowTypes, (prev, types) => {
+            const keys = [...prev.map.keys()];
             const typeKeys = [...types.map.keys()];
             const news = typeKeys.filter((e) => !keys.includes(e));
             const olds = keys.filter((e) => !typeKeys.includes(e));
             olds.forEach((id) => {
-                const editor = now.map.get(id);
+                const editor = prev.map.get(id);
                 editor.dom.remove();
-                now.map.delete(id)
+                prev.map.delete(id)
             });
             news.forEach((id) => {
                 const type = types.map.get(id);
-                now.map.set(id, type === "code" ? newEditor(id) : newRunner(id));
+                prev.map.set(id, type === "code" ? newEditor(id) : newRunner(id));
             });
-            return {map: now.map};
+            return {map: prev.map};
         }
     );
 
@@ -318,41 +233,40 @@ export function pad() {
 
     const newId = Events.select(
         0,
-        loadRequest, (now, request) => {
+        loadRequest, (_prev, request) => {
             const max = Math.max(...request.windows.map((w) => Number.parseInt(w)));
             return max;
         },
-        Events.or(addCode, addRunner, init), (now, _type) => now + 1
+        Events.or(addCode, addRunner, init), (prev, _type) => prev + 1
     );
 
     const newWindowRequest = {id: newId, type: Events.or(addCode, addRunner, init), padView};
 
     const padView = Behaviors.select(
         {x: 0, y: 0, scale: 1},
-        padViewChange, (now, view) => {
+        padViewChange, (prev, view) => {
             let {x, y, scale} = view;
 
             if (scale < 0.1) {
-                x = now.x;
-                y = now.y;
+                x = prev.x;
+                y = prev.y;
                 scale = 0.1;
             }
             if (scale > 20) {
-                x = now.x;
-                y = now.y;
+                x = prev.x;
+                y = prev.y;
                 scale = 20;
             }
-            return {...now, ...{x, y, scale}};
+            return {...prev, ...{x, y, scale}};
         }
     );
 
     const padTitle = Behaviors.select(
         "untitled",
-        loadRequest, (now, data) => {
-            console.log("padTitle loaded");
+        loadRequest, (_prev, data) => {
             return data.padTitle || "untitled"
         },
-        titleChange, (now, request) => request
+        titleChange, (_prev, request) => request
     );
 
     const titleChange = Events.observe((notify) => {
@@ -369,158 +283,6 @@ export function pad() {
             renkon.querySelector("#padTitle").value = padTitle;
         }
     })(padTitle);
-
-    // New Component
-
-    const newEditor = (id, doc) => {
-        const mirror = window.CodeMirror;
-
-        const config = {
-            // eslint configuration
-            languageOptions: {
-                globals: mirror.globals,
-                parserOptions: {
-                    ecmaVersion: 2022,
-                    sourceType: "module",
-                },
-            },
-            rules: {
-            },
-        };
-
-        const getDecl = (state, pos) => {
-            const showDependency = Renkon.resolved.get("showGraph")?.value;
-            if (!showDependency || showDependency !== "showDeps") {return;}
-            let decls;
-            try {
-                decls = Renkon.findDecls(state.doc.toString());
-            } catch(e) {
-                console.log("Dependency analyzer encountered an error in source code:");
-                return;
-            }
-            const head = pos !== undefined ? pos : state.selection.ranges[0]?.head;
-            if (typeof head !== "number") {return;}
-            const decl = decls.find((d) => d.start <= head && head < d.end);
-            if (!decl) {return;}
-            const programState = new Renkon.constructor(0);
-            programState.setLog(() => {});
-            programState.setupProgram([decl.code]);
-            const keys = [...programState.nodes.keys()];
-            const last = keys[keys.length - 1];
-            const deps = [];
-            for (const k of keys) {
-                const is = programState.nodes.get(k).inputs;
-                deps.push(...is.filter((n) => !/_[0-9]/.exec(n)));
-            }
-            return {deps, name: last}
-        }
-
-        const wordHover = mirror.hoverTooltip((view, pos, _side) => {
-            let node = getDecl(view.state, pos);
-            if (!node) return null;
-            const {deps, name} = node;
-            return {
-                pos,
-                above: true,
-                create() {
-                    let dom = document.createElement("div");
-                    dom.textContent = `${deps} -> ${name}`;
-                    dom.className = "cm-tooltip-dependency cm-tooltip-cursor-wide";
-                    return {dom};
-                }
-            };
-        });
-
-        const editor = new mirror.EditorView({
-            doc: doc || `console.log("hello")`,
-            extensions: [
-                mirror.basicSetup,
-                mirror.javascript({typescript: true}),
-                mirror.EditorView.lineWrapping,
-                mirror.EditorView.editorAttributes.of({"class": "editor"}),
-                mirror.keymap.of([mirror.indentWithTab]),
-                mirror.linter(mirror.esLint(new mirror.eslint.Linter(), config)),
-                wordHover,
-            ],
-        });
-        editor.dom.id = `${id}-editor`;
-        return editor;
-    };
-
-    const newRunner = (id) => {
-        const runnerIframe = document.createElement("iframe");
-        runnerIframe.srcdoc = `
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <style>
-.dock {
-    position: fixed;
-    top: 0px;
-    right: 0px;
-    width: 35%;
-    height: 80%;
-    display: flex;
-    box-shadow: 10px 10px 5px #4d4d4d, -10px -10px 5px #dddddd;
-    transition: left 0.5s;
-    background-color: white;
-    z-index: 1000000;
-    overflow-y: scroll;
-}
-
-.dock #inspector {
-    flex-grow: 1;
-    margin: 0px 20px 0px 20px;
-    background-color: #ffffff;
-    border: 1px solid black;
-}
-
-</style>
-        <script type="module">
-            import {ProgramState, CodeMirror, newInspector} from "./renkon-web.js";
-            window.thisProgramState = new ProgramState(Date.now());
-            window.CodeMirror = CodeMirror;
-            window.newInspector = newInspector;
-
-            window.onmessage = (evt) => {
-                if (evt.data && Array.isArray(evt.data.code)) {
-                    window.thisProgramState.updateProgram(evt.data.code, evt.data.path);
-                    if (window.thisProgramState.evaluatorRunning === 0) {
-                        window.thisProgramState.evaluator();
-                    }
-                }
-                if (evt.data && typeof evt.data.inspector === "boolean") {
-                    if (window.thisProgramState) {
-                        if (document.body.querySelector(".dock")) {
-                            document.body.querySelector(".dock").remove();
-                            return;
-                        }
-                        const dock = document.createElement("div");
-                        dock.classList.add("dock");
-                        const dom = document.createElement("div");
-                        dom.id = "renkonInspector";
-
-                        dock.appendChild(dom);
-                        document.body.appendChild(dock);
-                        const result = thisProgramState.order.map((id) => {
-                            return [
-                                id + " (" + thisProgramState.types.get(id) + ")",
-                                thisProgramState.resolved.get(id)
-                            ];
-                        });
-                        newInspector(Object.fromEntries(result), dom);
-                   }
-                }
-            };
-        </script>
-    </head>
-    <body></body>
-</html>`;
-        runnerIframe.classList = "runnerIframe";
-        runnerIframe.id = `runner-${id}`;
-        return {dom: runnerIframe};
-    };
 
     // User Interaction
 
@@ -905,6 +667,158 @@ export function pad() {
         }
     })(downOrUpOrResize, positions, padView);
 
+    // New Component
+    
+    const newEditor = (id, doc) => {
+        const mirror = window.CodeMirror;
+
+        const config = {
+            // eslint configuration
+            languageOptions: {
+                globals: mirror.globals,
+                parserOptions: {
+                    ecmaVersion: 2022,
+                    sourceType: "module",
+                },
+            },
+            rules: {
+            },
+        };
+
+        const getDecl = (state, pos) => {
+            const showDependency = Renkon.resolved.get("showGraph")?.value;
+            if (!showDependency || showDependency !== "showDeps") {return;}
+            let decls;
+            try {
+                decls = Renkon.findDecls(state.doc.toString());
+            } catch(e) {
+                console.log("Dependency analyzer encountered an error in source code:");
+                return;
+            }
+            const head = pos !== undefined ? pos : state.selection.ranges[0]?.head;
+            if (typeof head !== "number") {return;}
+            const decl = decls.find((d) => d.start <= head && head < d.end);
+            if (!decl) {return;}
+            const programState = new Renkon.constructor(0);
+            programState.setLog(() => {});
+            programState.setupProgram([decl.code]);
+            const keys = [...programState.nodes.keys()];
+            const last = keys[keys.length - 1];
+            const deps = [];
+            for (const k of keys) {
+                const is = programState.nodes.get(k).inputs;
+                deps.push(...is.filter((n) => !/_[0-9]/.exec(n)));
+            }
+            return {deps, name: last}
+        }
+
+        const wordHover = mirror.hoverTooltip((view, pos, _side) => {
+            let node = getDecl(view.state, pos);
+            if (!node) return null;
+            const {deps, name} = node;
+            return {
+                pos,
+                above: true,
+                create() {
+                    let dom = document.createElement("div");
+                    dom.textContent = `${deps} -> ${name}`;
+                    dom.className = "cm-tooltip-dependency cm-tooltip-cursor-wide";
+                    return {dom};
+                }
+            };
+        });
+
+        const editor = new mirror.EditorView({
+            doc: doc || `console.log("hello")`,
+            extensions: [
+                mirror.basicSetup,
+                mirror.javascript({typescript: true}),
+                mirror.EditorView.lineWrapping,
+                mirror.EditorView.editorAttributes.of({"class": "editor"}),
+                mirror.keymap.of([mirror.indentWithTab]),
+                mirror.linter(mirror.esLint(new mirror.eslint.Linter(), config)),
+                wordHover,
+            ],
+        });
+        editor.dom.id = `${id}-editor`;
+        return editor;
+    };
+
+    const newRunner = (id) => {
+        const runnerIframe = document.createElement("iframe");
+        runnerIframe.srcdoc = `
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+.dock {
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    width: 35%;
+    height: 80%;
+    display: flex;
+    box-shadow: 10px 10px 5px #4d4d4d, -10px -10px 5px #dddddd;
+    transition: left 0.5s;
+    background-color: white;
+    z-index: 1000000;
+    overflow-y: scroll;
+}
+
+.dock #inspector {
+    flex-grow: 1;
+    margin: 0px 20px 0px 20px;
+    background-color: #ffffff;
+    border: 1px solid black;
+}
+
+</style>
+        <script type="module">
+            import {ProgramState, CodeMirror, newInspector} from "./renkon-web.js";
+            window.thisProgramState = new ProgramState(Date.now());
+            window.CodeMirror = CodeMirror;
+            window.newInspector = newInspector;
+
+            window.onmessage = (evt) => {
+                if (evt.data && Array.isArray(evt.data.code)) {
+                    window.thisProgramState.updateProgram(evt.data.code, evt.data.path);
+                    if (window.thisProgramState.evaluatorRunning === 0) {
+                        window.thisProgramState.evaluator();
+                    }
+                }
+                if (evt.data && typeof evt.data.inspector === "boolean") {
+                    if (window.thisProgramState) {
+                        if (document.body.querySelector(".dock")) {
+                            document.body.querySelector(".dock").remove();
+                            return;
+                        }
+                        const dock = document.createElement("div");
+                        dock.classList.add("dock");
+                        const dom = document.createElement("div");
+                        dom.id = "renkonInspector";
+
+                        dock.appendChild(dom);
+                        document.body.appendChild(dock);
+                        const result = thisProgramState.order.map((id) => {
+                            return [
+                                id + " (" + thisProgramState.types.get(id) + ")",
+                                thisProgramState.resolved.get(id)
+                            ];
+                        });
+                        newInspector(Object.fromEntries(result), dom);
+                   }
+                }
+            };
+        </script>
+    </head>
+    <body></body>
+</html>`;
+        runnerIframe.classList = "runnerIframe";
+        runnerIframe.id = `runner-${id}`;
+        return {dom: runnerIframe};
+    };
+
     // Rendering
 
     const inputHandler = (evt) => {
@@ -1011,7 +925,10 @@ export function pad() {
 
     const windowElements = ((windows, positions, zIndex, titles, windowContents, windowTypes, windowEnabled) => {
         return h("div", {id: "owner", "class": "owner"}, windows.map((id) => {
-            return windowDOM(id, positions.map.get(id), zIndex.map.get(id), titles.map.get(id), windowContents.map.get(id), windowTypes.map.get(id), windowEnabled.map.get(id));
+            return windowDOM(
+              id,
+              positions.map.get(id), zIndex.map.get(id), titles.map.get(id),
+              windowContents.map.get(id), windowTypes.map.get(id), windowEnabled.map.get(id));
         }));
     })(windows, positions, zIndex, titles, windowContents, windowTypes, windowEnabled);
 
@@ -1114,6 +1031,83 @@ export function pad() {
     const _loadFromUrl = fetch(nameFromUrl).then((resp) => resp.text()).then((result) => {
         loadData(result, null);
     });
+
+    function stringifyInner(node, seen) {
+        if (node === undefined) return undefined;
+        if (typeof node === 'number') return Number.isFinite(node) ? `${node}` : 'null';
+        if (typeof node !== 'object') return JSON.stringify(node, null, 4);
+
+        let out;
+        if (Array.isArray(node)) {
+            out = '[';
+            for (let i = 0; i < node.length; i++) {
+                if (i > 0) out += ',';
+                out += stringifyInner(node[i], seen) || 'null';
+            }
+            return out + ']';
+        }
+
+        if (node === null) return 'null';
+
+        if (seen.has(node)) {
+            throw new TypeError('Converting circular structure to JSON');
+        }
+
+        seen.add(node);
+
+        if (node.constructor === window.Map) {
+            let replacement = {__map: true, values: [...node]};
+            return stringifyInner(replacement, seen);
+        }
+
+        if (node.constructor === window.Set) {
+            let replacement = {__set: true, values: [...node]};
+            return stringifyInner(replacement, seen);
+        }
+
+        let keys = Object.keys(node).sort();
+        out = '';
+        for (let i = 0; i < keys.length; i++) {
+            let key = keys[i];
+            let value = stringifyInner(node[key], seen, out);
+            if (!value) continue;
+            if (out !== '') out += ',\n';
+            out += JSON.stringify(key) + ':' + value;
+        }
+        seen.delete(node);
+        return '{' + out + '}';
+    }
+
+    function stringify(obj) {
+        let seen = new Set();
+        return stringifyInner(obj, seen);
+    }
+
+    function parse(string) {
+        return JSON.parse(string, (_key, value) => {
+            if (typeof value === "object" && value !== null && value.__map) {
+                return new Map(value.values);
+            } else if (typeof value === "object" && value !== null && value.__set) {
+                return new Set(value.values);
+            }
+            return value;
+        });
+    }
+
+    function stringifyCodeMap(map) {
+        function replace(str) {
+            return str.replaceAll("\\", "\\\\").replaceAll("`", "\\`").replaceAll("$", "\\$");
+        }
+
+        return "\n{__codeMap: true, value: " + "[" +
+            [...map].map(([key, value]) => ("[" + "`" + replace(key) + "`" + ", " + "`" + 
+                                            replace(value) + "`" + "]")).join(",\n") + "]" + "}"
+    }
+
+    function parseCodeMap(string) {
+        const array = eval("(" + string + ")");
+        return new Map(array.value);
+    }
 
     // Graph Visualization
 
