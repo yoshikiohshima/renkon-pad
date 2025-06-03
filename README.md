@@ -1,5 +1,9 @@
 # Renkon-pad: A Live and Self-Sustaining Programming Environment Based on Functional Reactive Programming
 
+## Discussion
+
+Join the [Discord server](https://discord.gg/KKhUjmTn9q) for quick conversations. You are also welcome to [create an issue](https://github.com/yoshikiohshima/renkon-pad/issues) on GitHub.
+
 ## Introduction
 
 **Renkon-pad** is a live programming environment that allows you to create graphical, web-based applications interactively. The language used is called **Renkon**—see the [`renkon-core`](https://github.com/yoshikiohshima/renkon) repository for more information.
