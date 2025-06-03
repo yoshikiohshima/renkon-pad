@@ -1,46 +1,51 @@
 {"padTitle":"Renkon-Pad",
 "positions":{"map":{"__map":true,
-"values":[["3",{"height":6972.001743693048,
+"values":[["3",{"height":3801.3342360709776,
 "id":"3",
-"type":"resize",
-"width":985.0918366366018,
-"x":971.8645806260746,
-"y":228.36757879025845}],["4",{"height":2095.1831785175464,
+"type":"move",
+"width":881.5603420123308,
+"x":529.7938027478795,
+"y":181.93014102350742}],["4",{"height":2430.883507677384,
 "id":"4",
 "type":"move",
-"width":1082.422413499183,
-"x":3719.9036409484993,
-"y":215.9499762544539}],["5",{"height":3214.896569678353,
+"width":865.1838368893699,
+"x":3731.5284714119666,
+"y":185.46240245297892}],["5",{"height":3214.896569678353,
 "id":"5",
 "type":"move",
 "width":918.8802222861234,
-"x":3754.075585572406,
-"y":2437.119954711509}],["6",{"height":6725.506740621644,
+"x":4954.582899739514,
+"y":3184.8204015794095}],["6",{"height":7056.847231052796,
 "id":"6",
 "type":"move",
-"width":1034.4996588397535,
-"x":6599.119512134059,
-"y":217.43643252786887}],["7",{"height":2816.176728720233,
+"width":1060.3789232272009,
+"x":6302.2301598256245,
+"y":202.91654838407004}],["7",{"height":2834.4197260887954,
 "id":"7",
 "type":"move",
-"width":1315.1193704449306,
-"x":5139.753469093449,
-"y":220.74609106266962}],["9",{"height":4607.060264712583,
+"width":1045.6662804721764,
+"x":4924.362470513358,
+"y":181.81383324957196}],["9",{"height":4607.060264712583,
 "id":"9",
-"type":"resize",
+"type":"move",
 "width":764.9576772157842,
-"x":2469.032131893533,
-"y":217.25662038969352}],["11",{"height":605.1534973962149,
+"x":2677.08645242937,
+"y":188.1287299041631}],["11",{"height":605.1534973962149,
 "id":"11",
 "type":"move",
 "width":785.2313913845344,
-"x":-112.99228098361323,
-"y":226.91073846932085}],["15",{"height":2760.315341619548,
+"x":-688.0908676805566,
+"y":187.8357711371296}],["15",{"height":2760.315341619548,
 "id":"15",
 "type":"move",
 "width":768.5264842221045,
-"x":-81.27933318667834,
-"y":919.6505696378439}]]}},
+"x":-674.6591838958739,
+"y":884.4750956602653}],["40",{"height":3725.3454417957946,
+"id":"40",
+"type":"move",
+"width":891.6937393352453,
+"x":1620.3726063604531,
+"y":192.47755724510694}]]}},
 "titles":{"map":{"__map":true,
 "values":[["3",{"id":"3",
 "state":false,
@@ -58,7 +63,9 @@
 "state":false,
 "title":"Initialization"}],["15",{"id":"15",
 "state":false,
-"title":"New Component"}]]}},
+"title":"New Component"}],["40",{"id":"40",
+"state":false,
+"title":"Pointer Handling"}]]}},
 "version":2,
 "windowEnabled":{"map":{"__map":true,
 "values":[["3",{"enabled":true,
@@ -69,12 +76,13 @@
 "id":"7"}],["9",{"enabled":true,
 "id":"9"}],["11",{"enabled":true,
 "id":"11"}],["15",{"enabled":true,
-"id":"15"}]]}},
+"id":"15"}],["40",{"enabled":true,
+"id":"40"}]]}},
 "windowTypes":{"map":{"__map":true,
-"values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["15","code"]]}},
-"windows":["3","4","5","6","7","9","11","15"],
+"values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["15","code"],["40","code"]]}},
+"windows":["3","4","5","6","7","9","11","15","40"],
 "zIndex":{"map":{"__map":true,
-"values":[["3",100],["4",104],["5",113],["6",103],["7",111],["9",110],["11",105],["15",112]]}}}
+"values":[["3",110],["4",114],["5",104],["6",103],["7",111],["9",100],["11",113],["15",105],["40",112]]}}}
 {__codeMap: true, value: [[`3`, `    const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
     const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
     const save = Events.listener(renkon.querySelector("#saveButton"), "click", (evt) => evt);
@@ -261,8 +269,6 @@
     const runRequest = Events.receiver();
     const inspectRequest = Events.receiver();
 
-    const dblClick = Events.listener(renkon.querySelector("#pad"), "dblclick", (evt) => evt);
-
     const _goTo = ((padView, positions, dblClick) => {
         const strId = dblClick.target.id;
         if (!strId.endsWith("-titleBar")) {return;}
@@ -279,182 +285,6 @@
 
         Events.send(padViewChange, {x, y, scale});
     })(padView, positions, dblClick);
-
-    const rawPadDown = Events.listener(renkon.querySelector("#pad"), "pointerdown", (evt) => {
-        const strId = evt.target.id;
-        if (strId.endsWith("-title") && (evt.target.getAttribute("contenteditable") === "true")) {
-            return evt;
-        }
-        if (strId) {
-            evt.preventDefault();
-            evt.stopPropagation();
-        }
-        return evt;
-    }, {queued: true});
-
-    // this is an odd ball that gets mutated by padDownState and padUp
-    const evCache = new Map();
-
-    const padDown = Events.collect(undefined, rawPadDown, (old, evts) => {
-        let type;
-        let id;
-        if (evts.length <= 2 && evts[0].isPrimary) {
-            let primary = evts[0];
-            const strId = primary.target.id;
-            if (!strId) {return {...old, type: ""};}
-            let x = primary.clientX;
-            let y = primary.clientY;
-            if (strId === "pad") {
-                type = "padDragDown";
-                id = strId;
-            } else {
-                id = \`\${Number.parseInt(strId)}\`;
-                if (strId.endsWith("-titleBar")) {
-                    type = "moveDown";
-                } else if (strId.endsWith("-resize")) {
-                    type = "windowResizeDown";
-                }
-            }
-            if (type) {
-                primary.target.setPointerCapture(primary.pointerId);
-                if (strId === "pad") {
-                    evCache.set("primary", {x, y});
-                }
-                if (evts.length === 1) {
-                    return {
-                        id, target: primary.target, type, x: primary.clientX, y: primary.clientY
-                    };
-                }
-            } else {
-                return {...old, type: ""};
-            }
-        }
-
-        let secondary;
-        if (evCache.get("primary")) {
-            if (evts.length === 1 && evCache.size === 1 && !evts[0].isPrimary) {
-                secondary = evts[0];
-            }
-            if (evts.length === 2 && evCache.size === 1 && !evts[1].isPrimary) {
-                secondary = evts[1];
-            }
-        }
-        if (!secondary) {return old;}
-
-        const strId = secondary.target.id;
-        if (strId !== "pad") {return {type: "stuck", secondary: secondary.pointerId};}
-        let primary =  evCache.get("primary");
-        let x = secondary.clientX;
-        let y = secondary.clientY;
-        let dx = primary.x - secondary.clientX;
-        let dy = primary.y - secondary.clientY;
-        let origDiff = Math.sqrt(dx * dx + dy * dy);
-        evCache.set(secondary.pointerId, {origDiff, origScale: padView.scale, x, y});
-        return {type: "pinch", secondary: secondary.pointerId};
-    });
-
-    const padUp = Events.listener(renkon.querySelector("#pad"), "pointerup", (evt) => {
-        // console.log("ev1", evCache);
-        evt.target.releasePointerCapture(evt.pointerId);
-        evCache.clear();
-        // console.log("ev2", evCache);
-        return {type: "pointerup", x: evt.clientX, y: evt.clientY};
-    });
-
-    const downOrUpOrResize = Events.or(padDown, padUp, pointercancel, lostpointercapture, windowResize);
-
-    const _padMove = Events.listener("#pad", "pointermove", moveCompute);
-
-    const windowResize = Events.receiver();
-    const moveOrResize = Events.receiver();
-
-    const moveCompute = ((downOrUpOrResize, positions, padView) => {
-        if (downOrUpOrResize.type === "moveDown" || downOrUpOrResize.type === "windowResizeDown") {
-            const start = positions.map.get(downOrUpOrResize.id);
-            const scale = padView.scale;
-            const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
-            const type = downOrUpOrResize.type === "moveDown" ? "move" : "resize";
-            return (move) => {
-                const diffX = (move.clientX - downPoint.x) / scale;
-                const diffY = (move.clientY - downPoint.y) / scale;
-                const result = {id: downOrUpOrResize.id, type};
-                if (type === "move") {
-                    result.x = start.x + diffX;
-                    result.y = start.y + diffY;
-                } else {
-                    result.width = start.width + diffX;
-                    result.height = start.height + diffY;
-                }
-                Events.send(moveOrResize, result);
-                return move;
-            }
-        } else if (downOrUpOrResize.type === "padDragDown") {
-            const start = padView;
-            const scale = start.scale;
-            const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
-            const type = "padDrag";
-            return (move) => {
-                const diffX = move.clientX - downPoint.x;
-                const diffY = move.clientY - downPoint.y;
-                const result = {id: downOrUpOrResize.id, type, scale};
-                result.x = start.x + diffX;
-                result.y = start.y + diffY;
-                Events.send(padViewChange, result);
-                return move;
-            };
-        } else if (downOrUpOrResize.type === "pinch") {
-            return (move) => {
-                const keys = [...evCache.keys()];
-                const primary = evCache.get("primary");
-                if (!primary) {
-                    // the first finger has been lifted
-                    return move;
-                }
-                const otherKey = keys.find((k) => k !== "primary");
-                const secondary = evCache.get(otherKey);
-                const isPrimary = move.isPrimary;
-
-                if (isPrimary) {
-                    const newRecord = {...primary};
-                    newRecord.x = move.clientX;
-                    newRecord.y = move.clientY;
-                    evCache.set("primary", newRecord);
-                } else {
-                    const newRecord = {...secondary};
-                    newRecord.x = move.clientX;
-                    newRecord.y = move.clientY;
-                    evCache.set(otherKey, newRecord);
-                }
-
-                const origDiff = secondary.origDiff;
-                const origScale = secondary.origScale;
-
-                const pX = isPrimary ? move.clientX : primary.x;
-                const pY = isPrimary ? move.clientY : primary.y;
-
-                const sX = isPrimary ? secondary.x : move.clientX;
-                const sY = isPrimary ? secondary.y : move.clientY;
-
-                const newDiff = Math.sqrt((pX - sX) ** 2 + (pY - sY) ** 2);
-
-                const newScale = (newDiff / origDiff) * origScale;
-
-                const newCenterX = (pX - sX) / 2 + sX;
-                const newCenterY = (pY - sY) / 2 + sY;
-
-                const xInMover = (newCenterX - padView.x) / padView.scale;
-                const newX = newCenterX - xInMover * newScale;
-
-                const yInMover = (newCenterY - padView.y) / padView.scale;
-                const newY = newCenterY - yInMover * newScale;
-
-                Events.send(padViewChange, {x: newX, y: newY, scale: newScale});
-                return move;
-            }
-        } else if (["pointerup", "lost", "stuck"].includes(downOrUpOrResize.type)) {
-            return (move) => move;
-        }
-    })(downOrUpOrResize, positions, padView);
 `],
 [`4`, `    const inputHandler = (evt) => {
         if (evt.key === "Enter") {
@@ -503,7 +333,9 @@
                     "class": "titlebarButton enabledButton",
                     onClick: (evt) => {
                         //console.log(evt);
-                        Events.send(enabledChange, {id: \`\${Number.parseInt(evt.target.id)}\`, enabled: !windowEnabled || !windowEnabled.enabled});
+                        Events.send(enabledChange, {
+                          id: \`\${Number.parseInt(evt.target.id)}\`,
+                          enabled: !windowEnabled || !windowEnabled.enabled});
                     },
                 }),
                 h("div", {
@@ -547,9 +379,25 @@
                 }),
             ]),
             h("div", {
-                id: \`\${id}-resize\`,
+                id: \`\${id}-bottomRight-resize\`,
+                corner: "bottomRight",
                 "class": "resizeHandler",
             }, []),
+            h("div", {
+                id: \`\${id}-topLeft-resize\`,
+                corner: "topLeft",
+                "class": "resizeHandler",
+            }, []),          
+            h("div", {
+                id: \`\${id}-bottomLeft-resize\`,
+                corner: "bottomLeft",
+                "class": "resizeHandler",
+            }, []),          
+            h("div", {
+                id: \`\${id}-topRight-resize\`,
+                corner: "topRight",
+                "class": "resizeHandler",
+            }, []),          
             h("div", {
                 id: \`\${id}-windowHolder\`,
                 blurred: \`\${type !== "code" ? false : (windowEnabled ? !windowEnabled.enabled : false)}\`,
@@ -856,8 +704,8 @@ html, body {
     width: 100%;
     height: 28px;
     display: flex;
-    border: 2px ridge #ccc;
-    box-sizing: border-box;
+    /* border: 2px ridge #ccc;*/
+    /* box-sizing: border-box; */
     border-radius: 6px 6px 0px 0px;
     cursor: -webkit-grab;
     cursor: grab;
@@ -914,14 +762,35 @@ html, body {
 
 .resizeHandler {
     position: absolute;
-    background-color: rgba(0.1, 0.1, 0.1, 0.1);
     width: 20px;
     height: 20px;
-    bottom: -10px;
-    right: -10px;
     border-radius: 6px;
     z-index: 10000;
+    background-color: rgba(0.1, 0.1, 0.1, 0.03);
+}
+
+.resizeHandler[corner="bottomRight"] {
     cursor: se-resize;
+    bottom: -15px;
+    right: -15px;
+}
+
+.resizeHandler[corner="topLeft"] {
+    cursor: nw-resize;
+    top: -15px;
+    left: -15px;
+}
+
+.resizeHandler[corner="bottomLeft"] {
+    cursor: sw-resize;
+    bottom: -15px;
+    left: -15px;
+}
+
+.resizeHandler[corner="topRight"] {
+    cursor: ne-resize;
+    top: -15px;
+    right: -15px;
 }
 
 .resizeHandler:hover {
@@ -930,6 +799,7 @@ html, body {
 
 .windowHolder {
     height: calc(100% - 24px);
+    box-sizing: border
 }
 
 .windowHolder[blurred="true"] {
@@ -1137,7 +1007,8 @@ html, body {
         const c1 = \`\${pl.x + (pr.x - pl.x) * 0.5} \${pl.y + (pr.y - pl.y) * 0.2}\`;
         const c2 = \`\${pr.x - (pr.x - pl.x) * 0.2} \${pl.y + (pr.y - pl.y) * 0.6}\`;
         const c3 = \`\${pr.x} \${pr.y}\`;
-        return html\`<path d="M \${c0} C \${c1} \${c2} \${c3}" stroke="\${color}" fill="transparent" stroke-width="2" stroke-linecap="round"></path><text x="\${p1.x + 5}" y="\${p1.y}">\${label}</text>\`;
+        return html\`<path d="M \${c0} C \${c1} \${c2} \${c3}" stroke="\${color}"
+            fill="transparent" stroke-width="2" stroke-linecap="round"></path><text x="\${p1.x + 5}" y="\${p1.y}">\${label}</text>\`;
     };
 
     const hovered = Events.receiver();
@@ -1256,8 +1127,6 @@ html, body {
         moveOrResize, (prev, command) => {
             if (command.type === "move" || command.type === "resize") {
                 const v = {...prev.map.get(command.id), ...command};
-                v.width = Math.max(120, v.width);
-                v.height = Math.max(70, v.height);
                 prev.map.set(command.id, v);
                 return {map: prev.map};
             }
@@ -1624,4 +1493,203 @@ html, body {
         runnerIframe.id = \`runner-\${id}\`;
         return {dom: runnerIframe};
     };
+`],
+[`40`, `    const dblClick = Events.listener(renkon.querySelector("#pad"), "dblclick", (evt) => evt);
+
+    const rawPadDown = Events.listener(renkon.querySelector("#pad"), "pointerdown", (evt) => {
+        const strId = evt.target.id;
+        if (strId.endsWith("-title") && (evt.target.getAttribute("contenteditable") === "true")) {
+            return evt;
+        }
+        if (strId) {
+            evt.preventDefault();
+            evt.stopPropagation();
+        }
+        return evt;
+    }, {queued: true});
+
+    // this is an odd ball that gets mutated by padDownState and padUp
+    const evCache = new Map();
+
+    const padDown = Events.collect(undefined, rawPadDown, (old, evts) => {
+        let type;
+        let id;
+        let corner;
+        if (evts.length <= 2 && evts[0].isPrimary) {
+            let primary = evts[0];
+            const strId = primary.target.id;
+            if (!strId) {return {...old, type: ""};}
+            let x = primary.clientX;
+            let y = primary.clientY;
+            if (strId === "pad") {
+                type = "padDragDown";
+                id = strId;
+            } else {
+                id = \`\${Number.parseInt(strId)}\`;
+                if (strId.endsWith("-titleBar")) {
+                    type = "moveDown";
+                } else if (strId.endsWith("-resize")) {
+                    corner = (/[0-9]+-(.*)-resize/.exec(strId))[1];
+                    type = "windowResizeDown";
+                }
+            }
+            if (type) {
+                primary.target.setPointerCapture(primary.pointerId);
+                if (strId === "pad") {
+                    evCache.set("primary", {x, y});
+                }
+                if (evts.length === 1) {
+                    return {
+                        id, target: primary.target, type, x: primary.clientX, y: primary.clientY, corner
+                    };
+                }
+            } else {
+                return {...old, type: ""};
+            }
+        }
+
+        let secondary;
+        if (evCache.get("primary")) {
+            if (evts.length === 1 && evCache.size === 1 && !evts[0].isPrimary) {
+                secondary = evts[0];
+            }
+            if (evts.length === 2 && evCache.size === 1 && !evts[1].isPrimary) {
+                secondary = evts[1];
+            }
+        }
+        if (!secondary) {return old;}
+
+        const strId = secondary.target.id;
+        if (strId !== "pad") {return {type: "stuck", secondary: secondary.pointerId};}
+        let primary =  evCache.get("primary");
+        let x = secondary.clientX;
+        let y = secondary.clientY;
+        let dx = primary.x - secondary.clientX;
+        let dy = primary.y - secondary.clientY;
+        let origDiff = Math.sqrt(dx * dx + dy * dy);
+        evCache.set(secondary.pointerId, {origDiff, origScale: padView.scale, x, y});
+        return {type: "pinch", secondary: secondary.pointerId};
+    });
+
+    const padUp = Events.listener(renkon.querySelector("#pad"), "pointerup", (evt) => {
+        // console.log("ev1", evCache);
+        evt.target.releasePointerCapture(evt.pointerId);
+        evCache.clear();
+        // console.log("ev2", evCache);
+        return {type: "pointerup", x: evt.clientX, y: evt.clientY};
+    });
+
+    const downOrUpOrResize = Events.or(padDown, padUp, pointercancel, lostpointercapture, windowResize);
+
+    const _padMove = Events.listener("#pad", "pointermove", moveCompute);
+
+    const windowResize = Events.receiver();
+    const moveOrResize = Events.receiver();
+
+    const moveCompute = ((downOrUpOrResize, positions, padView) => {
+        if (downOrUpOrResize.type === "moveDown" || downOrUpOrResize.type === "windowResizeDown") {
+            const start = positions.map.get(downOrUpOrResize.id);
+            const scale = padView.scale;
+            const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
+            const type = downOrUpOrResize.type === "moveDown" ? "move" : "resize";
+            return (move) => {
+                const diffX = (move.clientX - downPoint.x) / scale;
+                const diffY = (move.clientY - downPoint.y) / scale;
+                const result = {id: downOrUpOrResize.id, type};
+                const position = positions.map.get(downOrUpOrResize.id);
+                if (type === "move") {
+                    result.x = start.x + diffX;
+                    result.y = start.y + diffY;
+                } else {
+                    if (downOrUpOrResize.corner === "bottomRight") {
+                        result.width = start.width + diffX;
+                        result.height = start.height + diffY;
+                    } else if (downOrUpOrResize.corner === "topLeft") {
+                        result.width = start.width - diffX;
+                        result.height = start.height - diffY;
+                        result.x = start.x + diffX;
+                        result.y = start.y + diffY;                        
+                    } else if (downOrUpOrResize.corner === "topRight") {
+                        result.width = start.width + diffX;
+                        result.height = start.height - diffY;
+                        result.y = start.y + diffY;
+                    } else if (downOrUpOrResize.corner === "bottomLeft") {
+                        result.width = start.width - diffX;
+                        result.height = start.height + diffY;
+                        result.x = start.x + diffX;
+                    }
+                }
+                if (typeof result.width !== "number" && typeof result.height !== "number" ||
+                    result.width >= 120 && result.height >= 70) {
+                  Events.send(moveOrResize, result);
+                }
+                return move;
+            }
+        } else if (downOrUpOrResize.type === "padDragDown") {
+            const start = padView;
+            const scale = start.scale;
+            const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
+            const type = "padDrag";
+            return (move) => {
+                const diffX = move.clientX - downPoint.x;
+                const diffY = move.clientY - downPoint.y;
+                const result = {id: downOrUpOrResize.id, type, scale};
+                result.x = start.x + diffX;
+                result.y = start.y + diffY;
+                Events.send(padViewChange, result);
+                return move;
+            };
+        } else if (downOrUpOrResize.type === "pinch") {
+            return (move) => {
+                const keys = [...evCache.keys()];
+                const primary = evCache.get("primary");
+                if (!primary) {
+                    // the first finger has been lifted
+                    return move;
+                }
+                const otherKey = keys.find((k) => k !== "primary");
+                const secondary = evCache.get(otherKey);
+                const isPrimary = move.isPrimary;
+
+                if (isPrimary) {
+                    const newRecord = {...primary};
+                    newRecord.x = move.clientX;
+                    newRecord.y = move.clientY;
+                    evCache.set("primary", newRecord);
+                } else {
+                    const newRecord = {...secondary};
+                    newRecord.x = move.clientX;
+                    newRecord.y = move.clientY;
+                    evCache.set(otherKey, newRecord);
+                }
+
+                const origDiff = secondary.origDiff;
+                const origScale = secondary.origScale;
+
+                const pX = isPrimary ? move.clientX : primary.x;
+                const pY = isPrimary ? move.clientY : primary.y;
+
+                const sX = isPrimary ? secondary.x : move.clientX;
+                const sY = isPrimary ? secondary.y : move.clientY;
+
+                const newDiff = Math.sqrt((pX - sX) ** 2 + (pY - sY) ** 2);
+
+                const newScale = (newDiff / origDiff) * origScale;
+
+                const newCenterX = (pX - sX) / 2 + sX;
+                const newCenterY = (pY - sY) / 2 + sY;
+
+                const xInMover = (newCenterX - padView.x) / padView.scale;
+                const newX = newCenterX - xInMover * newScale;
+
+                const yInMover = (newCenterY - padView.y) / padView.scale;
+                const newY = newCenterY - yInMover * newScale;
+
+                Events.send(padViewChange, {x: newX, y: newY, scale: newScale});
+                return move;
+            }
+        } else if (["pointerup", "lost", "stuck"].includes(downOrUpOrResize.type)) {
+            return (move) => move;
+        }
+    })(downOrUpOrResize, positions, padView);
 `]]}

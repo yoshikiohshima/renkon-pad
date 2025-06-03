@@ -95,8 +95,6 @@ export function pad() {
         moveOrResize, (prev, command) => {
             if (command.type === "move" || command.type === "resize") {
                 const v = {...prev.map.get(command.id), ...command};
-                v.width = Math.max(120, v.width);
-                v.height = Math.max(70, v.height);
                 prev.map.set(command.id, v);
                 return {map: prev.map};
             }
@@ -472,8 +470,6 @@ export function pad() {
     const runRequest = Events.receiver();
     const inspectRequest = Events.receiver();
 
-    const dblClick = Events.listener(renkon.querySelector("#pad"), "dblclick", (evt) => evt);
-
     const _goTo = ((padView, positions, dblClick) => {
         const strId = dblClick.target.id;
         if (!strId.endsWith("-titleBar")) {return;}
@@ -490,6 +486,10 @@ export function pad() {
 
         Events.send(padViewChange, {x, y, scale});
     })(padView, positions, dblClick);
+
+    // Pointer Handling
+
+    const dblClick = Events.listener(renkon.querySelector("#pad"), "dblclick", (evt) => evt);
 
     const rawPadDown = Events.listener(renkon.querySelector("#pad"), "pointerdown", (evt) => {
         const strId = evt.target.id;
@@ -509,6 +509,7 @@ export function pad() {
     const padDown = Events.collect(undefined, rawPadDown, (old, evts) => {
         let type;
         let id;
+        let corner;
         if (evts.length <= 2 && evts[0].isPrimary) {
             let primary = evts[0];
             const strId = primary.target.id;
@@ -523,6 +524,7 @@ export function pad() {
                 if (strId.endsWith("-titleBar")) {
                     type = "moveDown";
                 } else if (strId.endsWith("-resize")) {
+                    corner = (/[0-9]+-(.*)-resize/.exec(strId))[1];
                     type = "windowResizeDown";
                 }
             }
@@ -533,7 +535,7 @@ export function pad() {
                 }
                 if (evts.length === 1) {
                     return {
-                        id, target: primary.target, type, x: primary.clientX, y: primary.clientY
+                        id, target: primary.target, type, x: primary.clientX, y: primary.clientY, corner
                     };
                 }
             } else {
@@ -589,14 +591,33 @@ export function pad() {
                 const diffX = (move.clientX - downPoint.x) / scale;
                 const diffY = (move.clientY - downPoint.y) / scale;
                 const result = {id: downOrUpOrResize.id, type};
+                const position = positions.map.get(downOrUpOrResize.id);
                 if (type === "move") {
                     result.x = start.x + diffX;
                     result.y = start.y + diffY;
                 } else {
-                    result.width = start.width + diffX;
-                    result.height = start.height + diffY;
+                    if (downOrUpOrResize.corner === "bottomRight") {
+                        result.width = start.width + diffX;
+                        result.height = start.height + diffY;
+                    } else if (downOrUpOrResize.corner === "topLeft") {
+                        result.width = start.width - diffX;
+                        result.height = start.height - diffY;
+                        result.x = start.x + diffX;
+                        result.y = start.y + diffY;                        
+                    } else if (downOrUpOrResize.corner === "topRight") {
+                        result.width = start.width + diffX;
+                        result.height = start.height - diffY;
+                        result.y = start.y + diffY;
+                    } else if (downOrUpOrResize.corner === "bottomLeft") {
+                        result.width = start.width - diffX;
+                        result.height = start.height + diffY;
+                        result.x = start.x + diffX;
+                    }
                 }
-                Events.send(moveOrResize, result);
+                if (typeof result.width !== "number" && typeof result.height !== "number" ||
+                    result.width >= 120 && result.height >= 70) {
+                  Events.send(moveOrResize, result);
+                }
                 return move;
             }
         } else if (downOrUpOrResize.type === "padDragDown") {
@@ -868,7 +889,9 @@ export function pad() {
                     "class": "titlebarButton enabledButton",
                     onClick: (evt) => {
                         //console.log(evt);
-                        Events.send(enabledChange, {id: `${Number.parseInt(evt.target.id)}`, enabled: !windowEnabled || !windowEnabled.enabled});
+                        Events.send(enabledChange, {
+                          id: `${Number.parseInt(evt.target.id)}`,
+                          enabled: !windowEnabled || !windowEnabled.enabled});
                     },
                 }),
                 h("div", {
@@ -912,9 +935,25 @@ export function pad() {
                 }),
             ]),
             h("div", {
-                id: `${id}-resize`,
+                id: `${id}-bottomRight-resize`,
+                corner: "bottomRight",
                 "class": "resizeHandler",
             }, []),
+            h("div", {
+                id: `${id}-topLeft-resize`,
+                corner: "topLeft",
+                "class": "resizeHandler",
+            }, []),          
+            h("div", {
+                id: `${id}-bottomLeft-resize`,
+                corner: "bottomLeft",
+                "class": "resizeHandler",
+            }, []),          
+            h("div", {
+                id: `${id}-topRight-resize`,
+                corner: "topRight",
+                "class": "resizeHandler",
+            }, []),          
             h("div", {
                 id: `${id}-windowHolder`,
                 blurred: `${type !== "code" ? false : (windowEnabled ? !windowEnabled.enabled : false)}`,
@@ -1380,8 +1419,8 @@ html, body {
     width: 100%;
     height: 28px;
     display: flex;
-    border: 2px ridge #ccc;
-    box-sizing: border-box;
+    /* border: 2px ridge #ccc;*/
+    /* box-sizing: border-box; */
     border-radius: 6px 6px 0px 0px;
     cursor: -webkit-grab;
     cursor: grab;
@@ -1438,14 +1477,35 @@ html, body {
 
 .resizeHandler {
     position: absolute;
-    background-color: rgba(0.1, 0.1, 0.1, 0.1);
     width: 20px;
     height: 20px;
-    bottom: -10px;
-    right: -10px;
     border-radius: 6px;
     z-index: 10000;
+    background-color: rgba(0.1, 0.1, 0.1, 0.03);
+}
+
+.resizeHandler[corner="bottomRight"] {
     cursor: se-resize;
+    bottom: -15px;
+    right: -15px;
+}
+
+.resizeHandler[corner="topLeft"] {
+    cursor: nw-resize;
+    top: -15px;
+    left: -15px;
+}
+
+.resizeHandler[corner="bottomLeft"] {
+    cursor: sw-resize;
+    bottom: -15px;
+    left: -15px;
+}
+
+.resizeHandler[corner="topRight"] {
+    cursor: ne-resize;
+    top: -15px;
+    right: -15px;
 }
 
 .resizeHandler:hover {
@@ -1454,6 +1514,7 @@ html, body {
 
 .windowHolder {
     height: calc(100% - 24px);
+    box-sizing: border
 }
 
 .windowHolder[blurred="true"] {
