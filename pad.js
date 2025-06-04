@@ -594,8 +594,11 @@ export function pad() {
                     result.y = start.y + diffY;
                 } else {
                     if (downOrUpOrResize.corner === "bottomRight") {
-                        result.width = start.width + diffX;
-                        result.height = start.height + diffY;
+                        const realDiffX = start.width + diffX < 120 ? 120 - start.width : diffX;
+                        const realDiffY = start.height + diffY < 70 ? 70 - start.height : diffY;
+                        console.log(start.width, diffX, realDiffX);
+                        result.width = start.width + realDiffX;
+                        result.height = start.height + realDiffY;
                     } else if (downOrUpOrResize.corner === "topLeft") {
                         const realDiffX = start.width - diffX < 120 ? start.width - 120 : diffX;
                         const realDiffY = start.height - diffY < 70 ? start.height - 70 : diffY;
@@ -605,7 +608,7 @@ export function pad() {
                         result.y = start.y + realDiffY;                        
                     } else if (downOrUpOrResize.corner === "topRight") {
                         const realDiffX = start.width + diffX < 120 ? 120 - start.width : diffX;
-                        const realDiffY = start.height + diffY < 70 ? start.height - 70 : diffY;
+                        const realDiffY = start.height - diffY < 70 ? start.height - 70 : diffY;
                         result.width = start.width + realDiffX;
                         result.height = start.height - realDiffY;
                         result.y = start.y + realDiffY;
