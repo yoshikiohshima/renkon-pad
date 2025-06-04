@@ -597,24 +597,27 @@ export function pad() {
                         result.width = start.width + diffX;
                         result.height = start.height + diffY;
                     } else if (downOrUpOrResize.corner === "topLeft") {
-                        result.width = start.width - diffX;
-                        result.height = start.height - diffY;
-                        result.x = start.x + diffX;
-                        result.y = start.y + diffY;                        
+                        const realDiffX = start.width - diffX < 120 ? start.width - 120 : diffX;
+                        const realDiffY = start.height - diffY < 70 ? start.height - 70 : diffY;
+                        result.width = start.width - realDiffX;
+                        result.height = start.height - realDiffY;
+                        result.x = start.x + realDiffX;
+                        result.y = start.y + realDiffY;                        
                     } else if (downOrUpOrResize.corner === "topRight") {
-                        result.width = start.width + diffX;
-                        result.height = start.height - diffY;
-                        result.y = start.y + diffY;
+                        const realDiffX = start.width + diffX < 120 ? 120 - start.width : diffX;
+                        const realDiffY = start.height + diffY < 70 ? start.height - 70 : diffY;
+                        result.width = start.width + realDiffX;
+                        result.height = start.height - realDiffY;
+                        result.y = start.y + realDiffY;
                     } else if (downOrUpOrResize.corner === "bottomLeft") {
-                        result.width = start.width - diffX;
-                        result.height = start.height + diffY;
-                        result.x = start.x + diffX;
+                        const realDiffX = start.width - diffX < 120 ? start.width - 120 : diffX;
+                        const realDiffY = start.height + diffY < 70 ? 70 - start.height : diffY;
+                        result.width = start.width - realDiffX;
+                        result.height = start.height + realDiffY;
+                        result.x = start.x + realDiffX;
                     }
                 }
-                if (typeof result.width !== "number" && typeof result.height !== "number" ||
-                    result.width >= 120 && result.height >= 70) {
-                  Events.send(moveOrResize, result);
-                }
+                Events.send(moveOrResize, result);
                 return move;
             }
         } else if (downOrUpOrResize.type === "padDragDown") {
