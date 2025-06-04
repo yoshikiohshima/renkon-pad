@@ -25,10 +25,10 @@
 "type":"move",
 "width":1045.6662804721764,
 "x":4924.362470513358,
-"y":181.81383324957196}],["9",{"height":4607.060264712583,
+"y":181.81383324957196}],["9",{"height":4530.934273342389,
 "id":"9",
-"type":"move",
-"width":764.9576772157842,
+"type":"resize",
+"width":755.00360999353,
 "x":2677.08645242937,
 "y":188.1287299041631}],["11",{"height":605.1534973962149,
 "id":"11",
@@ -40,10 +40,10 @@
 "type":"move",
 "width":768.5264842221045,
 "x":-674.6591838958739,
-"y":884.4750956602653}],["40",{"height":3725.3454417957946,
+"y":884.4750956602653}],["40",{"height":3784.7927148487006,
 "id":"40",
-"type":"move",
-"width":891.6937393352453,
+"type":"resize",
+"width":908.6608993731786,
 "x":1620.3726063604531,
 "y":192.47755724510694}]]}},
 "titles":{"map":{"__map":true,
@@ -1601,7 +1601,6 @@ html, body {
                     if (downOrUpOrResize.corner === "bottomRight") {
                         const realDiffX = start.width + diffX < 120 ? 120 - start.width : diffX;
                         const realDiffY = start.height + diffY < 70 ? 70 - start.height : diffY;
-                        console.log(start.width, diffX, realDiffX);
                         result.width = start.width + realDiffX;
                         result.height = start.height + realDiffY;
                     } else if (downOrUpOrResize.corner === "topLeft") {

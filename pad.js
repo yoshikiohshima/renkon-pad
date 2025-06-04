@@ -596,7 +596,6 @@ export function pad() {
                     if (downOrUpOrResize.corner === "bottomRight") {
                         const realDiffX = start.width + diffX < 120 ? 120 - start.width : diffX;
                         const realDiffY = start.height + diffY < 70 ? 70 - start.height : diffY;
-                        console.log(start.width, diffX, realDiffX);
                         result.width = start.width + realDiffX;
                         result.height = start.height + realDiffY;
                     } else if (downOrUpOrResize.corner === "topLeft") {
