@@ -93,13 +93,10 @@ export function pad() {
             return {map: prev.map};
         },
         moveOrResize, (prev, command) => {
-            if (command.type === "move" || command.type === "resize") {
-                const v = {...prev.map.get(command.id), ...command};
-                prev.map.set(command.id, v);
-                return {map: prev.map};
-            }
-            return prev;
-        },
+            const v = {...prev.map.get(command.id), ...command};
+            prev.map.set(command.id, v);
+            return {map: prev.map};
+        }
     );
 
     const findMax = (map)  => {
