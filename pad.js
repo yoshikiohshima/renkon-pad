@@ -338,7 +338,7 @@ export function pad() {
         let absDeltaY = Math.min(30, Math.abs(deltaY));
         let diff = Math.sign(deltaY) * absDeltaY;
 
-        let desiredZoom = zoom * (1 - diff / 200);
+        let desiredZoom = zoom * (1 - diff / 50);
 
         const xInMover = (wheel.clientX - padView.x) / padView.scale;
         const newX = wheel.clientX - xInMover * desiredZoom;
