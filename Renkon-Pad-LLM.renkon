@@ -1781,8 +1781,8 @@ const abortHandler = Events.listener("#abort", "click", (evt) => evt);
 
 const abortController = Behaviors.select(
     new AbortController(),
-    Events.or(abortHandler, \$responses), (a, b) => {
-        a.abort();
+    Events.or(abortHandler, \$responses), (prev, evt) => {
+        prev.abort();
         console.log("abort");
         return new AbortController();
       },
