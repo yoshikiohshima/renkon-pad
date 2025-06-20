@@ -806,9 +806,6 @@ export function pad() {
             window.onmessage = (evt) => {
                 if (evt.data && Array.isArray(evt.data.code)) {
                     window.thisProgramState.updateProgram(evt.data.code, evt.data.path);
-                    if (window.thisProgramState.evaluatorRunning === 0) {
-                        window.thisProgramState.evaluator();
-                    }
                 }
                 if (evt.data && typeof evt.data.inspector === "boolean") {
                     if (window.thisProgramState) {

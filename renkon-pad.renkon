@@ -19,8 +19,8 @@
 "id":"6",
 "type":"move",
 "width":1060.3789232272009,
-"x":6302.2301598256245,
-"y":202.91654838407004}],["7",{"height":2834.4197260887954,
+"x":6353.266837671926,
+"y":188.94770597128448}],["7",{"height":2834.4197260887954,
 "id":"7",
 "type":"move",
 "width":1045.6662804721764,
@@ -42,10 +42,10 @@
 "x":-674.6591838958739,
 "y":884.4750956602653}],["40",{"height":3784.7927148487006,
 "id":"40",
-"type":"resize",
+"type":"move",
 "width":908.6608993731786,
-"x":1620.3726063604531,
-"y":192.47755724510694}]]}},
+"x":1610.224028072432,
+"y":195.43192114673084}]]}},
 "titles":{"map":{"__map":true,
 "values":[["3",{"id":"3",
 "state":false,
@@ -82,7 +82,7 @@
 "values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["15","code"],["40","code"]]}},
 "windows":["3","4","5","6","7","9","11","15","40"],
 "zIndex":{"map":{"__map":true,
-"values":[["3",110],["4",114],["5",104],["6",103],["7",111],["9",100],["11",113],["15",105],["40",112]]}}}
+"values":[["3",110],["4",112],["5",104],["6",114],["7",111],["9",100],["11",113],["15",105],["40",103]]}}}
 {__codeMap: true, value: [[`3`, `    const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
     const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
     const save = Events.listener(renkon.querySelector("#saveButton"), "click", (evt) => evt);
@@ -1455,9 +1455,6 @@ html, body {
             window.onmessage = (evt) => {
                 if (evt.data && Array.isArray(evt.data.code)) {
                     window.thisProgramState.updateProgram(evt.data.code, evt.data.path);
-                    if (window.thisProgramState.evaluatorRunning === 0) {
-                        window.thisProgramState.evaluator();
-                    }
                 }
                 if (evt.data && typeof evt.data.inspector === "boolean") {
                     if (window.thisProgramState) {

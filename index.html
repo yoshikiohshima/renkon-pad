@@ -44,31 +44,29 @@
                     }
                 }
 
-            if (docName) {
-                fetch(docName).then((resp) => resp.text()).then((result) => {
-                    const index = result.indexOf("{__codeMap: true, value:");
-                    let code;
-                    if (index < 0) {
-                        const json = JSON.parse(result);
-                        if (json.version !== 1) {
-                            console.log("unknown type of data");
+                if (docName) {
+                    fetch(docName).then((resp) => resp.text()).then((result) => {
+                        const index = result.indexOf("{__codeMap: true, value:");
+                        let code;
+                        if (index < 0) {
+                            const json = JSON.parse(result);
+                            if (json.version !== 1) {
+                                console.log("unknown type of data");
+                            }
+                            code = JSON.parse(result).code.values;
+                        } else {
+                            let data1 = JSON.parse(result.slice(0, index));
+                            let map = new Map();
+                            if (data1?.windowEnabled?.map?.values) {
+                                map = new Map(data1?.windowEnabled?.map?.values);
+                            }
+                            const data2 = result.slice(index);
+                            const array = eval("(" + data2 + ")");
+                            code = array.value;
+                            code = code.filter((pair) => (!map.get(pair[0]) || map.get(pair[0]).enabled));
                         }
-                        code = JSON.parse(result).code.values;
-                    } else {
-                        let data1 = JSON.parse(result.slice(0, index));
-                        let map = new Map();
-                        if (data1?.windowEnabled?.map?.values) {
-                            map = new Map(data1?.windowEnabled?.map?.values);
-                        }
-                        const data2 = result.slice(index);
-                        const array = eval("(" + data2 + ")");
-                        code = array.value;
-                        code = code.filter((pair) => (!map.get(pair[0]) || map.get(pair[0]).enabled));
-                    }
-                    programState.setupProgram(code.map((pair) => ({blockId: pair[0], code: pair[1]})), docName);
-                        if (programState.evaluatorRunning === 0) {
-                            programState.evaluator();
-                        }
+                        programState.setupProgram(code.map((pair) => ({blockId: pair[0], code: pair[1]})), docName);
+                        programState.evaluate(Date.now());
                     }).catch((err) => {
                         console.error("docName could not be loaded");
                     });
@@ -77,10 +75,9 @@
                     programState.setupProgram([`
                         const {pad} = import("./pad.js");
                         console.log("default renkon-pad is starting");
-                        Renkon.merge(pad);`]);
-                    if (programState.evaluatorRunning === 0) {
-                        programState.evaluator();
-                    }
+                    Renkon.merge(pad);`]);
+                    programState.evaluate(Date.now());
+                    // programState.tickingEvaluator(Date.now());
                 }
             }
             window.onload = launcher;
