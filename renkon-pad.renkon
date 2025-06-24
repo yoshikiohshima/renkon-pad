@@ -1,9 +1,9 @@
 {"padTitle":"Renkon-Pad",
 "positions":{"map":{"__map":true,
-"values":[["3",{"height":3801.3342360709776,
+"values":[["3",{"height":3740.1917532551547,
 "id":"3",
-"type":"move",
-"width":881.5603420123308,
+"type":"resize",
+"width":876.7622518682088,
 "x":529.7938027478795,
 "y":181.93014102350742}],["4",{"height":2430.883507677384,
 "id":"4",
@@ -14,35 +14,35 @@
 "id":"5",
 "type":"move",
 "width":918.8802222861234,
-"x":4954.582899739514,
-"y":3184.8204015794095}],["6",{"height":7056.847231052796,
+"x":4959.684488436475,
+"y":3502.87232396676}],["6",{"height":7056.847231052796,
 "id":"6",
 "type":"move",
 "width":1060.3789232272009,
 "x":6353.266837671926,
-"y":188.94770597128448}],["7",{"height":2834.4197260887954,
+"y":188.94770597128448}],["7",{"height":3104.708718529484,
 "id":"7",
-"type":"move",
-"width":1045.6662804721764,
+"type":"resize",
+"width":1073.054591797073,
 "x":4924.362470513358,
-"y":181.81383324957196}],["9",{"height":4530.934273342389,
+"y":181.81383324957196}],["9",{"height":4512.951630311457,
 "id":"9",
 "type":"resize",
-"width":755.00360999353,
+"width":752.5992943508127,
 "x":2677.08645242937,
-"y":188.1287299041631}],["11",{"height":605.1534973962149,
+"y":188.1287299041631}],["11",{"height":580.7300964026755,
 "id":"11",
-"type":"move",
-"width":785.2313913845344,
+"type":"resize",
+"width":781.3177973091624,
 "x":-688.0908676805566,
-"y":187.8357711371296}],["15",{"height":2760.315341619548,
+"y":187.8357711371296}],["15",{"height":2728.7299223308996,
 "id":"15",
-"type":"move",
-"width":768.5264842221045,
+"type":"resize",
+"width":766.6381823404922,
 "x":-674.6591838958739,
-"y":884.4750956602653}],["40",{"height":3784.7927148487006,
+"y":884.4750956602653}],["40",{"height":3770.1876339622277,
 "id":"40",
-"type":"move",
+"type":"resize",
 "width":908.6608993731786,
 "x":1610.224028072432,
 "y":195.43192114673084}]]}},
@@ -82,7 +82,7 @@
 "values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["15","code"],["40","code"]]}},
 "windows":["3","4","5","6","7","9","11","15","40"],
 "zIndex":{"map":{"__map":true,
-"values":[["3",110],["4",112],["5",104],["6",114],["7",111],["9",100],["11",113],["15",105],["40",103]]}}}
+"values":[["3",110],["4",112],["5",114],["6",104],["7",111],["9",100],["11",113],["15",105],["40",103]]}}}
 {__codeMap: true, value: [[`3`, `    const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
     const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
     const save = Events.listener(renkon.querySelector("#saveButton"), "click", (evt) => evt);
@@ -285,6 +285,7 @@
 
         Events.send(padViewChange, {x, y, scale});
     })(padView, positions, dblClick);
+
 `],
 [`4`, `    const inputHandler = (evt) => {
         if (evt.key === "Enter") {
@@ -334,8 +335,8 @@
                     onClick: (evt) => {
                         //console.log(evt);
                         Events.send(enabledChange, {
-                          id: \`\${Number.parseInt(evt.target.id)}\`,
-                          enabled: !windowEnabled || !windowEnabled.enabled});
+                            id: \`\${Number.parseInt(evt.target.id)}\`,
+                            enabled: !windowEnabled || !windowEnabled.enabled});
                     },
                 }),
                 h("div", {
@@ -387,17 +388,17 @@
                 id: \`\${id}-topLeft-resize\`,
                 corner: "topLeft",
                 "class": "resizeHandler",
-            }, []),          
+            }, []),
             h("div", {
                 id: \`\${id}-bottomLeft-resize\`,
                 corner: "bottomLeft",
                 "class": "resizeHandler",
-            }, []),          
+            }, []),
             h("div", {
                 id: \`\${id}-topRight-resize\`,
                 corner: "topRight",
                 "class": "resizeHandler",
-            }, []),          
+            }, []),
             h("div", {
                 id: \`\${id}-windowHolder\`,
                 blurred: \`\${type !== "code" ? false : (windowEnabled ? !windowEnabled.enabled : false)}\`,
@@ -409,13 +410,14 @@
     const windowElements = ((windows, positions, zIndex, titles, windowContents, windowTypes, windowEnabled) => {
         return h("div", {id: "owner", "class": "owner"}, windows.map((id) => {
             return windowDOM(
-              id,
-              positions.map.get(id), zIndex.map.get(id), titles.map.get(id),
-              windowContents.map.get(id), windowTypes.map.get(id), windowEnabled.map.get(id));
+                id,
+                positions.map.get(id), zIndex.map.get(id), titles.map.get(id),
+                windowContents.map.get(id), windowTypes.map.get(id), windowEnabled.map.get(id));
         }));
     })(windows, positions, zIndex, titles, windowContents, windowTypes, windowEnabled);
 
     const _windowRender = render(windowElements, document.querySelector("#mover"));
+
 `],
 [`5`, `    const loadRequest = Events.receiver();
 
@@ -581,7 +583,7 @@
         }
 
         return "\\n{__codeMap: true, value: " + "[" +
-            [...map].map(([key, value]) => ("[" + "\`" + replace(key) + "\`" + ", " + "\`" + 
+            [...map].map(([key, value]) => ("[" + "\`" + replace(key) + "\`" + ", " + "\`" +
                                             replace(value) + "\`" + "]")).join(",\\n") + "]" + "}"
     }
 
@@ -918,10 +920,21 @@ html, body {
         const programState = new Renkon.constructor(0);
         programState.setLog(() => {});
 
+        const blockMap = new Map() // name -> blockId
+
         const code = [...windowContents.map].filter(
             ([id, editor]) => editor.state && windowEnabled.map.get(id)?.enabled)
             .map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
         try {
+            code.forEach(info => {
+                const blockId = info.blockId;
+                const decls = programState.findDecls(info.code);
+                for (const decl of decls) {
+                    for (const d of decl.decls) {
+                        blockMap.set(d, blockId);
+                    }
+                }
+            });
             programState.setupProgram(code);
         } catch(e) {
             console.log("Graph analyzer encountered an error in source code:");
@@ -930,10 +943,14 @@ html, body {
 
         const nodes = new Map();
         for (let jsNode of programState.nodes.values()) {
-            let ary = nodes.get(jsNode.blockId);
+            if (/^_?[0-9]/.exec(jsNode.id)) {
+                continue;
+            }
+            const blockId = blockMap.get(jsNode.id);
+            let ary = nodes.get(blockId);
             if (!ary) {
                 ary = [];
-                nodes.set(jsNode.blockId, ary);
+                nodes.set(blockId, ary);
             }
             ary.push({inputs: jsNode.inputs, outputs: jsNode.outputs});
         }
@@ -1007,8 +1024,7 @@ html, body {
         const c1 = \`\${pl.x + (pr.x - pl.x) * 0.5} \${pl.y + (pr.y - pl.y) * 0.2}\`;
         const c2 = \`\${pr.x - (pr.x - pl.x) * 0.2} \${pl.y + (pr.y - pl.y) * 0.6}\`;
         const c3 = \`\${pr.x} \${pr.y}\`;
-        return html\`<path d="M \${c0} C \${c1} \${c2} \${c3}" stroke="\${color}"
-            fill="transparent" stroke-width="2" stroke-linecap="round"></path><text x="\${p1.x + 5}" y="\${p1.y}">\${label}</text>\`;
+        return html\`<path d="M \${c0} C \${c1} \${c2} \${c3}" stroke="\${color}" fill="transparent" stroke-width="2" stroke-linecap="round"></path><text x="\${p1.x + 5}" y="\${p1.y}">\${label}</text>\`;
     };
 
     const hovered = Events.receiver();
@@ -1487,6 +1503,7 @@ html, body {
         runnerIframe.id = \`runner-\${id}\`;
         return {dom: runnerIframe};
     };
+
 `],
 [`40`, `    const dblClick = Events.listener(renkon.querySelector("#pad"), "dblclick", (evt) => evt);
 
@@ -1590,7 +1607,7 @@ html, body {
                 const diffX = (move.clientX - downPoint.x) / scale;
                 const diffY = (move.clientY - downPoint.y) / scale;
                 const result = {id: downOrUpOrResize.id, type};
-                const position = positions.map.get(downOrUpOrResize.id);
+                // const position = positions.map.get(downOrUpOrResize.id);
                 if (type === "move") {
                     result.x = start.x + diffX;
                     result.y = start.y + diffY;
@@ -1606,7 +1623,7 @@ html, body {
                         result.width = start.width - realDiffX;
                         result.height = start.height - realDiffY;
                         result.x = start.x + realDiffX;
-                        result.y = start.y + realDiffY;                        
+                        result.y = start.y + realDiffY;
                     } else if (downOrUpOrResize.corner === "topRight") {
                         const realDiffX = start.width + diffX < 120 ? 120 - start.width : diffX;
                         const realDiffY = start.height - diffY < 70 ? start.height - 70 : diffY;
@@ -1691,4 +1708,5 @@ html, body {
             return (move) => move;
         }
     })(downOrUpOrResize, positions, padView);
+
 `]]}

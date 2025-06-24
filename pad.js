@@ -588,7 +588,7 @@ export function pad() {
                 const diffX = (move.clientX - downPoint.x) / scale;
                 const diffY = (move.clientY - downPoint.y) / scale;
                 const result = {id: downOrUpOrResize.id, type};
-                const position = positions.map.get(downOrUpOrResize.id);
+                // const position = positions.map.get(downOrUpOrResize.id);
                 if (type === "move") {
                     result.x = start.x + diffX;
                     result.y = start.y + diffY;
@@ -604,7 +604,7 @@ export function pad() {
                         result.width = start.width - realDiffX;
                         result.height = start.height - realDiffY;
                         result.x = start.x + realDiffX;
-                        result.y = start.y + realDiffY;                        
+                        result.y = start.y + realDiffY;
                     } else if (downOrUpOrResize.corner === "topRight") {
                         const realDiffX = start.width + diffX < 120 ? 120 - start.width : diffX;
                         const realDiffY = start.height - diffY < 70 ? start.height - 70 : diffY;
@@ -691,7 +691,7 @@ export function pad() {
     })(downOrUpOrResize, positions, padView);
 
     // New Component
-    
+
     const newEditor = (id, doc) => {
         const mirror = window.CodeMirror;
 
@@ -889,8 +889,8 @@ export function pad() {
                     onClick: (evt) => {
                         //console.log(evt);
                         Events.send(enabledChange, {
-                          id: `${Number.parseInt(evt.target.id)}`,
-                          enabled: !windowEnabled || !windowEnabled.enabled});
+                            id: `${Number.parseInt(evt.target.id)}`,
+                            enabled: !windowEnabled || !windowEnabled.enabled});
                     },
                 }),
                 h("div", {
@@ -942,17 +942,17 @@ export function pad() {
                 id: `${id}-topLeft-resize`,
                 corner: "topLeft",
                 "class": "resizeHandler",
-            }, []),          
+            }, []),
             h("div", {
                 id: `${id}-bottomLeft-resize`,
                 corner: "bottomLeft",
                 "class": "resizeHandler",
-            }, []),          
+            }, []),
             h("div", {
                 id: `${id}-topRight-resize`,
                 corner: "topRight",
                 "class": "resizeHandler",
-            }, []),          
+            }, []),
             h("div", {
                 id: `${id}-windowHolder`,
                 blurred: `${type !== "code" ? false : (windowEnabled ? !windowEnabled.enabled : false)}`,
@@ -964,9 +964,9 @@ export function pad() {
     const windowElements = ((windows, positions, zIndex, titles, windowContents, windowTypes, windowEnabled) => {
         return h("div", {id: "owner", "class": "owner"}, windows.map((id) => {
             return windowDOM(
-              id,
-              positions.map.get(id), zIndex.map.get(id), titles.map.get(id),
-              windowContents.map.get(id), windowTypes.map.get(id), windowEnabled.map.get(id));
+                id,
+                positions.map.get(id), zIndex.map.get(id), titles.map.get(id),
+                windowContents.map.get(id), windowTypes.map.get(id), windowEnabled.map.get(id));
         }));
     })(windows, positions, zIndex, titles, windowContents, windowTypes, windowEnabled);
 
@@ -1138,7 +1138,7 @@ export function pad() {
         }
 
         return "\n{__codeMap: true, value: " + "[" +
-            [...map].map(([key, value]) => ("[" + "`" + replace(key) + "`" + ", " + "`" + 
+            [...map].map(([key, value]) => ("[" + "`" + replace(key) + "`" + ", " + "`" +
                                             replace(value) + "`" + "]")).join(",\n") + "]" + "}"
     }
 
@@ -1156,10 +1156,21 @@ export function pad() {
         const programState = new Renkon.constructor(0);
         programState.setLog(() => {});
 
+        const blockMap = new Map() // name -> blockId
+
         const code = [...windowContents.map].filter(
             ([id, editor]) => editor.state && windowEnabled.map.get(id)?.enabled)
             .map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
         try {
+            code.forEach(info => {
+                const blockId = info.blockId;
+                const decls = programState.findDecls(info.code);
+                for (const decl of decls) {
+                    for (const d of decl.decls) {
+                        blockMap.set(d, blockId);
+                    }
+                }
+            });
             programState.setupProgram(code);
         } catch(e) {
             console.log("Graph analyzer encountered an error in source code:");
@@ -1168,10 +1179,14 @@ export function pad() {
 
         const nodes = new Map();
         for (let jsNode of programState.nodes.values()) {
-            let ary = nodes.get(jsNode.blockId);
+            if (/^_?[0-9]/.exec(jsNode.id)) {
+                continue;
+            }
+            const blockId = blockMap.get(jsNode.id);
+            let ary = nodes.get(blockId);
             if (!ary) {
                 ary = [];
-                nodes.set(jsNode.blockId, ary);
+                nodes.set(blockId, ary);
             }
             ary.push({inputs: jsNode.inputs, outputs: jsNode.outputs});
         }
