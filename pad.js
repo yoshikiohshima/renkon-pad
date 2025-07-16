@@ -853,18 +853,29 @@ export function pad() {
         }
     };
 
-    const windowDOM = (id, position, zIndex, title, windowContent, type, windowEnabled) => {
+    const _positionsCss = ((positions, zIndex) => {
+        let style = document.head.querySelector("#positions-css");
+        if (!style) {
+            style = document.createElement("style");
+            style.id = "positions-css";
+            document.head.appendChild(style);
+        }
+
+        const css = [...positions.map].map(([id, rect]) => `
+[id="${id}-win"] {
+    transform: translate(${rect.x}px, ${rect.y}px);
+    width: ${rect.width}px;
+    height: ${rect.height}px;
+    z-index: ${zIndex.map.get(id)};
+}`.trim()).join("\n");
+        style.textContent = css;
+    })(positions, zIndex);
+
+    const windowDOM = (id, title, windowContent, type, windowEnabled) => {
         return h("div", {
             key: `${id}`,
             id: `${id}-win`,
             "class": "window",
-            style: {
-                left: `${position.x}px`,
-                top: `${position.y}px`,
-                width: `${position.width}px`,
-                height: `${position.height}px`,
-                zIndex: `${zIndex}`,
-            },
             ref: (ref) => {
                 if (ref) {
                     if (ref.querySelector(".windowHolder") !== windowContent.dom.parentNode) {
@@ -961,14 +972,14 @@ export function pad() {
         ])
     };
 
-    const windowElements = ((windows, positions, zIndex, titles, windowContents, windowTypes, windowEnabled) => {
+    const windowElements = ((windows, titles, windowContents, windowTypes, windowEnabled) => {
         return h("div", {id: "owner", "class": "owner"}, windows.map((id) => {
             return windowDOM(
                 id,
-                positions.map.get(id), zIndex.map.get(id), titles.map.get(id),
-                windowContents.map.get(id), windowTypes.map.get(id), windowEnabled.map.get(id));
+                titles.map.get(id), windowContents.map.get(id),
+                windowTypes.map.get(id), windowEnabled.map.get(id));
         }));
-    })(windows, positions, zIndex, titles, windowContents, windowTypes, windowEnabled);
+    })(windows, titles, windowContents, windowTypes, windowEnabled);
 
     const _windowRender = render(windowElements, document.querySelector("#mover"));
 
