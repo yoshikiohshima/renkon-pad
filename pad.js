@@ -12,6 +12,7 @@ export function pad() {
    <button class="menuButton" id="addCodeButton">code</button>
    <button class="menuButton" id="addRunnerButton">runner</button>
    <div class="spacer"></div>
+   <button class="menuButton" id="searchButton">search</button>
    <button class="menuButton" id="showGraph">show graph</button>
    <button class="menuButton" id="saveButton">save</button>
    <button class="menuButton" id="loadButton">load</button>
@@ -30,6 +31,33 @@ export function pad() {
         document.body.appendChild(renkon);
         return renkon;
     })();
+
+    const searchPanel = ((renkon) => {
+        let search = renkon.querySelector("#search");
+        search?.remove();
+        const div = document.createElement("div");
+        div.innerHTML = `
+<div class="search-panels search-panels-bottom" style="bottom: 0px;">
+    <div class="search-search search-panel">
+        <input value="" placeholder="Find" aria-label="Find" class="search-textfield" name="search" form="" main-field="true">
+        <button class="search-button" name="next" type="button">next</button>
+        <!-- <button class="search-button" name="prev" type="button">previous</button>
+        <button class="search-button" name="select" type="button">all</button> -->
+        <label><input type="checkbox" name="case" form="">match case</label>
+        <label><input type="checkbox" name="re" form="">regexp</label>
+        <label><input type="checkbox" name="word" form="">by word</label>
+        <!-- <input value="" placeholder="Replace" aria-label="Replace" class="search-textfield" name="replace" form="">
+        <button class="search-button" name="replace" type="button">replace</button>
+        <button class="search-button" name="replaceAll" type="button">replace all</button> -->
+        <button name="close" aria-label="close" type="button">×</button>
+    </div>
+</div>
+`.trim();
+        search = div.childNodes[0];
+        search.id = "search";
+        renkon.appendChild(search);
+        return search;
+    })(renkon);
 
     // Data Structure
 
@@ -76,8 +104,8 @@ export function pad() {
             const news = typeKeys.filter((e) => !keys.includes(e));
             const olds = keys.filter((e) => !typeKeys.includes(e));
 
-            const newX = (-padView.x + typeKeys.length * 5 + 40) / padView.scale;
-            const newY = (-padView.y + typeKeys.length * 5 + 45) / padView.scale;
+            const newX = (typeKeys.length * 5 + 40) / padView.scale - padView.x;
+            const newY = (typeKeys.length * 5 + 45) / padView.scale - padView.y;
 
             const newWindow = (id, type) => {
                 return {
@@ -285,6 +313,7 @@ export function pad() {
     const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
     const save = Events.listener(renkon.querySelector("#saveButton"), "click", (evt) => evt);
     const load = Events.listener(renkon.querySelector("#loadButton"), "click", (evt) => evt);
+    const search = Events.listener(renkon.querySelector("#searchButton"), "click", (evt) => evt);
 
     const home = Events.listener(renkon.querySelector("#homeButton"), "click", () => "home");
     const zoomIn = Events.listener(renkon.querySelector("#zoomInButton"), "click", () => "zoomIn");
@@ -299,11 +328,12 @@ export function pad() {
     const _padViewUpdate = ((padView) => {
         const mover = document.querySelector("#mover");
         const pad = document.querySelector("#pad");
-        mover.style.setProperty("transform", ` translate(${padView.x}px, ${padView.y}px) scale(${padView.scale})`);
+        mover.style.setProperty("transform", `scale(${padView.scale}) translate(${padView.x}px, ${padView.y}px)`);
 
-        pad.style.setProperty("background-position", `${padView.x}px ${padView.y}px`);
+        pad.style.setProperty("background-position", `${padView.x * padView.scale}px ${padView.y * padView.scale}px`);
         pad.style.setProperty("background-size", `${64 * padView.scale}px ${64 * padView.scale}px`);
     })(padView);
+
 
     const wheel = Events.listener(renkon.querySelector("#pad"), "wheel", (evt) => {
         let pinch;
@@ -340,17 +370,17 @@ export function pad() {
 
         let desiredZoom = zoom * (1 - diff / 50);
 
-        const xInMover = (wheel.clientX - padView.x) / padView.scale;
-        const newX = wheel.clientX - xInMover * desiredZoom;
+        const xInMover = (wheel.clientX / padView.scale) - padView.x;
+        const newX = wheel.clientX / desiredZoom - xInMover;
 
-        const yInMover = (wheel.clientY - padView.y) / padView.scale;
-        const newY = wheel.clientY - yInMover * desiredZoom;
+        const yInMover = (wheel.clientY / padView.scale) - padView.y;
+        const newY = wheel.clientY / desiredZoom - yInMover;
 
         if (strId === "pad") {
             if (pinch) {
                 Events.send(padViewChange, {x: newX, y: newY, scale: desiredZoom});
             } else {
-                Events.send(padViewChange, {x: padView.x - deltaX, y: padView.y - deltaY, scale: padView.scale});
+                Events.send(padViewChange, {x: padView.x - deltaX / padView.scale, y: padView.y - deltaY / padView.scale, scale: padView.scale});
             }
         }
     })(wheel, padView);
@@ -390,9 +420,12 @@ export function pad() {
         if (navigationAction === "zoomIn" || navigationAction === "zoomOut") {
             const pad = document.body.querySelector("#pad").getBoundingClientRect();
             const newScale = padView.scale * ( navigationAction === "zoomIn" ? 1.1 : 0.9);
-
-            const newX = (padView.x - (pad.width / 2)) * (newScale / padView.scale) + pad.width / 2;
-            const newY = (padView.y - (pad.height / 2)) * (newScale / padView.scale) + pad.height / 2;
+            const centerX = pad.width / 2 / padView.scale - padView.x;
+            const centerY = pad.height / 2 / padView.scale - padView.y;
+            const newX = pad.width / 2 / newScale - centerX;
+            const newY = pad.height / 2 / newScale - centerY;
+            // const newX = (padView.x - (pad.width / 2)) * (newScale / padView.scale) + pad.width / 2;
+            // const newY = (padView.y - (pad.height / 2)) * (newScale / padView.scale) + pad.height / 2;
             Events.send(padViewChange, {x: newX, y: newY, scale: newScale});
         } else if (navigationAction === "home") {
             let minLeft = Number.MAX_VALUE;
@@ -419,10 +452,8 @@ export function pad() {
 
             const centerX = (maxRight + minLeft) / 2;
             const centerY = (maxBottom + minTop) / 2;
-
-            let x = pad.width / 2 - centerX * scale;
-            let y = pad.height / 2 - centerY * scale;
-
+            let x = (pad.width / 2 / scale - centerX);
+            let y = (pad.height / 2 / scale - centerY);
             Events.send(padViewChange, {x, y, scale});
         }
     })(navigationAction, positions, padView);
@@ -478,8 +509,12 @@ export function pad() {
         const scaleX = pad.width / position.width;
         const scaleY = pad.height / position.height;
         const scale = Math.min(scaleX, scaleY) * 0.95;
-        const x = pad.width / 2 - (position.x + position.width / 2) * scale;
-        const y = pad.height / 2 - (position.y + position.height / 2) * scale;
+
+        const centerX = position.x + position.width / 2;
+        const centerY = position.y + position.height / 2;
+
+        const x = pad.width / 2 / scale - centerX;
+        const y = pad.height / 2 / scale - centerY;
 
         Events.send(padViewChange, {x, y, scale});
     })(padView, positions, dblClick);
@@ -631,8 +666,8 @@ export function pad() {
                 const diffX = move.clientX - downPoint.x;
                 const diffY = move.clientY - downPoint.y;
                 const result = {id: downOrUpOrResize.id, type, scale};
-                result.x = start.x + diffX;
-                result.y = start.y + diffY;
+                result.x = start.x + (diffX / scale);
+                result.y = start.y + (diffY / scale);
                 Events.send(padViewChange, result);
                 return move;
             };
@@ -724,7 +759,12 @@ export function pad() {
             if (!decl) {return;}
             const programState = new Renkon.constructor(0);
             programState.setLog(() => {});
-            programState.setupProgram([decl.code]);
+            try {
+                programState.setupProgram([decl.code]);
+            } catch (e) {
+                console.log("could not find the declarations as there is a syntax error");
+                return;
+            }
             const keys = [...programState.nodes.keys()];
             const last = keys[keys.length - 1];
             const deps = [];
@@ -751,9 +791,17 @@ export function pad() {
             };
         });
 
+        const openSearch = ({_state, _dispatch }) => {
+            Events.send(toggleSearchPanel, true);
+            return true;
+        };
+
+        const search = {key: "Mod-f", run: openSearch, shift: openSearch};
+
         const editor = new mirror.EditorView({
             doc: doc || `console.log("hello")`,
             extensions: [
+                mirror.keymap.of([search]),
                 mirror.basicSetup,
                 mirror.javascript({typescript: true}),
                 mirror.EditorView.lineWrapping,
@@ -1292,10 +1340,11 @@ export function pad() {
             const ind = edges.exports.indexOf(edge.id);
             let p1 = positions.map.get(hoveredB);
             p1 = {x: p1.x + p1.width, y: p1.y};
-            p1 = {x: p1.x * padView.scale + padView.x, y: p1.y * padView.scale + padView.y};
+            // p1 = {x: p1.x * padView.scale + padView.x, y: p1.y * padView.scale + padView.y};
+            p1 = {x: (p1.x + padView.x) * padView.scale, y: (p1.y + padView.y) * padView.scale};
             p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
             let p2 = positions.map.get(edge.dest);
-            p2 = {x: p2.x * padView.scale + padView.x, y: p2.y * padView.scale + padView.y};
+            p2 = {x: (p2.x + padView.x) * padView.scale, y: (p2.y + padView.y) * padView.scale};
             p2 = {x: p2.x, y: p2.y + 10};
             let e = "";
             if (!exportEdges.has(edge.id)) {
@@ -1310,10 +1359,10 @@ export function pad() {
             const ind = exporter.exports.indexOf(edge.id);
             let p1 = positions.map.get(edge.origin);
             p1 = {x: p1.x + p1.width, y: p1.y};
-            p1 = {x: p1.x * padView.scale + padView.x, y: p1.y * padView.scale + padView.y};
+            p1 = {x: (p1.x + padView.x) * padView.scale , y: (p1.y + padView.y) * padView.scale};
             p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
             let p2 = positions.map.get(hoveredB);
-            p2 = {x: p2.x * padView.scale + padView.x, y: p2.y * padView.scale + padView.y};
+            p2 = {x: (p2.x + padView.x) * padView.scale, y: (p2.y + padView.y) * padView.scale};
             p2 = {x: p2.x, y: p2.y + 10};
             let e = "";
             if (!importEdges.has(edge.id)) {
@@ -1650,6 +1699,202 @@ html, body {
         renkon.querySelector("#pad-css")?.remove();
         renkon.appendChild(style);
     })(css);
+
+    // Search
+
+    const searchRequest = Events.receiver();
+    const searchUpdate = Events.receiver();
+    const toggleSearchPanel = Events.receiver();
+
+    const searchState = Behaviors.select(
+        {id: null, editor: null, range: null, shown: false}, // id: string, editor: EditorView, range: {from: number, to: number}
+        search, (prev, _search) => ({id: prev.id, editor: prev.editor, range: prev.range, shown: !prev.shown}),
+        toggleSearchPanel, (prev, panelState) => ({id: prev.id, editor: prev.editor, range: prev.range, shown: panelState}),
+        searchUpdate, (prev, searchUpdate) => searchUpdate
+    );
+
+    const _searchHandler = Events.listener(searchPanel.querySelector(`input[name="search"]`), "keydown", searchInputHandler);
+    const _searchNext = Events.listener(searchPanel.querySelector(`button[name="next"]`), "click", searchNextHandler);
+    const _searchClose = Events.listener(searchPanel.querySelector(`button[name="close"]`), "click", searchCloseHandler);
+
+    const searchInputHandler = (evt) => {
+        if (evt.key === "Enter") {
+            evt.preventDefault();
+            evt.stopPropagation();
+            const searchRequest = getSearchRequest(evt.target.parentNode);
+            if (searchRequest) {
+                Events.send(searchRequest, searchRequest);
+            }
+        }
+    };
+
+    const searchNextHandler = (evt) => {
+        const searchRequest = getSearchRequest(evt.target.parentNode);
+        if (searchRequest) {
+            Events.send(searchRequest, searchRequest);
+        }
+    }
+
+    const searchCloseHandler = (_evt) => {
+        Events.send(toggleSearchPanel, false);
+    }
+
+    const getSearchRequest = (searchPanel) => {
+        const field = searchPanel.querySelector(`input[name="search"]`);
+        const search = field?.value;
+        const caseSensitive = searchPanel.querySelector(`input[name="case"]`)?.checked;
+        const regexp = searchPanel.querySelector(`input[name="re"]`)?.checked;
+        const wholeWord = searchPanel.querySelector(`input[name="word"]`)?.checked;
+        if (search) {
+            return {search, caseSensitive, regexp, wholeWord};
+        }
+        return null;
+    }
+
+    renkon.querySelector("#search") && (renkon.querySelector("#search").style.display = searchState.shown ? "inherit" : "none");
+
+    ((searchRequest, windowContents, searchState) => {
+        const mirror = window.CodeMirror;
+        const editorsPair = [...windowContents.map].filter(([_id, content]) => content.state)
+        const query = new mirror.SearchQuery(searchRequest);
+        const startEditorIndex = editorsPair.findIndex((e) => e[1] === searchState.editor);
+        let found = null;
+
+        for (let i = startEditorIndex <= 0 ? 0 : startEditorIndex; i < editorsPair.length; i++) {
+            const myRangeStart = startEditorIndex >= 0 && i === startEditorIndex ? searchState.range.to : 0;
+            const targetPair = editorsPair[i];
+            const cursor = query.getCursor(targetPair[1].state, myRangeStart);
+            cursor.next();
+            if (!cursor.done) {
+                found = {id: targetPair[0], editor: targetPair[1], range: {from: cursor.value.from, to: cursor.value.to}, shown: true};
+                break;
+            }
+        }
+        if (found) {
+            Events.send(searchUpdate, found);
+        } else {
+            Events.send(searchUpdate, {id: null, editor: null, range: null, shown: true});
+        }
+    })(searchRequest, windowContents, searchState)
+
+    const updateEditorSelection = ((searchUpdate) => {
+        if (!searchUpdate.editor || !searchUpdate.range) {return;}
+        const editor = searchUpdate.editor;
+        const scrollIntoView = editor.scrollDOM.scrollHeight > editor.scrollDOM.clientHeight;
+        editor.dispatch({
+            changes: [], // no text change
+            selection: {anchor: searchUpdate.range.from, head: searchUpdate.range.to},
+            scrollIntoView: scrollIntoView,
+        });
+        editor.focus();
+        return searchUpdate;
+    })(searchUpdate);
+
+    const _searchGoTo = ((padView, positions, updateEditorSelection) => {
+        const pad = document.body.querySelector("#pad").getBoundingClientRect();
+
+        const visiblePad = {
+            x: -padView.x,
+            y: -padView.y,
+            width: pad.width / padView.scale,
+            height: pad.height / padView.scale
+        };
+        const position = positions.map.get(`${updateEditorSelection.id}`);
+
+        const allVisible = position.x >= visiblePad.x && position.y >= visiblePad.y &&
+            position.width + position.x <= visiblePad.x + visiblePad.width &&
+            position.height + position.y <= visiblePad.y + visiblePad.height;
+
+        if (allVisible) {return;}
+
+        const textPos = updateEditorSelection.editor.coordsAtPos(updateEditorSelection.range.from);
+        const scrollRect = updateEditorSelection.editor.scrollDOM.getBoundingClientRect();
+        const top = textPos.top - scrollRect.top + updateEditorSelection.editor.scrollDOM.scrollTop;
+        const targetY = position.y + top / padView.scale;
+        let x = -position.x + 30;
+        let y = padView.y;
+        if (targetY < visiblePad.y) {
+            y = -targetY + 50 / padView.scale;
+        }
+
+        Events.send(padViewChange, {x: x, y: y, scale: padView.scale})
+    })(padView, positions, updateEditorSelection);
+
+    const searchCSS = `
+    .search-panels {
+        position: absolute;
+        top: 40px;
+        right: 10px;
+        background-color: #f5f5f5;
+        color: black;
+        display: none;
+        max-height: 30px;
+    }
+    
+    .search-panels[open="true"] {
+        display: inherit;
+    }
+    
+    .search-panels-bottom {
+        border-top: 1px solid #ddd;
+    }
+    
+    .search-search {
+        padding: 2px 6px 4px;
+    }
+    
+    .search-search input, .search-search button, .search-search label {
+        margin: .2em .6em .2em 0;
+    }
+    .search-textfield {
+        background-color: white;
+    }
+    .search-textfield {
+        vertical-align: middle;
+        color: inherit;
+        font-size: 70%;
+        border: 1px solid silver;
+        padding: .2em .5em;
+    }
+    
+    .search-button {
+        background-image: linear-gradient(#eff1f5, #d9d9df);
+        border: 1px solid #888;
+    }
+    .search-button {
+        vertical-align: middle;
+        color: inherit;
+        font-size: 70%;
+        padding: .2em 1em;
+        border-radius: 1px;
+    }
+    
+    .search-search label {
+        font-size: 80%;
+        white-space: pre;
+    }
+    
+    .search-search button[name="close"] {
+        background-color: inherit;
+        border: none;
+        font: inherit;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .search-search button[name="close"]:hover {
+        background-color: #eee;
+    }
+    `;
+
+    ((css) => {
+        const renkon = document.querySelector("#renkon");
+        const style = document.createElement("style");
+        style.id = "search-css";
+        style.textContent = css;
+        renkon.querySelector("#search-css")?.remove();
+        renkon.appendChild(style);
+    })(searchCSS);
 
     return [];
 }

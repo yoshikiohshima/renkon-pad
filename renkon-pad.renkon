@@ -1,9 +1,9 @@
 {"padTitle":"Renkon-Pad",
 "positions":{"map":{"__map":true,
-"values":[["3",{"height":3907.1866772314775,
+"values":[["3",{"height":3872.5865096259345,
 "id":"3",
 "type":"resize",
-"width":880.3549070043497,
+"width":863.7040240689183,
 "x":529.7938027478795,
 "y":181.93014102350742}],["4",{"height":2632.686949774408,
 "id":"4",
@@ -15,52 +15,42 @@
 "type":"move",
 "width":918.8802222861234,
 "x":4959.684488436475,
-"y":3502.87232396676}],["6",{"height":7056.847231052796,
+"y":3502.87232396676}],["6",{"height":7049.878498252195,
 "id":"6",
-"type":"move",
-"width":1060.3789232272009,
+"type":"resize",
+"width":1076.0642984217723,
 "x":6353.266837671926,
-"y":188.94770597128448}],["7",{"height":3104.708718529484,
+"y":188.94770597128448}],["7",{"height":3135.0575597839675,
 "id":"7",
 "type":"resize",
-"width":1073.054591797073,
+"width":1074.8944786826785,
 "x":4924.362470513358,
 "y":181.81383324957196}],["9",{"height":4512.951630311457,
 "id":"9",
 "type":"resize",
 "width":752.5992943508127,
 "x":2677.08645242937,
-"y":188.1287299041631}],["11",{"height":580.7300964026755,
+"y":188.1287299041631}],["11",{"height":1090.723065272567,
 "id":"11",
 "type":"resize",
-"width":781.3177973091624,
+"width":867.5493419599283,
 "x":-688.0908676805566,
 "y":187.8357711371296}],["15",{"height":2956.7730736202,
 "id":"15",
-"type":"resize",
+"type":"move",
 "width":802.0370215038298,
-"x":-687.485588416044,
-"y":827.8890788151233}],["40",{"height":3770.1876339622277,
+"x":-637.8895464226022,
+"y":1346.1007879467368}],["40",{"height":3770.1876339622277,
 "id":"40",
 "type":"resize",
 "width":908.6608993731786,
 "x":1610.224028072432,
-"y":195.43192114673084}],["50",{"height":522.5119896649458,
-"id":"50",
-"type":"move",
-"width":883.459928473307,
-"x":504.2920081454065,
-"y":4161.807728249333}],["70",{"height":1423.7928192742752,
-"id":"70",
-"type":"move",
-"width":574.7415210210845,
-"x":1610.7778670497487,
-"y":4131.596720159194}],["74",{"height":2219.58677442505,
+"y":195.43192114673084}],["74",{"height":3583.6260751404757,
 "id":"74",
 "type":"resize",
-"width":984.8250442818868,
-"x":-689.0958086834844,
-"y":3867.7339681282483}]]}},
+"width":1104.3740389063641,
+"x":3687.5252965363384,
+"y":3504.5950664455486}]]}},
 "titles":{"map":{"__map":true,
 "values":[["3",{"id":"3",
 "state":false,
@@ -80,11 +70,7 @@
 "state":false,
 "title":"New Component"}],["40",{"id":"40",
 "state":false,
-"title":"Pointer Handling"}],["50",{"id":"50",
-"state":false,
-"title":"SearchPanel"}],["70",{"id":"70",
-"state":false,
-"title":"Search CSS"}],["74",{"id":"74",
+"title":"Pointer Handling"}],["74",{"id":"74",
 "state":false,
 "title":"Search"}]]}},
 "version":2,
@@ -98,15 +84,13 @@
 "id":"9"}],["11",{"enabled":true,
 "id":"11"}],["15",{"enabled":true,
 "id":"15"}],["40",{"enabled":true,
-"id":"40"}],["50",{"enabled":true,
-"id":"50"}],["70",{"enabled":true,
-"id":"70"}],["74",{"enabled":true,
+"id":"40"}],["74",{"enabled":true,
 "id":"74"}]]}},
 "windowTypes":{"map":{"__map":true,
-"values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["15","code"],["40","code"],["50","code"],["70","code"],["74","code"]]}},
-"windows":["3","4","5","6","7","9","11","15","40","50","70","74"],
+"values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["15","code"],["40","code"],["74","code"]]}},
+"windows":["3","4","5","6","7","9","11","15","40","74"],
 "zIndex":{"map":{"__map":true,
-"values":[["3",110],["4",112],["5",114],["6",104],["7",111],["9",100],["11",113],["15",118],["40",103],["50",119],["70",105],["74",117]]}}}
+"values":[["3",110],["4",112],["5",114],["6",104],["7",111],["9",100],["11",113],["15",105],["40",103],["74",119]]}}}
 {__codeMap: true, value: [[`3`, `    const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
     const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
     const save = Events.listener(renkon.querySelector("#saveButton"), "click", (evt) => evt);
@@ -316,7 +300,6 @@
 
         Events.send(padViewChange, {x, y, scale});
     })(padView, positions, dblClick);
-
 `],
 [`4`, `    const inputHandler = (evt) => {
         if (evt.key === "Enter") {
@@ -1400,6 +1383,33 @@ html, body {
         document.body.appendChild(renkon);
         return renkon;
     })();
+
+    const searchPanel = ((renkon) => {
+        let search = renkon.querySelector("#search");
+        search?.remove();
+        const div = document.createElement("div");
+        div.innerHTML = \`
+<div class="search-panels search-panels-bottom" style="bottom: 0px;">
+    <div class="search-search search-panel">
+        <input value="" placeholder="Find" aria-label="Find" class="search-textfield" name="search" form="" main-field="true">
+        <button class="search-button" name="next" type="button">next</button>
+        <!-- <button class="search-button" name="prev" type="button">previous</button>
+        <button class="search-button" name="select" type="button">all</button> -->
+        <label><input type="checkbox" name="case" form="">match case</label>
+        <label><input type="checkbox" name="re" form="">regexp</label>
+        <label><input type="checkbox" name="word" form="">by word</label>
+        <!-- <input value="" placeholder="Replace" aria-label="Replace" class="search-textfield" name="replace" form="">
+        <button class="search-button" name="replace" type="button">replace</button>
+        <button class="search-button" name="replaceAll" type="button">replace all</button> -->
+        <button name="close" aria-label="close" type="button">×</button>
+    </div>
+</div>
+\`.trim();
+        search = div.childNodes[0];
+        search.id = "search";
+        renkon.appendChild(search);
+        return search;
+    })(renkon);
 `],
 [`15`, `    const newEditor = (id, doc) => {
         const mirror = window.CodeMirror;
@@ -1465,7 +1475,7 @@ html, body {
             };
         });
 
-        const openSearch = ({ state, dispatch }) => {
+        const openSearch = ({_state, _dispatch }) => {
             Events.send(toggleSearchPanel, true);
             return true;
         };
@@ -1766,116 +1776,13 @@ html, body {
     })(downOrUpOrResize, positions, padView);
 
 `],
-[`50`, `    const searchPanel = ((renkon) => {
-        let search = renkon.querySelector("#search");
-        search?.remove();
-        const div = document.createElement("div");
-        div.innerHTML = \`
-<div class="search-panels search-panels-bottom" style="bottom: 0px;">
-    <div class="search-search search-panel">
-        <input value="" placeholder="Find" aria-label="Find" class="search-textfield" name="search" form="" main-field="true">
-        <button class="search-button" name="next" type="button">next</button>
-        <!-- <button class="search-button" name="prev" type="button">previous</button>
-        <button class="search-button" name="select" type="button">all</button> -->
-        <label><input type="checkbox" name="case" form="">match case</label>
-        <label><input type="checkbox" name="re" form="">regexp</label>
-        <label><input type="checkbox" name="word" form="">by word</label>
-        <!-- <input value="" placeholder="Replace" aria-label="Replace" class="search-textfield" name="replace" form="">
-        <button class="search-button" name="replace" type="button">replace</button>
-        <button class="search-button" name="replaceAll" type="button">replace all</button> -->
-        <button name="close" aria-label="close" type="button">×</button>
-    </div>
-</div>
-\`.trim();
-        search = div.childNodes[0];
-        search.id = "search";
-        renkon.appendChild(search);
-        return search;
-    })(renkon);
-`],
-[`70`, `const searchCSS = \`
-.search-panels {
-    position: absolute;
-    top: 40px;
-    right: 10px;
-    background-color: #f5f5f5;
-    color: black;
-    display: none;
-    max-height: 30px;
-}
-
-.search-panels[open="true"] {
-    display: inherit;
-}
-
-.search-panels-bottom {
-    border-top: 1px solid #ddd;
-}
-
-.search-search {
-    padding: 2px 6px 4px;
-}
-
-.search-search input, .search-search button, .search-search label {
-    margin: .2em .6em .2em 0;
-}
-.search-textfield {
-    background-color: white;
-}
-.search-textfield {
-    vertical-align: middle;
-    color: inherit;
-    font-size: 70%;
-    border: 1px solid silver;
-    padding: .2em .5em;
-}
-
-.search-button {
-    background-image: linear-gradient(#eff1f5, #d9d9df);
-    border: 1px solid #888;
-}
-.search-button {
-    vertical-align: middle;
-    color: inherit;
-    font-size: 70%;
-    padding: .2em 1em;
-    border-radius: 1px;
-}
-
-.search-search label {
-    font-size: 80%;
-    white-space: pre;
-}
-
-.search-search button[name="close"] {
-    background-color: inherit;
-    border: none;
-    font: inherit;
-    padding: 0;
-    margin: 0;
-}
-
-.search-search button[name="close"]:hover {
-    background-color: #eee;
-}
-\`;
-
-    ((css) => {
-        const renkon = document.querySelector("#renkon");
-        const style = document.createElement("style");
-        style.id = "search-css";
-        style.textContent = css;
-        renkon.querySelector("#search-css")?.remove();
-        renkon.appendChild(style);
-    })(searchCSS);
-`],
 [`74`, `    const searchRequest = Events.receiver();
     const searchUpdate = Events.receiver();
     const toggleSearchPanel = Events.receiver();
 
     const searchState = Behaviors.select(
         {id: null, editor: null, range: null, shown: false}, // id: string, editor: EditorView, range: {from: number, to: number}
-        search, (prev, search) => ({id: prev.id, editor: prev.editor, range: prev.range, shown: !prev.shown}),
+        search, (prev, _search) => ({id: prev.id, editor: prev.editor, range: prev.range, shown: !prev.shown}),
         toggleSearchPanel, (prev, panelState) => ({id: prev.id, editor: prev.editor, range: prev.range, shown: panelState}),
         searchUpdate, (prev, searchUpdate) => searchUpdate
     );
@@ -1890,7 +1797,7 @@ html, body {
             evt.stopPropagation();
             const searchRequest = getSearchRequest(evt.target.parentNode);
             if (searchRequest) {
-              Events.send(searchRequest, searchRequest);
+                Events.send(searchRequest, searchRequest);
             }
         }
     };
@@ -1902,7 +1809,7 @@ html, body {
         }
     }
 
-    const searchCloseHandler = (evt) => {
+    const searchCloseHandler = (_evt) => {
         Events.send(toggleSearchPanel, false);
     }
 
@@ -1913,7 +1820,7 @@ html, body {
         const regexp = searchPanel.querySelector(\`input[name="re"]\`)?.checked;
         const wholeWord = searchPanel.querySelector(\`input[name="word"]\`)?.checked;
         if (search) {
-          return {search, caseSensitive, regexp, wholeWord};
+            return {search, caseSensitive, regexp, wholeWord};
         }
         return null;
     }
@@ -1922,7 +1829,7 @@ html, body {
 
     ((searchRequest, windowContents, searchState) => {
         const mirror = window.CodeMirror;
-        const editorsPair = [...windowContents.map].filter(([id, content]) => content.state)
+        const editorsPair = [...windowContents.map].filter(([_id, content]) => content.state)
         const query = new mirror.SearchQuery(searchRequest);
         const startEditorIndex = editorsPair.findIndex((e) => e[1] === searchState.editor);
         let found = null;
@@ -1933,33 +1840,33 @@ html, body {
             const cursor = query.getCursor(targetPair[1].state, myRangeStart);
             cursor.next();
             if (!cursor.done) {
-              found = {id: targetPair[0], editor: targetPair[1], range: {from: cursor.value.from, to: cursor.value.to}, shown: true};
-              break;
+                found = {id: targetPair[0], editor: targetPair[1], range: {from: cursor.value.from, to: cursor.value.to}, shown: true};
+                break;
             }
         }
         if (found) {
-          Events.send(searchUpdate, found);
+            Events.send(searchUpdate, found);
         } else {
-          Events.send(searchUpdate, {id: null, editor: null, range: null, shown: true});
+            Events.send(searchUpdate, {id: null, editor: null, range: null, shown: true});
         }
     })(searchRequest, windowContents, searchState)
 
-  const updateEditorSelection = ((searchUpdate) => {
-      if (!searchUpdate.editor || !searchUpdate.range) {return;}
-      const editor = searchUpdate.editor;
-      const scrollIntoView = editor.scrollDOM.scrollHeight > editor.scrollDOM.clientHeight;
-      editor.dispatch({
-          changes: [], // no text change
-          selection: {anchor: searchUpdate.range.from, head: searchUpdate.range.to},
-          scrollIntoView: editor.scrollDOM.scrollHeight > editor.scrollDOM.clientHeight,
-      });
-      editor.focus();
-      return searchUpdate;
-  })(searchUpdate);
+    const updateEditorSelection = ((searchUpdate) => {
+        if (!searchUpdate.editor || !searchUpdate.range) {return;}
+        const editor = searchUpdate.editor;
+        const scrollIntoView = editor.scrollDOM.scrollHeight > editor.scrollDOM.clientHeight;
+        editor.dispatch({
+            changes: [], // no text change
+            selection: {anchor: searchUpdate.range.from, head: searchUpdate.range.to},
+            scrollIntoView: scrollIntoView,
+        });
+        editor.focus();
+        return searchUpdate;
+    })(searchUpdate);
 
     const _searchGoTo = ((padView, positions, updateEditorSelection) => {
         const pad = document.body.querySelector("#pad").getBoundingClientRect();
-        
+
         const visiblePad = {
             x: -padView.x,
             y: -padView.y,
@@ -1975,15 +1882,91 @@ html, body {
         if (allVisible) {return;}
 
         const textPos = updateEditorSelection.editor.coordsAtPos(updateEditorSelection.range.from);
-        const textRect = updateEditorSelection.editor.dom.getBoundingClientRect();
         const scrollRect = updateEditorSelection.editor.scrollDOM.getBoundingClientRect();
         const top = textPos.top - scrollRect.top + updateEditorSelection.editor.scrollDOM.scrollTop;
         const targetY = position.y + top / padView.scale;
         let x = -position.x + 30;
         let y = padView.y;
         if (targetY < visiblePad.y) {
-          y = -targetY + 50 / padView.scale;
+            y = -targetY + 50 / padView.scale;
         }
 
         Events.send(padViewChange, {x: x, y: y, scale: padView.scale})
-    })(padView, positions, updateEditorSelection);`]]}
+    })(padView, positions, updateEditorSelection);
+
+    const searchCSS = \`
+    .search-panels {
+        position: absolute;
+        top: 40px;
+        right: 10px;
+        background-color: #f5f5f5;
+        color: black;
+        display: none;
+        max-height: 30px;
+    }
+    
+    .search-panels[open="true"] {
+        display: inherit;
+    }
+    
+    .search-panels-bottom {
+        border-top: 1px solid #ddd;
+    }
+    
+    .search-search {
+        padding: 2px 6px 4px;
+    }
+    
+    .search-search input, .search-search button, .search-search label {
+        margin: .2em .6em .2em 0;
+    }
+    .search-textfield {
+        background-color: white;
+    }
+    .search-textfield {
+        vertical-align: middle;
+        color: inherit;
+        font-size: 70%;
+        border: 1px solid silver;
+        padding: .2em .5em;
+    }
+    
+    .search-button {
+        background-image: linear-gradient(#eff1f5, #d9d9df);
+        border: 1px solid #888;
+    }
+    .search-button {
+        vertical-align: middle;
+        color: inherit;
+        font-size: 70%;
+        padding: .2em 1em;
+        border-radius: 1px;
+    }
+    
+    .search-search label {
+        font-size: 80%;
+        white-space: pre;
+    }
+    
+    .search-search button[name="close"] {
+        background-color: inherit;
+        border: none;
+        font: inherit;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .search-search button[name="close"]:hover {
+        background-color: #eee;
+    }
+    \`;
+
+    ((css) => {
+        const renkon = document.querySelector("#renkon");
+        const style = document.createElement("style");
+        style.id = "search-css";
+        style.textContent = css;
+        renkon.querySelector("#search-css")?.remove();
+        renkon.appendChild(style);
+    })(searchCSS);
+`]]}
