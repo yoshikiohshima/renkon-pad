@@ -1815,6 +1815,8 @@ html, body {
         let y = padView.y;
         if (targetY < visiblePad.y) {
             y = -targetY + 50 / padView.scale;
+        } else if (targetY > visiblePad.y + visiblePad.height) {
+            y = -targetY + visiblePad.height / 2 / padView.scale;
         }
 
         Events.send(padViewChange, {x: x, y: y, scale: padView.scale})
