@@ -1761,11 +1761,11 @@ html, body {
                 const newCenterX = (pX - sX) / 2 + sX;
                 const newCenterY = (pY - sY) / 2 + sY;
 
-                const xInMover = (newCenterX - padView.x) / padView.scale;
-                const newX = newCenterX - xInMover * newScale;
+                const xInMover = (newCenterX / padView.scale) - padView.x;
+                const newX = newCenterX / newScale - xInMover;
 
-                const yInMover = (newCenterY - padView.y) / padView.scale;
-                const newY = newCenterY - yInMover * newScale;
+                const yInMover = (newCenterY / padView.scale) - padView.y;
+                const newY = newCenterY / newScale - yInMover;
 
                 Events.send(padViewChange, {x: newX, y: newY, scale: newScale});
                 return move;
