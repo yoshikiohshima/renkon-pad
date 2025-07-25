@@ -775,7 +775,7 @@ export function pad() {
             return {deps, name: last}
         }
 
-        const wordHover = mirror.hoverTooltip((view, pos, _side) => {
+        const wordHover = mirror.view.hoverTooltip((view, pos, _side) => {
             let node = getDecl(view.state, pos);
             if (!node) return null;
             const {deps, name} = node;
@@ -801,13 +801,15 @@ export function pad() {
         const editor = new mirror.EditorView({
             doc: doc || `console.log("hello")`,
             extensions: [
-                mirror.keymap.of([search]),
+                mirror.view.keymap.of([search]),
                 mirror.basicSetup,
-                mirror.javascript({typescript: true}),
+                mirror["lang-javascript"].javascript({typescript: true}),
                 mirror.EditorView.lineWrapping,
                 mirror.EditorView.editorAttributes.of({"class": "editor"}),
-                mirror.keymap.of([mirror.indentWithTab]),
-                mirror.linter(mirror.esLint(new mirror.eslint.Linter(), config)),
+                mirror.view.keymap.of([mirror.commands.indentWithTab]),
+                mirror.lint.linter(
+                    mirror["lang-javascript"]
+                        .esLint(new mirror["eslint-linter-browserify"].Linter(), config)),
                 wordHover,
             ],
         });
@@ -1756,7 +1758,7 @@ html, body {
     ((searchRequest, windowContents, searchState) => {
         const mirror = window.CodeMirror;
         const editorsPair = [...windowContents.map].filter(([_id, content]) => content.state)
-        const query = new mirror.SearchQuery(searchRequest);
+        const query = new mirror.search.SearchQuery(searchRequest);
         const startEditorIndex = editorsPair.findIndex((e) => e[1] === searchState.editor);
         let found = null;
 
