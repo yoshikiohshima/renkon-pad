@@ -798,6 +798,19 @@ export function pad() {
 
         const search = {key: "Mod-f", run: openSearch, shift: openSearch};
 
+        const cursorChange = mirror.view.ViewPlugin.fromClass(class {
+            update(update) {
+                if (update.selectionSet || update.docChanged) {
+                    this.reportCursor(update.view);
+                }
+            }
+
+            reportCursor(view) {
+                const pos = view.state.selection.main.head;
+                Events.send(cursorChanged, {id: id, position: pos});
+            }
+        });
+
         const editor = new mirror.EditorView({
             doc: doc || `console.log("hello")`,
             extensions: [
@@ -811,6 +824,7 @@ export function pad() {
                     mirror["lang-javascript"]
                         .esLint(new mirror["eslint-linter-browserify"].Linter(), config)),
                 wordHover,
+                cursorChange,
             ],
         });
         editor.dom.id = `${id}-editor`;
@@ -1708,11 +1722,36 @@ html, body {
     const searchUpdate = Events.receiver();
     const toggleSearchPanel = Events.receiver();
 
+    const cursorChanged = Events.receiver();
+
+    const cursorState = Behaviors.select(
+        {map: new Map()},
+        cursorChanged, (prev, cursorChanged) => {
+            const id = cursorChanged.id;
+            const entry = prev.map.get(id);
+            if (!entry || entry.position !== cursorChanged.position) {
+                prev.map.set(id, cursorChanged);
+                return {map: prev.map, change: id};
+            }
+            return prev;
+        }
+    );
+
     const searchState = Behaviors.select(
-        {id: null, editor: null, range: null, shown: false}, // id: string, editor: EditorView, range: {from: number, to: number}
+        {id: null, range: null, shown: false}, // id: string, editor: EditorView, range: {from: number, to: number}
         search, (prev, _search) => ({id: prev.id, editor: prev.editor, range: prev.range, shown: !prev.shown}),
         toggleSearchPanel, (prev, panelState) => ({id: prev.id, editor: prev.editor, range: prev.range, shown: panelState}),
-        searchUpdate, (prev, searchUpdate) => searchUpdate
+        searchUpdate, (prev, searchUpdate) => searchUpdate,
+        cursorState, (prev, cursorState) => {
+            if (cursorState.change) {
+                const cursor = cursorState.map.get(cursorState.change);
+                return {
+                    id: cursorState.change,
+                    range: {from: cursor.position, to: cursor.position},
+                    shown: prev.shown}
+            }
+            return prev;
+        }
     );
 
     const _searchHandler = Events.listener(searchPanel.querySelector(`input[name="search"]`), "keydown", searchInputHandler);
@@ -1753,13 +1792,22 @@ html, body {
         return null;
     }
 
-    renkon.querySelector("#search") && (renkon.querySelector("#search").style.display = searchState.shown ? "inherit" : "none");
+    const _searchFieldUpdate = ((searchState) => {
+        const searchField = renkon.querySelector("#search");
+        if (!searchField) {return;}
+        const oldStyle = searchField.style.display;
+        const newStyle = searchState.shown ? "inherit" : "none";
+        searchField.style.display = newStyle;
+        if (newStyle !== oldStyle && newStyle === "inherit") {
+            searchField.querySelector(`input[name="search"]`).focus();
+        }
+    })(searchState);
 
     ((searchRequest, windowContents, searchState) => {
         const mirror = window.CodeMirror;
         const editorsPair = [...windowContents.map].filter(([_id, content]) => content.state)
         const query = new mirror.search.SearchQuery(searchRequest);
-        const startEditorIndex = editorsPair.findIndex((e) => e[1] === searchState.editor);
+        const startEditorIndex = editorsPair.findIndex((e) => e[0] === searchState.id);
         let found = null;
 
         for (let i = startEditorIndex <= 0 ? 0 : startEditorIndex; i < editorsPair.length; i++) {
@@ -1775,13 +1823,13 @@ html, body {
         if (found) {
             Events.send(searchUpdate, found);
         } else {
-            Events.send(searchUpdate, {id: null, editor: null, range: null, shown: true});
+            Events.send(searchUpdate, {id: null, range: null, shown: true});
         }
     })(searchRequest, windowContents, searchState)
 
-    const updateEditorSelection = ((searchUpdate) => {
-        if (!searchUpdate.editor || !searchUpdate.range) {return;}
-        const editor = searchUpdate.editor;
+    const updateEditorSelection = ((searchUpdate, windowContents) => {
+        if (!searchUpdate.id || !searchUpdate.range) {return;}
+        const editor = windowContents.map.get(searchUpdate.id);
         const scrollIntoView = editor.scrollDOM.scrollHeight > editor.scrollDOM.clientHeight;
         editor.dispatch({
             changes: [], // no text change
@@ -1790,9 +1838,9 @@ html, body {
         });
         editor.focus();
         return searchUpdate;
-    })(searchUpdate);
+    })(searchUpdate, windowContents);
 
-    const _searchGoTo = ((padView, positions, updateEditorSelection) => {
+    const _searchGoTo = ((padView, positions, updateEditorSelection, windowContents) => {
         const pad = document.body.querySelector("#pad").getBoundingClientRect();
 
         const visiblePad = {
@@ -1809,9 +1857,12 @@ html, body {
 
         if (allVisible) {return;}
 
-        const textPos = updateEditorSelection.editor.coordsAtPos(updateEditorSelection.range.from);
-        const scrollRect = updateEditorSelection.editor.scrollDOM.getBoundingClientRect();
-        const top = textPos.top - scrollRect.top + updateEditorSelection.editor.scrollDOM.scrollTop;
+        const editor = windowContents.map.get(updateEditorSelection.id);
+
+        const textPos = editor.coordsAtPos(updateEditorSelection.range.from);
+        const scrollRect = editor.scrollDOM.getBoundingClientRect();
+        const top = textPos.top - scrollRect.top + editor.scrollDOM.scrollTop;
+
         const targetY = position.y + top / padView.scale;
         let x = -position.x + 30;
         let y = padView.y;
@@ -1822,7 +1873,7 @@ html, body {
         }
 
         Events.send(padViewChange, {x: x, y: y, scale: padView.scale})
-    })(padView, positions, updateEditorSelection);
+    })(padView, positions, updateEditorSelection, windowContents);
 
     const searchCSS = `
     .search-panels {

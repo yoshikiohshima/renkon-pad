@@ -5,10 +5,10 @@
 "type":"resize",
 "width":863.7040240689183,
 "x":529.7938027478795,
-"y":181.93014102350742}],["4",{"height":2632.686949774408,
+"y":181.93014102350742}],["4",{"height":2633.4938852912614,
 "id":"4",
 "type":"resize",
-"width":846.930576796666,
+"width":842.2839731121171,
 "x":3731.5284714119666,
 "y":185.46240245297892}],["5",{"height":3214.896569678353,
 "id":"5",
@@ -35,20 +35,20 @@
 "type":"resize",
 "width":867.5493419599283,
 "x":-688.0908676805566,
-"y":187.8357711371296}],["15",{"height":2956.7730736202,
+"y":187.8357711371296}],["15",{"height":3243.8834098401894,
 "id":"15",
-"type":"move",
-"width":802.0370215038298,
+"type":"resize",
+"width":810.550370759896,
 "x":-637.8895464226022,
 "y":1346.1007879467368}],["40",{"height":3770.1876339622277,
 "id":"40",
 "type":"resize",
 "width":908.6608993731786,
 "x":1610.224028072432,
-"y":195.43192114673084}],["74",{"height":3583.6260751404757,
+"y":195.43192114673084}],["74",{"height":4338.682336187288,
 "id":"74",
 "type":"resize",
-"width":1104.3740389063641,
+"width":1101.9454317006707,
 "x":3687.5252965363384,
 "y":3504.5950664455486}]]}},
 "titles":{"map":{"__map":true,
@@ -442,7 +442,6 @@
     })(windows, titles, windowContents, windowTypes, windowEnabled);
 
     const _windowRender = render(windowElements, document.querySelector("#mover"));
-
 `],
 [`5`, `    const loadRequest = Events.receiver();
 
@@ -1479,8 +1478,21 @@ html, body {
             Events.send(toggleSearchPanel, true);
             return true;
         };
-      
+
         const search = {key: "Mod-f", run: openSearch, shift: openSearch};
+
+        const cursorChange = mirror.view.ViewPlugin.fromClass(class {
+            update(update) {
+                if (update.selectionSet || update.docChanged) {
+                    this.reportCursor(update.view);
+                }
+            }
+
+            reportCursor(view) {
+                const pos = view.state.selection.main.head;
+                Events.send(cursorChanged, {id: id, position: pos});
+            }
+        });
 
         const editor = new mirror.EditorView({
             doc: doc || \`console.log("hello")\`,
@@ -1494,7 +1506,8 @@ html, body {
                 mirror.lint.linter
                     (mirror["lang-javascript"]
                          .esLint(new mirror["eslint-linter-browserify"].Linter(), config)),
-              wordHover,
+                wordHover,
+                cursorChange,
             ],
         });
         editor.dom.id = \`\${id}-editor\`;
@@ -1781,12 +1794,36 @@ html, body {
 [`74`, `    const searchRequest = Events.receiver();
     const searchUpdate = Events.receiver();
     const toggleSearchPanel = Events.receiver();
+    const cursorChanged = Events.receiver();
+
+    const cursorState = Behaviors.select(
+        {map: new Map()},
+        cursorChanged, (prev, cursorChanged) => {
+            const id = cursorChanged.id;
+            const entry = prev.map.get(id);
+            if (!entry || entry.position !== cursorChanged.position) {
+                prev.map.set(id, cursorChanged);
+                return {map: prev.map, change: id};
+            }
+            return prev;
+        }
+    );
 
     const searchState = Behaviors.select(
-        {id: null, editor: null, range: null, shown: false}, // id: string, editor: EditorView, range: {from: number, to: number}
+        {id: null, range: null, shown: false}, // id: string, editor: EditorView, range: {from: number, to: number}
         search, (prev, _search) => ({id: prev.id, editor: prev.editor, range: prev.range, shown: !prev.shown}),
         toggleSearchPanel, (prev, panelState) => ({id: prev.id, editor: prev.editor, range: prev.range, shown: panelState}),
-        searchUpdate, (prev, searchUpdate) => searchUpdate
+        searchUpdate, (prev, searchUpdate) => searchUpdate,
+        cursorState, (prev, cursorState) => {
+            if (cursorState.change) {
+                const cursor = cursorState.map.get(cursorState.change);
+                return {
+                    id: cursorState.change,
+                    range: {from: cursor.position, to: cursor.position},
+                    shown: prev.shown}
+            }
+            return prev;
+        }
     );
 
     const _searchHandler = Events.listener(searchPanel.querySelector(\`input[name="search"]\`), "keydown", searchInputHandler);
@@ -1827,13 +1864,24 @@ html, body {
         return null;
     }
 
+    const _searchFieldUpdate = ((searchState) => {
+        const searchField = renkon.querySelector("#search");
+        if (!searchField) {return;}
+        const oldStyle = searchField.style.display;
+        const newStyle = searchState.shown ? "inherit" : "none";
+        searchField.style.display = newStyle;
+        if (newStyle !== oldStyle && newStyle === "inherit") {
+            searchField.querySelector(\`input[name="search"]\`).focus();
+        }
+    })(searchState);
+
     renkon.querySelector("#search") && (renkon.querySelector("#search").style.display = searchState.shown ? "inherit" : "none");
 
     ((searchRequest, windowContents, searchState) => {
         const mirror = window.CodeMirror;
         const editorsPair = [...windowContents.map].filter(([_id, content]) => content.state)
         const query = new mirror.search.SearchQuery(searchRequest);
-        const startEditorIndex = editorsPair.findIndex((e) => e[1] === searchState.editor);
+        const startEditorIndex = editorsPair.findIndex((e) => e[0] === searchState.id);
         let found = null;
 
         for (let i = startEditorIndex <= 0 ? 0 : startEditorIndex; i < editorsPair.length; i++) {
@@ -1842,20 +1890,20 @@ html, body {
             const cursor = query.getCursor(targetPair[1].state, myRangeStart);
             cursor.next();
             if (!cursor.done) {
-                found = {id: targetPair[0], editor: targetPair[1], range: {from: cursor.value.from, to: cursor.value.to}, shown: true};
+                found = {id: targetPair[0], range: {from: cursor.value.from, to: cursor.value.to}, shown: true};
                 break;
             }
         }
         if (found) {
             Events.send(searchUpdate, found);
         } else {
-            Events.send(searchUpdate, {id: null, editor: null, range: null, shown: true});
+            Events.send(searchUpdate, {id: null, range: null, shown: true});
         }
     })(searchRequest, windowContents, searchState)
 
-    const updateEditorSelection = ((searchUpdate) => {
-        if (!searchUpdate.editor || !searchUpdate.range) {return;}
-        const editor = searchUpdate.editor;
+    const updateEditorSelection = ((searchUpdate, windowContents) => {
+        if (!searchUpdate.id || !searchUpdate.range) {return;}
+        const editor = windowContents.map.get(searchUpdate.id);
         const scrollIntoView = editor.scrollDOM.scrollHeight > editor.scrollDOM.clientHeight;
         editor.dispatch({
             changes: [], // no text change
@@ -1864,9 +1912,9 @@ html, body {
         });
         editor.focus();
         return searchUpdate;
-    })(searchUpdate);
+    })(searchUpdate, windowContents);
 
-    const _searchGoTo = ((padView, positions, updateEditorSelection) => {
+    const _searchGoTo = ((padView, positions, updateEditorSelection, windowContents) => {
         const pad = document.body.querySelector("#pad").getBoundingClientRect();
 
         const visiblePad = {
@@ -1883,9 +1931,11 @@ html, body {
 
         if (allVisible) {return;}
 
-        const textPos = updateEditorSelection.editor.coordsAtPos(updateEditorSelection.range.from);
-        const scrollRect = updateEditorSelection.editor.scrollDOM.getBoundingClientRect();
-        const top = textPos.top - scrollRect.top + updateEditorSelection.editor.scrollDOM.scrollTop;
+        const editor = windowContents.map.get(updateEditorSelection.id);
+
+        const textPos = editor.coordsAtPos(updateEditorSelection.range.from);
+        const scrollRect = editor.scrollDOM.getBoundingClientRect();
+        const top = textPos.top - scrollRect.top + editor.scrollDOM.scrollTop;
         const targetY = position.y + top / padView.scale;
         let x = -position.x + 30;
         let y = padView.y;
@@ -1896,7 +1946,7 @@ html, body {
         }
 
         Events.send(padViewChange, {x: x, y: y, scale: padView.scale})
-    })(padView, positions, updateEditorSelection);
+    })(padView, positions, updateEditorSelection, windowContents);
 
     const searchCSS = \`
     .search-panels {
