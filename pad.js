@@ -1232,6 +1232,8 @@ export function pad() {
         programState.setLog(() => {});
 
         const blockMap = new Map() // name -> blockId
+        const nodes = new Map(); // blockId -> {exports:Set, imports: Set}
+        const edges = new Map(); // blockId -> {edgesOut: [{id, dest}], edgesIn: [{id, origin}], exports: [id]}
 
         const code = [...windowContents.map].filter(
             ([id, editor]) => editor.state && windowEnabled.map.get(id)?.enabled)
@@ -1239,85 +1241,47 @@ export function pad() {
         try {
             code.forEach(info => {
                 const blockId = info.blockId;
-                const decls = programState.findDecls(info.code);
-                for (const decl of decls) {
-                    for (const d of decl.decls) {
-                        blockMap.set(d, blockId);
+                programState.setupProgram([info.code]);
+                nodes.set(blockId, {exports: new Set(), imports: new Set()});
+                edges.set(blockId, {edgesOut: [], edgesIn: [], exports: []});
+                const obj = nodes.get(blockId);
+                for (const jsNode of programState.nodes.values()) {
+                    for (const input of jsNode.inputs) {
+                        if (/^_[0-9]/.test(input)) {continue;}
+                        obj.imports.add(input)
                     }
+                    if (jsNode.outputs === "") {continue;}
+                    if (/^_[0-9]/.test(jsNode.outputs)) {continue;}
+                    blockMap.set(jsNode.outputs, blockId)
+                    obj.exports.add(jsNode.outputs);
                 }
             });
-            programState.setupProgram(code);
         } catch(e) {
             console.log("Graph analyzer encountered an error in source code:");
             return new Map();
         }
 
-        const nodes = new Map();
-        for (let jsNode of programState.nodes.values()) {
-            if (/^_?[0-9]/.exec(jsNode.id)) {
-                continue;
-            }
-            const blockId = blockMap.get(jsNode.id);
-            let ary = nodes.get(blockId);
-            if (!ary) {
-                ary = [];
-                nodes.set(blockId, ary);
-            }
-            ary.push({inputs: jsNode.inputs, outputs: jsNode.outputs});
-        }
-
-        const exportedNames = new Map();
-        const importedNames = new Map();
-        for (let [id, subNodes] of nodes) {
-            const exSet = new Set();
-            exportedNames.set(id, exSet);
-
-            const inSet = new Set();
-            importedNames.set(id, inSet);
-
-            for (let subNode of subNodes) {
-                let outputs = subNode.outputs;
-                if (outputs.length > 0 && !/^_[0-9]/.exec(outputs)) {
-                    exSet.add(outputs);
-                }
-                for (let inString of subNode.inputs) {
-                    if (!/^_[0-9]/.exec(inString)) {
-                        inSet.add(inString);
+        for (let [id, obj] of nodes) {
+            for (const exported of obj.exports) {//exported:string
+                const edgesOut = edges.get(id).edgesOut;
+                const exports = edges.get(id).exports;
+                for (let [importId, importObj] of nodes) {
+                    if (importId === id) {continue;}
+                    const edgesIn = edges.get(importId).edgesIn;
+                    if (importObj.imports.has(exported)) {
+                        if (edgesOut.findIndex((already) => already.id === exported && already.dest === importId) < 0) {
+                            edgesOut.push({id: exported, dest: importId});
+                            if (exports.indexOf(exported) < 0) {
+                                exports.push(exported);
+                            }
+                        }
+                        if (edgesIn.findIndex((already) => already.id === exported && already.origin === id) < 0) {
+                            edgesIn.push({id: exported, origin: id});
+                        }
                     }
                 }
             }
         }
-
-        // {edgesOut: [{id: "defined name", dest: '2'}, ...],
-        //  edgesIn: [{id: "defined name", origin: '2'}, ...]}
-        const edges = new Map();
-
-        for (let [id, _] of nodes) {
-            const exporteds = exportedNames.get(id);
-            const importeds = importedNames.get(id);
-
-            const edgesOut = [];
-            const edgesIn = [];
-            const exports = new Set();
-
-            for (let exported of exporteds) {
-                for (let [destId, destSet] of importedNames) {
-                    if (destSet.has(exported) && id !== destId) {
-                        edgesOut.push({id: exported, dest: destId});
-                        exports.add(exported);
-                    }
-                }
-            }
-            for (let imported of importeds) {
-                for (let [sourceId, sourceSet] of exportedNames) {
-                    if (sourceSet.has(imported) && id !== sourceId) {
-                        edgesIn.push({id: imported, origin: sourceId});
-                    }
-                }
-            }
-            edges.set(id, {edgesOut, edgesIn, exports: [...exports]});
-        }
-
         return edges;
     })(windowContents, windowEnabled, Events.or(remove, hovered), showGraph === "showGraph");
 
