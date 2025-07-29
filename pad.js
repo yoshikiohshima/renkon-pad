@@ -253,7 +253,6 @@ export function pad() {
     );
 
     const init = Events.once("code");
-    // const init = Behaviors.keep(initE);
 
     const newId = Behaviors.select(
         0,
@@ -267,7 +266,6 @@ export function pad() {
 
     const newWindowRequest = ((some) => {
         const [newId, type, init] = some;
-        console.log(some);
         if (!type && newId === 1) {
             // the case where "init" triggered this
             return {id: newId, type: init};
@@ -1684,14 +1682,13 @@ html, body {
 }
 `;
 
-    ((css) => {
-        const renkon = document.querySelector("#renkon");
+    ((css, renkon) => {
         const style = document.createElement("style");
         style.id = "pad-css";
         style.textContent = css;
         renkon.querySelector("#pad-css")?.remove();
         renkon.appendChild(style);
-    })(css);
+    })(css, renkon);
 
     // Search
 
@@ -1919,14 +1916,13 @@ html, body {
     }
     `;
 
-    ((css) => {
-        const renkon = document.querySelector("#renkon");
+    ((css, renkon) => {
         const style = document.createElement("style");
         style.id = "search-css";
         style.textContent = css;
         renkon.querySelector("#search-css")?.remove();
         renkon.appendChild(style);
-    })(searchCSS);
+    })(searchCSS, renkon);
 
     return [];
 }

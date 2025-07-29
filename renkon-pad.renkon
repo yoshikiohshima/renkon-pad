@@ -25,10 +25,10 @@
 "type":"resize",
 "width":1082.4883673237543,
 "x":4924.362470513358,
-"y":181.81383324957196}],["9",{"height":4512.951630311457,
+"y":181.81383324957196}],["9",{"height":4766.148430958541,
 "id":"9",
 "type":"resize",
-"width":752.5992943508127,
+"width":762.5539654492202,
 "x":2677.08645242937,
 "y":188.1287299041631}],["11",{"height":1090.723065272567,
 "id":"11",
@@ -45,10 +45,10 @@
 "type":"resize",
 "width":908.6608993731786,
 "x":1610.224028072432,
-"y":195.43192114673084}],["74",{"height":4338.682336187288,
+"y":195.43192114673084}],["74",{"height":4276.882097859705,
 "id":"74",
 "type":"resize",
-"width":1101.9454317006707,
+"width":1025.7952476478006,
 "x":3687.5252965363384,
 "y":3504.5950664455486}]]}},
 "titles":{"map":{"__map":true,
@@ -928,14 +928,13 @@ html, body {
 }
 \`;
 
-    ((css) => {
-        const renkon = document.querySelector("#renkon");
+    ((css, renkon) => {
         const style = document.createElement("style");
         style.id = "pad-css";
         style.textContent = css;
         renkon.querySelector("#pad-css")?.remove();
         renkon.appendChild(style);
-    })(css);
+    })(css, renkon);
 `],
 [`7`, `    const analyzed = ((windowContents, windowEnabled, trigger, showGraph) => {
         if (!showGraph) {return new Map()}
@@ -1262,7 +1261,6 @@ html, body {
     );
 
     const init = Events.once("code");
-    // const init = Behaviors.keep(initE);
 
     const newId = Behaviors.select(
         0,
@@ -1276,7 +1274,6 @@ html, body {
 
     const newWindowRequest = ((some) => {
         const [newId, type, init] = some;
-        console.log(some);
         if (!type && newId === 1) {
           // the case where "init" triggered this
           return {id: newId, type: init};
@@ -1992,12 +1989,11 @@ html, body {
     }
     \`;
 
-    ((css) => {
-        const renkon = document.querySelector("#renkon");
+    ((css, renkon) => {
         const style = document.createElement("style");
         style.id = "search-css";
         style.textContent = css;
         renkon.querySelector("#search-css")?.remove();
         renkon.appendChild(style);
-    })(searchCSS);
+    })(searchCSS, renkon);
 `]]}
