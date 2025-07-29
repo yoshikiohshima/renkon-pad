@@ -1262,17 +1262,30 @@ html, body {
     );
 
     const init = Events.once("code");
+    // const init = Behaviors.keep(initE);
 
-    const newId = Events.select(
+    const newId = Behaviors.select(
         0,
         loadRequest, (_prev, request) => {
+            if (request.windows.length === 0) {return 1;}
             const max = Math.max(...request.windows.map((w) => Number.parseInt(w)));
             return max;
         },
         Events.or(addCode, addRunner, init), (prev, _type) => prev + 1
     );
 
-    const newWindowRequest = {id: newId, type: Events.or(addCode, addRunner, init), padView};
+    const newWindowRequest = ((some) => {
+        const [newId, type, init] = some;
+        console.log(some);
+        if (!type && newId === 1) {
+          // the case where "init" triggered this
+          return {id: newId, type: init};
+        }
+        if (type) {
+          return {id: newId, type};
+        }
+        return undefined;
+    })(Events.some(newId, Events.or(addCode, addRunner), init));
 
     const padView = Behaviors.select(
         {x: 0, y: 0, scale: 1},
