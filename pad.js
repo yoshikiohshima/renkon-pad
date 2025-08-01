@@ -127,6 +127,38 @@ export function pad() {
         }
     );
 
+    const pinnedPositions = Behaviors.select(
+        {map: new Map()},
+        pinRequest, (prev, pinRequest) => {
+            const {id} = pinRequest;
+            if (prev.map.get(id)) {
+                prev.map.delete(id);
+                return {map: prev.map};
+            }
+
+            const position = positions.map.get(id);
+            const screenRect = {
+                height: position.height * padView.scale,
+                width: position.width * padView.scale,
+                x: (position.x + padView.x) * padView.scale,
+                y: (position.y + padView.y) * padView.scale,
+                scale: padView.scale
+            };
+            prev.map.set(id, screenRect);
+            return {map: prev.map};
+        },
+        windowTypes, (prev, types) => {
+            const keys = [...prev.map.keys()];
+            const typeKeys = [...types.map.keys()];
+            const olds = keys.filter((e) => !typeKeys.includes(e));
+            olds.forEach((id) => prev.map.delete(`${id}`));
+            return {map: prev.map};
+        },
+        home, (_prev, _home) => {
+            return {map: new Map}
+        }
+    )
+
     const findMax = (map)  => {
         let maxId = -1;
         let max = -1;
@@ -252,6 +284,10 @@ export function pad() {
         }
     );
 
+    // One can argue that we don't have to have a complicated initialization scheme like this
+    // but this is here to illustrate the use of Events.once and Events.some.
+    // For different cases, one should define the data to be used in initial spec, and the inital values
+    // windows and windowTypes would just use it.
     const init = Events.once("code");
 
     const newId = Behaviors.select(
@@ -506,6 +542,7 @@ export function pad() {
     const remove = Events.receiver();
     const titleEditChange = Events.receiver();
     const enabledChange = Events.receiver();
+    const pinRequest = Events.receiver();
     const runRequest = Events.receiver();
     const inspectRequest = Events.receiver();
 
@@ -636,6 +673,7 @@ export function pad() {
                 const result = {id: downOrUpOrResize.id, type};
                 // const position = positions.map.get(downOrUpOrResize.id);
                 if (type === "move") {
+                    if (pinnedPositions.map.get(downOrUpOrResize.id)) {return move;}
                     result.x = start.x + diffX;
                     result.y = start.y + diffY;
                 } else {
@@ -928,29 +966,50 @@ export function pad() {
         }
     };
 
-    const _positionsCss = ((positions, zIndex) => {
-        let style = document.head.querySelector("#positions-css");
+    const _positionsCss = ((positions, zIndex, pinnedPositions, padView) => {
+        let style = document.body.querySelector("#positions-css");
         if (!style) {
             style = document.createElement("style");
             style.id = "positions-css";
-            document.head.appendChild(style);
+            document.body.appendChild(style);
         }
 
-        const css = [...positions.map].map(([id, rect]) => `
+        const css = [...positions.map].map(([id, rect]) => {
+            let x;
+            let y;
+            let scale;
+            const pinned = pinnedPositions.map.get(id);
+            if (!pinned) {
+                x = rect.x;
+                y = rect.y;
+                scale = 1;
+            } else {
+                // t(x) = pinned.x
+                // t(a) = a * padView.scale + padView.x;
+                // x * padView.scale + padView.x = pinned.x;
+                // x = pinned.x / padView.scale - padView.x;
+                scale = pinned.scale / padView.scale;
+                x = pinned.x / padView.scale - padView.x;
+                y = pinned.y / padView.scale - padView.y;
+                // console.log(pinned.x, scale, x, padView.x);
+            }
+            return `
 [id="${id}-win"] {
-    transform: translate(${rect.x}px, ${rect.y}px);
+    transform: translate(${x}px, ${y}px) scale(${scale});
     width: ${rect.width}px;
     height: ${rect.height}px;
     z-index: ${zIndex.map.get(id)};
-}`.trim()).join("\n");
+}`.trim();
+        }).join("\n");
         style.textContent = css;
-    })(positions, zIndex);
+    })(positions, zIndex, pinnedPositions, padView);
 
-    const windowDOM = (id, title, windowContent, type, windowEnabled) => {
+    const windowDOM = (id, title, windowContent, type, windowEnabled, pinnedPosition) => {
         return h("div", {
             key: `${id}`,
             id: `${id}-win`,
             "class": "window",
+            pinned: !!pinnedPosition,
             ref: (ref) => {
                 if (ref) {
                     if (ref.querySelector(".windowHolder") !== windowContent.dom.parentNode) {
@@ -973,7 +1032,6 @@ export function pad() {
                     },
                     "class": "titlebarButton enabledButton",
                     onClick: (evt) => {
-                        //console.log(evt);
                         Events.send(enabledChange, {
                             id: `${Number.parseInt(evt.target.id)}`,
                             enabled: !windowEnabled || !windowEnabled.enabled});
@@ -984,7 +1042,6 @@ export function pad() {
                     "class": "titlebarButton runButton",
                     type,
                     onClick: (evt) => {
-                        //console.log(evt);
                         Events.send(runRequest, {id: `${Number.parseInt(evt.target.id)}`});
                     },
                 }),
@@ -993,7 +1050,6 @@ export function pad() {
                     "class": "titlebarButton inspectorButton",
                     type,
                     onClick: (evt) => {
-                        //console.log(evt);
                         Events.send(inspectRequest, {id: `${Number.parseInt(evt.target.id)}`});
                     },
                 }),
@@ -1004,6 +1060,10 @@ export function pad() {
                     onKeydown: inputHandler,
                 }, title.title),
                 h("div", {
+                    id: `${id}-titleSpacer`,
+                    "class": "titleSpacer",
+                }),
+                h("div", {
                     id: `${id}-edit`,
                     "class": `titlebarButton editButton`,
                     onClick: (evt) => {
@@ -1011,6 +1071,14 @@ export function pad() {
                         Events.send(titleEditChange, {id: `${Number.parseInt(evt.target.id)}`, state: !title.state});
                     },
                 }, []),
+                h("div", {
+                    id: `${id}-pin`,
+                    "class": "titlebarButton pinButton",
+                    state: pinnedPosition ? "on" : "off",
+                    onClick: (evt) => {
+                        Events.send(pinRequest, {id: `${Number.parseInt(evt.target.id)}`})
+                    }
+                }),
                 h("div", {
                     id: `${id}-close`,
                     "class": "titlebarButton closeButton",
@@ -1047,14 +1115,15 @@ export function pad() {
         ])
     };
 
-    const windowElements = ((windows, titles, windowContents, windowTypes, windowEnabled) => {
+    const windowElements = ((windows, titles, windowContents, windowTypes, windowEnabled, pinnedPositions) => {
         return h("div", {id: "owner", "class": "owner"}, windows.map((id) => {
             return windowDOM(
                 id,
                 titles.map.get(id), windowContents.map.get(id),
-                windowTypes.map.get(id), windowEnabled.map.get(id));
+                windowTypes.map.get(id), windowEnabled.map.get(id),
+                pinnedPositions.map.get(id));
         }));
-    })(windows, titles, windowContents, windowTypes, windowEnabled);
+    })(windows, titles, windowContents, windowTypes, windowEnabled, pinnedPositions);
 
     const _windowRender = render(windowElements, document.querySelector("#mover"));
 
@@ -1429,9 +1498,14 @@ html, body {
 
 .window {
     position: absolute;
+    transform-origin: 0px 0px;
     background-color: #eee;
     border-radius: 6px;
     box-shadow: inset 0 2px 2px 0 rgba(255, 255, 255, 0.8), 1px 1px 8px 0 rgba(0, 35, 46, 0.2);
+}
+
+.window[pinned="true"] {
+    box-shadow: inset 0 4px 4px 0 rgba(255, 255, 255, 0.8), 8px 8px 8px 0 rgb(208 53 53 / 20%);
 }
 
 #buttonBox {
@@ -1489,15 +1563,19 @@ html, body {
     border-radius: 6px 6px 0px 0px;
     cursor: -webkit-grab;
     cursor: grab;
+    overflow: hidden;
 }
 
 .title {
     font-family: OpenSans-Regular;
     pointer-events: none;
+    margin-right: 10px;
     margin-left: 10px;
-    flex-grow: 1;
-    margin-right: 20px;
+    margin-top: 2px;
     padding-left: 10px;
+    padding-right: 10px;
+    max-width: calc(100% - 150px);
+    text-wrap: nowrap;
 }
 
 .title[contentEditable="true"] {
@@ -1506,11 +1584,18 @@ html, body {
     user-select: all;
 }
 
+.titleSpacer {
+    flex-grow: 1;
+    pointer-events: none;
+}
+
 .titlebarButton {
     height: 19px;
     width: 19px;
+    min-width: 19px;
+    min-height: 19px;
     margin: 2px;
-    margin-top: 2px;
+    margin-top: 4px;
     pointer-events: all;
     border-radius: 4px;
     background-position: center;
@@ -1533,6 +1618,15 @@ html, body {
     background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3C!--%20Box%20outline%20--%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2218%22%20height%3D%2218%22%20rx%3D%222%22%20ry%3D%222%22%2F%3E%3C!--%20Right-pointing%20triangle%20(play%20icon)%20--%3E%3Cpath%20d%3D%22M9%207L17%2012L9%2017Z%22%20fill%3D%22%234D4D4D%22%20stroke%3D%22none%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
     display: none;
     pointer-events: none;
+}
+
+.pinButton {
+    background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%234D4D4D%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3C!--%20Scaled%20filled%20top%20--%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%226.5%22%20rx%3D%223.2%22%20ry%3D%221.6%22%2F%3E%3C!--%20Scaled%20neck%20as%20filled%20trapezoid%20--%3E%3Cpolygon%20points%3D%229.8%2C8.3%2014.2%2C8.3%2014.8%2C11.5%209.2%2C11.5%22%2F%3E%3C!--%20Scaled%20filled%20base%20--%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%2213.2%22%20rx%3D%225%22%20ry%3D%221.8%22%2F%3E%3C!--%20Scaled%20short%20pin%20--%3E%3Cline%20x1%3D%2212%22%20y1%3D%2214.9%22%20x2%3D%2212%22%20y2%3D%2220%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+.pinButton[state="off"] {
+    transform-origin: center;
+    transform: rotate(40deg);
 }
 
 .runButton[type="runner"] {
@@ -1695,7 +1789,6 @@ html, body {
     const searchRequest = Events.receiver();
     const searchUpdate = Events.receiver();
     const toggleSearchPanel = Events.receiver();
-
     const cursorChanged = Events.receiver();
 
     const cursorState = Behaviors.select(
@@ -1777,6 +1870,8 @@ html, body {
         }
     })(searchState);
 
+    renkon.querySelector("#search") && (renkon.querySelector("#search").style.display = searchState.shown ? "inherit" : "none");
+
     ((searchRequest, windowContents, searchState) => {
         const mirror = window.CodeMirror;
         const editorsPair = [...windowContents.map].filter(([_id, content]) => content.state)
@@ -1790,7 +1885,7 @@ html, body {
             const cursor = query.getCursor(targetPair[1].state, myRangeStart);
             cursor.next();
             if (!cursor.done) {
-                found = {id: targetPair[0], editor: targetPair[1], range: {from: cursor.value.from, to: cursor.value.to}, shown: true};
+                found = {id: targetPair[0], range: {from: cursor.value.from, to: cursor.value.to}, shown: true};
                 break;
             }
         }
@@ -1836,7 +1931,6 @@ html, body {
         const textPos = editor.coordsAtPos(updateEditorSelection.range.from);
         const scrollRect = editor.scrollDOM.getBoundingClientRect();
         const top = textPos.top - scrollRect.top + editor.scrollDOM.scrollTop;
-
         const targetY = position.y + top / padView.scale;
         let x = -position.x + 30;
         let y = padView.y;
