@@ -34,14 +34,15 @@ The top bar includes one text field and five buttons:
 
 - The text field lets you enter the name of your project.
 - The first two buttons, **code** and **runner**, create a new text box and a new runner, respectively.
-- The third button cycles through three states: **"show graph"**, **"show deps"**, and **"hide graph"**:
+- The search button brings up the search panel that looks up text from all text boxes.
+- The fourth button cycles through three states: **"show graph"**, **"show deps"**, and **"hide graph"**:
   - **Show graph**: Hovering over a text box displays its imports and exports.
   - **Show deps**: Hovering over a node definition shows its dependencies.
   - **Hide graph**: Disables both overlays.
 
-- The **"save"** button saves window positions and contents to a file named after the project with a `.renkon` suffix. *Note: Older versions of Renkon-pad saved a file with a `.json` suffix. You can still load them. *
+- The **"save"** button saves window positions and contents to a file named after the project with a `.renkon` suffix.
 
-### Text Box
+### Manipulating Text Box and Runner
 
 <img style="border: 6px solid #eee" src="./doc/textbox.png"></img>
 
@@ -49,11 +50,8 @@ Each text area uses CodeMirror for editing. The title bar contains:
 
 - A **checkmark** button in the top-left corner to enable or disable the box (this affects runners; see below),
 - An **edit** button that lets you change the label in the title bar,
-- A **close** button.
-
-You can resize the box using the resize handle at the bottom right. To bring a box to the front, drag the title bar.
-
-### Runner
+- A **pin** button that keeps the position and extent of the text box even when you pan or zoom the view.
+- A **close** button that closes the text box.
 
 <img style="border: 6px solid #eee" src="./doc/runner.png"></img>
 
@@ -62,11 +60,16 @@ A runner is a separate Renkon execution context in an iframe. A runner has:
 - A **play** button,
 - An **inspector** toggle button,
 - An **edit** button that lets you change the label in the title bar,
+- A **pin** button that keeps the position and extent of the text box even when you pan or zoom the view.
 - A **close** button.
 
 The **play** button gathers the contents of all enabled text boxes and runs them in the runner iframe as a Renkon program. The **inspector** button toggles the visibility of the resolved stream values.
 
-You can resize the runner using the resize handle at the bottom right. To bring a runner to the front, drag the title bar.
+You can resize the text box or the runner using the resize handles at four corners. To bring a window to the front, drag the title bar.
+
+The pin feature keeps the window at the same visual location while you
+pan and zoom. Note, however, that the "actual" position of the window
+does not change. It is purely the view side feature.
 
 ### Navigation Box and Pan and Zoom
 
