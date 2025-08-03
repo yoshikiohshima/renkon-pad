@@ -21,13 +21,13 @@ module.exports = {
     'no-implicit-globals': ['error'],
     'no-trailing-spaces': ['error'],
     'no-unreachable': ["error"],
-    'indent': ['warn', 4, {
+    'indent': ['warn', 2, {
       SwitchCase: 1,
       VariableDeclarator: 1,
       outerIIFEBody: 1,
       FunctionDeclaration: {
         parameters: 1,
-        body: 1
+        body: 0
       },
       FunctionExpression: {
         parameters: 1,
