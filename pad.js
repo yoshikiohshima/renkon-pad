@@ -316,6 +316,40 @@ const newWindowRequest = ((some) => {
   return undefined;
 })(Events.some(newId, Events.or(addCode, addRunner), init));
 
+const modifierState = Behaviors.select(
+  {shiftKey: false, ctrlKey: false, metaKey: false, scrollDirection: null},
+  // scrollDirection: null|"vertical"|"horizontal"
+  queuedKeydown, (prev, keydown) => {
+    const ret = {...prev};
+    keydown.forEach((key) => {
+      ret.shiftKey = ret.shiftKey || key.key === "Shift";
+      ret.ctrlKey = ret.ctrlKey || key.key === "Control";
+      ret.metaKey = ret.metaKey || key.key === "Meta";
+    });
+    return ret;
+  },
+  queuedKeyup, (prev, keyup) => {
+    const ret = {...prev};
+    let reset = false;
+    keyup.forEach((key) => {
+      reset = reset || ["Shift", "Control", "Meta"].includes(key.key);
+      if (key.key === "Shift") {ret.shiftKey = false;}
+      if (key.key === "Control") {ret.ctrlKey = false;}
+      if (key.key === "Meta") {ret.metaKey = false;}
+    });
+    if (reset) {ret.scrollDirection = null;}
+    return ret;
+  },
+  wheeling, (prev, wheeling) => {
+    if (prev.scrollDirection === null && wheeling.scrollDirection) {
+      const ret = {...prev};
+      ret.scrollDirection = wheeling.scrollDirection;
+      return ret;
+    }
+    return prev;
+  }
+);
+
 const padView = Behaviors.select(
   {x: 0, y: 0, scale: 1},
   padViewChange, (prev, view) => {
@@ -375,6 +409,10 @@ const homeUponLoad = ((_positions, _loadRequest) => "home")(positions, loadReque
 const navigationAction = Events.or(home, zoomIn, zoomOut, homeUponLoad);
 
 const padViewChange = Events.receiver();
+const wheeling = Events.receiver();
+
+const queuedKeydown = Events.listener(document.body, "keydown", evt => evt, {queued: true});
+const queuedKeyup = Events.listener(document.body, "keyup", evt => evt, {queued: true});
 
 const _padViewUpdate = ((padView) => {
   const mover = document.querySelector("#mover");
@@ -402,13 +440,16 @@ const wheel = Events.listener(renkon.querySelector("#pad"), "wheel", (evt) => {
   return evt;
 });
 
-const _handleWheel = ((wheel, padView) => {
+const _handleWheel = ((wheel, padView, modifierState) => {
   let pinch;
   if (isSafari) {
     pinch = (Number.isInteger(wheel.deltaX) && !Number.isInteger(wheel.deltaY)) || wheel.metaKey;
   } else {
     pinch = wheel.ctrlKey || wheel.metaKey;
   }
+
+  const shiftKey = modifierState.shiftKey;
+  const scrollDirection = modifierState.scrollDirection;
   const strId = wheel.target.id;
 
   let deltaX = wheel.deltaX;
@@ -426,14 +467,32 @@ const _handleWheel = ((wheel, padView) => {
   const yInMover = (wheel.clientY / padView.scale) - padView.y;
   const newY = wheel.clientY / desiredZoom - yInMover;
 
-  if (strId === "pad") {
-    if (pinch) {
-      Events.send(padViewChange, {x: newX, y: newY, scale: desiredZoom});
+  if (scrollDirection === null && shiftKey) {
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      Events.send(wheeling, {scrollDirection: "horizontal"});
+      deltaY = 0;
     } else {
-      Events.send(padViewChange, {x: padView.x - deltaX / padView.scale, y: padView.y - deltaY / padView.scale, scale: padView.scale});
+      Events.send(wheeling, {scrollDirection: "vertical"});
+      deltaX = 0;
+    }
+  } else if (scrollDirection !== null && shiftKey) {
+    if (scrollDirection === "vertical") {
+      deltaX = 0;
+    }
+    if (scrollDirection === "horizontal") {
+      deltaY = 0;
     }
   }
-})(wheel, padView);
+
+  if (pinch) {
+    Events.send(padViewChange, {x: newX, y: newY, scale: desiredZoom});
+  } else {
+    if (strId === "pad") {
+      Events.send(padViewChange, {x: padView.x - deltaX / padView.scale,
+                                  y: padView.y - deltaY / padView.scale, scale: padView.scale});
+    }
+  }
+})(wheel, padView, modifierState);
 
 Events.listener(renkon.querySelector("#buttonBox"), "wheel", preventDefault);
 Events.listener(renkon.querySelector("#navigationBox"), "wheel", preventDefault);

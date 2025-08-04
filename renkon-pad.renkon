@@ -1,9 +1,9 @@
 {"padTitle":"Renkon-Pad",
 "positions":{"map":{"__map":true,
-"values":[["3",{"height":3907.9530266120073,
+"values":[["3",{"height":4321.39006157139,
 "id":"3",
 "type":"resize",
-"width":859.7841862271783,
+"width":845.6053528260484,
 "x":529.7938027478795,
 "y":181.93014102350742}],["4",{"height":3199.0248069744134,
 "id":"4",
@@ -25,15 +25,15 @@
 "type":"resize",
 "width":890.0223147719955,
 "x":4924.362470513358,
-"y":181.81383324957196}],["9",{"height":5441.141478886521,
+"y":181.81383324957196}],["9",{"height":6161.636202838911,
 "id":"9",
 "type":"resize",
-"width":671.5046343316653,
+"width":687.8136267154363,
 "x":2677.08645242937,
-"y":188.1287299041631}],["11",{"height":1076.3596683247354,
+"y":188.1287299041631}],["11",{"height":364.9755664219117,
 "id":"11",
 "type":"resize",
-"width":848.9579451383473,
+"width":833.983011789983,
 "x":-688.0908676805566,
 "y":187.8357711371296}],["15",{"height":3223.550753776546,
 "id":"15",
@@ -106,6 +106,10 @@ const homeUponLoad = ((_positions, _loadRequest) => "home")(positions, loadReque
 const navigationAction = Events.or(home, zoomIn, zoomOut, homeUponLoad);
 
 const padViewChange = Events.receiver();
+const wheeling = Events.receiver();
+
+const queuedKeydown = Events.listener(document.body, "keydown", evt => evt, {queued: true});
+const queuedKeyup = Events.listener(document.body, "keyup", evt => evt, {queued: true});
 
 const _padViewUpdate = ((padView) => {
   const mover = document.querySelector("#mover");
@@ -133,13 +137,16 @@ const wheel = Events.listener(renkon.querySelector("#pad"), "wheel", (evt) => {
   return evt;
 });
 
-const _handleWheel = ((wheel, padView) => {
+const _handleWheel = ((wheel, padView, modifierState) => {
   let pinch;
   if (isSafari) {
     pinch = (Number.isInteger(wheel.deltaX) && !Number.isInteger(wheel.deltaY)) || wheel.metaKey;
   } else {
     pinch = wheel.ctrlKey || wheel.metaKey;
   }
+
+  const shiftKey = modifierState.shiftKey;
+  const scrollDirection = modifierState.scrollDirection;
   const strId = wheel.target.id;
 
   let deltaX = wheel.deltaX;
@@ -157,14 +164,32 @@ const _handleWheel = ((wheel, padView) => {
   const yInMover = (wheel.clientY / padView.scale) - padView.y;
   const newY = wheel.clientY / desiredZoom - yInMover;
 
-  if (strId === "pad") {
-    if (pinch) {
-      Events.send(padViewChange, {x: newX, y: newY, scale: desiredZoom});
+  if (scrollDirection === null && shiftKey) {
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      Events.send(wheeling, {scrollDirection: "horizontal"});
+      deltaY = 0;
     } else {
-      Events.send(padViewChange, {x: padView.x - deltaX / padView.scale, y: padView.y - deltaY / padView.scale, scale: padView.scale});
+      Events.send(wheeling, {scrollDirection: "vertical"});      
+      deltaX = 0;
+    }
+  } else if (scrollDirection !== null && shiftKey) {
+    if (scrollDirection === "vertical") {
+      deltaX = 0;
+    }
+    if (scrollDirection === "horizontal") {
+      deltaY = 0;
     }
   }
-})(wheel, padView);
+
+  if (pinch) {
+    Events.send(padViewChange, {x: newX, y: newY, scale: desiredZoom});
+  } else {
+    if (strId === "pad") {
+      Events.send(padViewChange, {x: padView.x - deltaX / padView.scale,
+                                  y: padView.y - deltaY / padView.scale, scale: padView.scale});
+    }
+  }
+})(wheel, padView, modifierState);
 
 Events.listener(renkon.querySelector("#buttonBox"), "wheel", preventDefault);
 Events.listener(renkon.querySelector("#navigationBox"), "wheel", preventDefault);
@@ -300,7 +325,6 @@ const _goTo = ((padView, positions, dblClick) => {
 
   Events.send(padViewChange, {x, y, scale});
 })(padView, positions, dblClick);
-
 `],
 [`4`, `const inputHandler = (evt) => {
   if (evt.key === "Enter") {
@@ -1382,6 +1406,40 @@ const newWindowRequest = ((some) => {
   }
   return undefined;
 })(Events.some(newId, Events.or(addCode, addRunner), init));
+
+const modifierState = Behaviors.select(
+  {shiftKey: false, ctrlKey: false, metaKey: false, scrollDirection: null},
+  // scrollDirection: null|"vertical"|"horizontal"
+  queuedKeydown, (prev, keydown) => {
+    const ret = {...prev};
+    keydown.forEach((key) => {
+      ret.shiftKey ||= key.key === "Shift";
+      ret.ctrlKey ||= key.key === "Control";
+      ret.metaKey ||= key.key === "Meta";   
+    });
+    return ret;
+  },
+  queuedKeyup, (prev, keyup) => {
+    const ret = {...prev};
+    let reset = false;
+    keyup.forEach((key) => {
+      reset ||= ["Shift", "Control", "Meta"].includes(key.key);
+      if (key.key === "Shift") {ret.shiftKey = false;}
+      if (key.key === "Control") {ret.ctrlKey = false;}
+      if (key.key === "Meta") {ret.metaKey = false;}
+    });
+    if (reset) {ret.scrollDirection = null;}
+    return ret;
+  },
+  wheeling, (prev, wheeling) => {
+    if (prev.scrollDirection === null && wheeling.scrollDirection) {
+      const ret = {...prev};
+      ret.scrollDirection = wheeling.scrollDirection;
+      return ret;
+    }
+    return prev;
+  }
+);
 
 const padView = Behaviors.select(
   {x: 0, y: 0, scale: 1},
