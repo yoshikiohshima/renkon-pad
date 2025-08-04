@@ -30,10 +30,10 @@
 "type":"resize",
 "width":687.8136267154363,
 "x":2677.08645242937,
-"y":188.1287299041631}],["11",{"height":364.9755664219117,
+"y":188.1287299041631}],["11",{"height":1089.2995263519622,
 "id":"11",
 "type":"resize",
-"width":833.983011789983,
+"width":869.3182948522489,
 "x":-688.0908676805566,
 "y":187.8357711371296}],["15",{"height":3223.550753776546,
 "id":"15",
@@ -1482,7 +1482,11 @@ const _padTitleUpdater = ((padTitle) => {
     renkon.querySelector("#padTitle").value = padTitle;
   }
 })(padTitle);
-`],
+
+const _focus = ((renkon) => {
+  renkon.querySelector("#padTitle").focus();
+  renkon.querySelector("#padTitle").blur();
+})(renkon);`],
 [`11`, `const {h, html, render} = import("./preact.standalone.module.js");
 
 const renkon = (() => {

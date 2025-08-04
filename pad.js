@@ -392,6 +392,11 @@ const _padTitleUpdater = ((padTitle) => {
   }
 })(padTitle);
 
+const _focus = ((renkon) => {
+  renkon.querySelector("#padTitle").focus();
+  renkon.querySelector("#padTitle").blur();
+})(renkon);
+
 // User Interaction
 
 const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
