@@ -1140,7 +1140,7 @@ const windowDOM = (id, title, windowContent, type, windowEnabled, pinnedPosition
       h("div", {
         id: `${id}-pin`,
         "class": "titlebarButton pinButton",
-        state: pinnedPosition ? "on" : "off",
+        state: pinnedPosition ? "off" : "on",
         onClick: (evt) => {
           Events.send(pinRequest, {id: `${Number.parseInt(evt.target.id)}`})
         }
