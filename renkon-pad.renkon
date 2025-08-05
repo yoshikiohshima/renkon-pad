@@ -5,7 +5,7 @@
 "type":"resize",
 "width":845.6053528260484,
 "x":529.7938027478795,
-"y":181.93014102350742}],["4",{"height":3199.0248069744134,
+"y":181.93014102350742}],["4",{"height":3231.7182777003695,
 "id":"4",
 "type":"resize",
 "width":931.8298679195711,
@@ -335,6 +335,7 @@ const _goTo = ((padView, positions, dblClick) => {
       title: evt.target.textContent,
       state: false
     });
+    evt.target.textContent = "";
   }
 };
 

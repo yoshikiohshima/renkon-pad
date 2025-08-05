@@ -1029,6 +1029,7 @@ const inputHandler = (evt) => {
       title: evt.target.textContent,
       state: false
     });
+    evt.target.textContent = "";
   }
 };
 
