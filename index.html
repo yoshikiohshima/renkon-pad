@@ -29,8 +29,19 @@
                 let basename = match ? match[1] : "index";
                 const url = new URL(window.location);
                 const option = url.searchParams.get("pad");
+                const bootstrap = url.searchParams.get("bootstrap");
 
-                let docName;
+                if (bootstrap) {
+                    // bootstrap version if this file name is index.html and the file? option is not specified
+                    programState.setupProgram([`
+                        const {pad} = import("./pad.js");
+                        console.log("default renkon-pad is starting");
+                    Renkon.merge(pad);`]);
+                    programState.evaluate(Date.now());
+                    return;
+                }
+
+                let docName = `${basename}.renkon`;
                 if (option) {
                     if (option.endsWith(".json") || option.endsWith(".renkon")) {
                         docName = option;
@@ -38,46 +49,33 @@
                         console.log("pad option does not have .json or .renkon suffix.")
                         return;
                     }
-                } else {
-                    if (basename !== "index") {
-                        docName = `${basename}.renkon`;
-                    }
                 }
 
-                if (docName) {
-                    fetch(docName).then((resp) => resp.text()).then((result) => {
-                        const index = result.indexOf("{__codeMap: true, value:");
-                        let code;
-                        if (index < 0) {
-                            const json = JSON.parse(result);
-                            if (json.version !== 1) {
-                                console.log("unknown type of data");
-                            }
-                            code = JSON.parse(result).code.values;
-                        } else {
-                            let data1 = JSON.parse(result.slice(0, index));
-                            let map = new Map();
-                            if (data1?.windowEnabled?.map?.values) {
-                                map = new Map(data1?.windowEnabled?.map?.values);
-                            }
-                            const data2 = result.slice(index);
-                            const array = eval("(" + data2 + ")");
-                            code = array.value;
-                            code = code.filter((pair) => (!map.get(pair[0]) || map.get(pair[0]).enabled));
+                fetch(docName).then((resp) => resp.text()).then((result) => {
+                    const index = result.indexOf("{__codeMap: true, value:");
+                    let code;
+                    if (index < 0) {
+                        const json = JSON.parse(result);
+                        if (json.version !== 1) {
+                            console.log("unknown type of data");
                         }
-                        programState.setupProgram(code.map((pair) => ({blockId: pair[0], code: pair[1]})), docName);
-                        programState.evaluate(Date.now());
-                    }).catch((err) => {
-                        console.error("docName could not be loaded");
-                    });
-                } else {
-                    // bootstrap version if this file name is index.html and the file? option is not specified
-                    programState.setupProgram([`
-                        const {pad} = import("./pad.js");
-                        console.log("default renkon-pad is starting");
-                    Renkon.merge(pad);`]);
+                        code = JSON.parse(result).code.values;
+                    } else {
+                        let data1 = JSON.parse(result.slice(0, index));
+                        let map = new Map();
+                        if (data1?.windowEnabled?.map?.values) {
+                            map = new Map(data1?.windowEnabled?.map?.values);
+                        }
+                        const data2 = result.slice(index);
+                        const array = eval("(" + data2 + ")");
+                        code = array.value;
+                        code = code.filter((pair) => (!map.get(pair[0]) || map.get(pair[0]).enabled));
+                    }
+                    programState.setupProgram(code.map((pair) => ({blockId: pair[0], code: pair[1]})), docName);
                     programState.evaluate(Date.now());
-                }
+                }).catch((err) => {
+                    console.error("docName could not be loaded");
+                });
             }
             window.onload = launcher;
         </script>

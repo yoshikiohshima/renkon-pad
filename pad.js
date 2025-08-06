@@ -11,6 +11,7 @@ const renkon = (() => {
 <div id="buttonBox">
    <input class="menuButton" id="padTitle"></input>
    <button class="menuButton" id="addCodeButton">code</button>
+   <button class="menuButton" id="addDocButton">doc</button>
    <button class="menuButton" id="addRunnerButton">runner</button>
    <div class="spacer"></div>
    <button class="menuButton" id="searchButton">search</button>
@@ -261,10 +262,12 @@ const windowContents = Behaviors.select(
 
     for (let [id, type] of loaded.windowTypes.map) {
       let elem;
-      if (type === "code") {
-        elem = newEditor(id, loaded.code.get(id));
+      if (type === "runner") {
+        elem = newRunner(id)
+      } else if (type === "doc") {
+        elem = newDocPane(id, loaded.code.get(id));
       } else {
-        elem = newRunner(id);
+        elem = newEditor(id, loaded.code.get(id));
       }
       prev.map.set(id, elem);
     }
@@ -282,8 +285,23 @@ const windowContents = Behaviors.select(
     });
     news.forEach((id) => {
       const type = types.map.get(id);
-      prev.map.set(id, type === "code" ? newEditor(id) : newRunner(id));
+      let elem;
+      if (type === "runner") {
+        elem = newRunner(id);
+      } else if (type === "doc") {
+        elem = newDocPane(id ,"");
+      } else {
+        elem = newEditor(id)
+      }
+      prev.map.set(id, elem);
     });
+    return {map: prev.map};
+  },
+  docUpdate, (prev, docUpdate) => {
+    const {id, code} = docUpdate;
+    let elem = prev.map.get(id);
+    if (!elem) {return prev;}
+    elem.doc = code;
     return {map: prev.map};
   }
 );
@@ -301,7 +319,7 @@ const newId = Behaviors.select(
     const max = Math.max(...request.windows.map((w) => Number.parseInt(w)));
     return max;
   },
-  Events.or(addCode, addRunner, init), (prev, _type) => prev + 1
+  Events.or(addCode, addRunner, addDoc, init), (prev, _type) => prev + 1
 );
 
 const newWindowRequest = ((some) => {
@@ -314,7 +332,7 @@ const newWindowRequest = ((some) => {
     return {id: newId, type};
   }
   return undefined;
-})(Events.some(newId, Events.or(addCode, addRunner), init));
+})(Events.some(newId, Events.or(addCode, addRunner, addDoc), init));
 
 const modifierState = Behaviors.select(
   {shiftKey: false, ctrlKey: false, metaKey: false, scrollDirection: null},
@@ -397,10 +415,20 @@ const _focus = ((renkon) => {
   renkon.querySelector("#padTitle").blur();
 })(renkon);
 
+const readyMessages = Events.listener(
+  window,
+  "message",
+  evt => {
+    if (typeof evt.data.ready === "string" && evt.data.ready.startsWith("renkon-ready")) {
+      return evt;
+    }
+  }, {queued: true});
+
 // User Interaction
 
 const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
 const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
+const addDoc = Events.listener(renkon.querySelector("#addDocButton"), "click", () => "doc");
 const save = Events.listener(renkon.querySelector("#saveButton"), "click", (evt) => evt);
 const load = Events.listener(renkon.querySelector("#loadButton"), "click", (evt) => evt);
 const search = Events.listener(renkon.querySelector("#searchButton"), "click", (evt) => evt);
@@ -1009,6 +1037,7 @@ const newRunner = (id) => {
           }
         }
       };
+      window.parent.postMessage({ready: "renkon-ready", type: "runner", id: "${id}"});
     </script>
   </head>
   <body></body>
@@ -1199,10 +1228,19 @@ const _windowRender = render(windowElements, document.querySelector("#mover"));
 const loadRequest = Events.receiver();
 
 const saveData = (windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
-  const code = new Map([...windowContents.map].filter(([_id, editor]) => editor.state).map(([id, editor]) => ([id, editor.state.doc.toString()])));
+  const code = new Map(
+    [...windowContents.map].map(([id, content]) => {
+      if (content.state) {
+        return [id, content.state.doc.toString()];
+      } else if (content.doc) {
+        return [id, content.doc];
+      } else {
+        return null;
+      }
+    }).filter(item => item !== null));
   const myTitles = new Map([...titles.map].map(([id, obj]) => ([id, {...obj, state: false}])));
   const data1 = stringify({
-    version: 2,
+    version: 3,
     windows,
     positions,
     zIndex,
@@ -1277,7 +1315,7 @@ const loadData = (result, maybeImageInput) => {
 
   const loaded = parse(data1);
 
-  if (loaded.version === 2) {
+  if (loaded.version === 2 || loaded.version === 3) {
     const code = parseCodeMap(data2);
     loaded.code = code;
     Events.send(loadRequest, loaded);
@@ -2088,6 +2126,258 @@ const searchCSS = `
   renkon.querySelector("#search-css")?.remove();
   renkon.appendChild(style);
 })(searchCSS, renkon);
+
+// Doc Pane
+
+function doc(id) {
+  const init = (() => {
+    const script = document.createElement("script");
+    script.id = "markdownit";
+    script.src = "./markdown-it.min.js";
+    const promise = new Promise((resolve) => {
+      script.onload = () => {
+         resolve(window.markdownit);
+      };
+    });
+
+    document.head.querySelector("#markdownit")?.remove();
+    document.head.appendChild(script);
+
+    const container = document.createElement("div");
+    container.id = "container";
+    document.body.querySelector("#container")?.remove();
+    document.body.appendChild(container);
+    container.innerHTML = `
+   <div id="result"></div>
+   <div id="separator"></div>
+   <div id="editorContainer"></div>
+`.trim();
+    return {markdownit: promise, container};
+  })();
+
+  const resolved = Behaviors.resolvePart(init);
+  const md = resolved.markdownit({html: true});
+  const container = resolved.container;
+  const separator = container.querySelector("#separator");
+
+  const docString = Events.receiver();
+
+  const _update = ((docString, container) => {
+    const result = md.render(docString);
+    const div = document.createElement("div");
+    div.id = "renkon";
+    container.querySelector("#renkon")?.remove();
+    container.querySelector("#result").appendChild(div);
+    div.innerHTML = result;
+    return div;
+  })(docString, container);
+
+  const docEditor = ((id, doc) => {
+    const mirror = window.CodeMirror;
+    const callback = (id, viewUpdate) => {
+      if (viewUpdate.docChanged) {
+        const  str = viewUpdate.state.doc.toString();
+        Events.send(docString, str);
+        window.parent.postMessage({type: "renkon-doc-updated", id, code: str});
+      }
+    };
+    const editor = new mirror.EditorView({
+        doc: doc || "",
+        extensions: [
+            mirror.basicSetup,
+            mirror.EditorView.lineWrapping,
+            mirror.EditorView.updateListener.of((viewUpdate) => callback(id, viewUpdate)),
+            mirror.EditorView.editorAttributes.of({"class": "editor"}),
+            mirror.view.keymap.of([mirror.commands.indentWithTab])
+        ],
+    });
+    editor.dom.id = `${id}-docEditor`;
+    return editor;
+  })(id);
+
+  const contentsEvent = Events.listener(window, "message", evt => {
+    if (evt.data.type === "renkon-doc" && typeof evt.data.doc === "string") {
+      const isEmpty = evt.data.doc === "";
+      const doc = isEmpty ? "# Hello, Renkon-pad" : evt.data.doc;
+      docEditor.dispatch({
+        changes: {
+          from: 0,
+          to: docEditor.state.doc.length,
+          insert: doc
+        }
+      });
+      if (!isEmpty) {
+        return {type: "resize"};
+      }
+    }
+  });
+
+  const _init = ((container, docEditor) => {
+    container.querySelector("#editorContainer").appendChild(docEditor.dom);
+    window.parent.postMessage({ready: "renkon-ready", type: "doc", id});
+  })(container, docEditor);
+
+  const sepDown = Events.listener(
+     separator,
+     "pointerdown",
+     evt => evt);
+
+  const down = Events.collect(undefined, sepDown, (old, evt) => {
+    if (evt.isPrimary) {
+      evt.target.setPointerCapture(evt.pointerId);
+    }
+    return {type: "sepDown", x: evt.clientX};
+  });
+
+  const up = Events.listener(
+    separator,
+    "pointerup",
+    (evt) => {
+      if (evt.isPrimary) {
+        evt.target.releasePointerCapture(evt.pointerId);
+      }
+      return {type: "sepUp"}
+    }
+  );
+
+  const _sepMove = Events.listener(separator, "pointermove", moveCompute);
+
+  const moveCompute = Behaviors.select(
+    evt => evt,
+    down, (_old, down) => {
+      return (move) => {
+        const newX = move.clientX;
+        const newRenkonWidth = Math.min(window.innerWidth - 8, Math.max(newX - 8, 0));
+        const newEditorWidth = Math.max(window.innerWidth - 22 - newRenkonWidth, 60);
+        const right = newEditorWidth === 60 ? -60 - 16 + (window.innerWidth - newX) : 0;
+
+        document.head.querySelector("#separator-style").textContent = `
+  #result {
+    width: ${newRenkonWidth}px;
+  }
+  #editorContainer {
+    width: ${newEditorWidth}px;
+    right: ${right}px;
+  }
+  
+  `.trim();
+        return move;
+      }
+    },
+    up, (_old, _up) => (move) => move,
+    Events.or(resize, contentsEvent), (old, resize) => {
+      const newX = window.innerWidth - 22;
+      const newEditorWidth = 60;
+      const right = -60;
+        document.head.querySelector("#separator-style").textContent = `
+  #result {
+    width: ${newX}px;
+  }
+  
+  #editorContainer {
+    width: ${newEditorWidth}px;
+    right: ${right}px;
+  }
+
+  `.trim();
+      return old;
+    }
+  );
+
+  const resize = Events.listener(window, "resize", (evt) => ({type: "resize"}));
+
+  const css = `
+#container, html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0px;
+}
+
+#container {
+  display: flex;
+}
+
+#result {
+  height: 100%;
+  width: calc(100% - 220px);
+  overflow: scroll;
+  scroll-behavior: smooth;
+}
+
+#renkon {
+  height: 100%;
+}
+
+#separator {
+   width: 8px;
+   min-width: 8px;
+   height: 100%;
+   background-color: #f8f8f8;
+}
+
+#separator:hover {
+   background-color: #e8e8e8;
+   cursor: ew-resize;
+}
+
+#editorContainer {
+  position: fixed;
+  right: 0px;
+  min-height: 100%;
+  height: 100%;
+  width: 200px;
+  border: 1px solid black;
+  padding: 6px;
+  min-width: 0px;
+  background-color: white;
+  white-space: pre-wrap;
+  overflow: scroll;
+}
+
+`;
+
+  ((css) => {
+    document.head.querySelector("#presenter-style")?.remove();
+    const style = document.createElement("style");
+    style.id = "presenter-style";
+    style.textContent = css;
+    document.head.appendChild(style);
+
+    document.head.querySelector("#separator-style")?.remove();
+    const sepStyle = document.createElement("style");
+    sepStyle.id = "separator-style";
+    document.head.appendChild(sepStyle);
+  })(css, container);
+
+  return [];
+}
+
+const newDocPane = (id, doc) => {
+  const runner = newRunner(id);
+  return {dom: runner.dom, doc: doc};
+}
+
+const _handleDocReady = ((readyMessages, windowContents, windowTypes) => {
+  for (const ready of readyMessages) {
+    const id = ready.data.id;
+    const type = windowTypes.map.get(id);
+    const content = windowContents.map.get(id);
+    if (ready.data.type === "runner" && type === "doc") {
+      if (content) {
+        if (type) {
+          const code = Renkon.getFunctionBody(Renkon.findDecl(type));
+          content.dom.contentWindow.postMessage({code: [code, `const id = "${id}"`]});
+        }
+      }
+    } else if (ready.data.type === "doc") {
+      content.dom.contentWindow.postMessage({type: "renkon-doc", doc: content.doc});
+    }
+  }
+})(readyMessages, windowContents, windowTypes);
+
+const docUpdate = Events.listener(window, "message", evt => {
+  if (evt.data.type === "renkon-doc-updated") {return evt.data;}
+});
 
 return [];
 }
