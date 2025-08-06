@@ -33,7 +33,7 @@ Renkon-pad has several buttons and controls for interacting with the environment
 The top bar includes one text field and five buttons:
 
 - The text field lets you enter the name of your project.
-- The first two buttons, **code** and **runner**, create a new text box and a new runner, respectively.
+- The first three buttons, **code**, **doc**, and **runner**, create a new text box, a doc box, and a new runner, respectively.
 - The search button brings up the search panel that looks up text from all text boxes.
 - The fourth button cycles through three states: **"show graph"**, **"show deps"**, and **"hide graph"**:
   - **Show graph**: Hovering over a text box displays its imports and exports.
@@ -42,7 +42,7 @@ The top bar includes one text field and five buttons:
 
 - The **"save"** button saves window positions and contents to a file named after the project with a `.renkon` suffix.
 
-### Manipulating Text Box and Runner
+### Text Box
 
 <img style="border: 6px solid #eee" src="./doc/textbox.png"></img>
 
@@ -52,6 +52,16 @@ Each text area uses CodeMirror for editing. The title bar contains:
 - An **edit** button that lets you change the label in the title bar,
 - A **pin** button that keeps the position and extent of the text box even when you pan or zoom the view.
 - A **close** button that closes the text box.
+
+### Doc Box
+
+<img style="border: 6px solid #eee" src="./doc/doc.png"></img>
+
+The Doc Box allows you to write your documentation in Markdown. The right side is a text editor for markdown, and the left side is the rendered result. The separator between those two panes can be moved to change the sizes of the panes.
+
+The Markdown format also allows HTML notation. You can use `iframe` or other elements to extend the documentation.
+
+### Runner
 
 <img style="border: 6px solid #eee" src="./doc/runner.png"></img>
 
@@ -64,6 +74,8 @@ A runner is a separate Renkon execution context in an iframe. A runner has:
 - A **close** button.
 
 The **play** button gathers the contents of all enabled text boxes and runs them in the runner iframe as a Renkon program. The **inspector** button toggles the visibility of the resolved stream values.
+
+### Manipulation of windows
 
 You can resize the text box or the runner using the resize handles at four corners. To bring a window to the front, drag the title bar.
 
