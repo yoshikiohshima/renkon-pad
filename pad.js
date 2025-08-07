@@ -65,7 +65,7 @@ const searchPanel = ((renkon) => {
 
 // [id:string]
 const windows = Behaviors.select(
-  [],
+  [`${initialData.id}`],
   loadRequest, (_prev, data) => {
     return data.windows
   },
@@ -306,11 +306,7 @@ const windowContents = Behaviors.select(
   }
 );
 
-// One can argue that we don't have to have a complicated initialization scheme like this
-// but this is here to illustrate the use of Events.once and Events.some.
-// For different cases, one should define the data to be used in initial spec, and the inital values
-// windows and windowTypes would just use it.
-const init = Events.once("code");
+const initialData = {id: newId, type: "code"};
 
 const newId = Behaviors.select(
   0,
@@ -319,20 +315,10 @@ const newId = Behaviors.select(
     const max = Math.max(...request.windows.map((w) => Number.parseInt(w)));
     return max;
   },
-  Events.or(addCode, addRunner, addDoc, init), (prev, _type) => prev + 1
+  Events.or(addCode, addRunner, addDoc), (prev, _type) => prev + 1
 );
 
-const newWindowRequest = ((some) => {
-  const [newId, type, init] = some;
-  if (!type && newId === 1) {
-    // the case where "init" triggered this
-    return {id: newId, type: init};
-  }
-  if (type) {
-    return {id: newId, type};
-  }
-  return undefined;
-})(Events.some(newId, Events.or(addCode, addRunner, addDoc), init));
+const newWindowRequest = {id: newId, type: Events.or(addCode, addRunner, addDoc)};
 
 const modifierState = Behaviors.select(
   {shiftKey: false, ctrlKey: false, metaKey: false, scrollDirection: null},
