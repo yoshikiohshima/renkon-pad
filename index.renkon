@@ -25,10 +25,10 @@
 "type":"move",
 "width":817.2387935617032,
 "x":7051.2681969107125,
-"y":84.78084981924658}],["9",{"height":6626.980772906874,
+"y":84.78084981924658}],["9",{"height":6391.368396617012,
 "id":"9",
-"type":"move",
-"width":809.2288262184318,
+"type":"resize",
+"width":721.8624075685257,
 "x":3595.926841099591,
 "y":107.2642788797095}],["11",{"height":1105.7660756214398,
 "id":"11",
@@ -1503,7 +1503,7 @@ const windowContents = Behaviors.select(
   }
 );
 
-const initialData = {id: newId, type: "code"};
+const initialData = {id: 0, type: "code"};
 
 const newId = Behaviors.select(
   0,

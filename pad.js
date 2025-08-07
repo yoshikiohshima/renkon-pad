@@ -306,7 +306,7 @@ const windowContents = Behaviors.select(
   }
 );
 
-const initialData = {id: newId, type: "code"};
+const initialData = {id: 0, type: "code"};
 
 const newId = Behaviors.select(
   0,
