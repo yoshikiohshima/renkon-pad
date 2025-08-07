@@ -2,60 +2,115 @@
 "positions":{"map":{"__map":true,
 "values":[["3",{"height":4332.141632006608,
 "id":"3",
-"type":"resize",
+"type":"move",
 "width":850.990313975509,
-"x":524.4088415984188,
-"y":181.93014102350742}],["4",{"height":3222.5361581685247,
+"x":406.1597398268408,
+"y":146.80221485862992}],["4",{"height":3222.5361581685247,
 "id":"4",
 "type":"move",
 "width":863.4050023688781,
-"x":3705.695208665671,
-"y":185.1878028794921}],["5",{"height":3401.0264740146413,
+"x":5502.179118424666,
+"y":94.57117805926673}],["5",{"height":3401.0264740146413,
 "id":"5",
-"type":"resize",
+"type":"move",
 "width":897.0160173690531,
-"x":4897.949685326419,
-"y":3504.3891332637177}],["6",{"height":7573.274756442699,
+"x":7514.980184609792,
+"y":3527.0619348648274}],["6",{"height":7573.274756442699,
 "id":"6",
 "type":"move",
 "width":1078.9101134895518,
-"x":7156.46028897591,
-"y":179.14568362773863}],["7",{"height":2520.1883142246284,
+"x":11360.997099050153,
+"y":97.10594099214364}],["7",{"height":2520.1883142246284,
 "id":"7",
-"type":"resize",
+"type":"move",
 "width":817.2387935617032,
-"x":4874.200623811043,
-"y":177.3601437758582}],["9",{"height":6626.980772906874,
+"x":7485.339177941496,
+"y":76.89874983936144}],["9",{"height":6626.980772906874,
 "id":"9",
 "type":"move",
 "width":809.2288262184318,
-"x":2677.08645242937,
-"y":184.45588209142514}],["11",{"height":1105.7660756214398,
+"x":3714.9915640035183,
+"y":102.34155787161598}],["11",{"height":1105.7660756214398,
 "id":"11",
-"type":"resize",
+"type":"move",
 "width":869.2108208710029,
-"x":-688.0908676805566,
-"y":187.8357711371296}],["15",{"height":3238.9035437095645,
+"x":-1700.696602283183,
+"y":139.98089855490835}],["15",{"height":3238.9035437095645,
 "id":"15",
-"type":"resize",
+"type":"move",
 "width":682.9857272228223,
-"x":-675.8123581314011,
-"y":1417.87937444944}],["40",{"height":3779.7999188808067,
+"x":-1682.9239773593306,
+"y":1435.210062194688}],["40",{"height":3779.7999188808067,
 "id":"40",
 "type":"move",
 "width":809.0992415272672,
-"x":1610.224028072432,
-"y":185.8644727229188}],["74",{"height":4312.248341148691,
+"x":2215.304420802052,
+"y":139.54930892591472}],["74",{"height":4312.248341148691,
 "id":"74",
-"type":"resize",
+"type":"move",
 "width":928.6533281314535,
-"x":3687.5252965363384,
-"y":3504.5950664455486}],["82",{"height":4590.844232444626,
+"x":5544.681325053566,
+"y":3487.4413020762877}],["82",{"height":4590.844232444626,
 "id":"82",
-"type":"resize",
+"type":"move",
 "width":837.4205543672468,
-"x":6030.560053576863,
-"y":178.65401042550866}]]}},
+"x":9442.965857712328,
+"y":92.69873461866938}],["83",{"height":807.9386431606836,
+"id":"83",
+"type":"move",
+"width":588.070775595935,
+"x":-2422.1269558237154,
+"y":148.6739965183759}],["84",{"height":740.0732151000523,
+"id":"84",
+"type":"move",
+"width":615.8313099402498,
+"x":-2428.16843048147,
+"y":1445.5916043694926}],["85",{"height":766.6600604588784,
+"id":"85",
+"type":"move",
+"width":820.9114957194115,
+"x":-520.1450808908633,
+"y":145.0683451412429}],["86",{"height":773.412305439708,
+"id":"86",
+"type":"resize",
+"width":712.1946997571021,
+"x":1433.8760891741308,
+"y":142.8832103920429}],["87",{"height":764.2567694987133,
+"id":"87",
+"type":"move",
+"width":598.62741563727,
+"x":3077.2914008412163,
+"y":115.1007211710921}],["88",{"height":499.07562391371164,
+"id":"88",
+"type":"move",
+"width":683.981902795685,
+"x":4774.536099474353,
+"y":95.69847235399777}],["89",{"height":531.8603215930543,
+"id":"89",
+"type":"move",
+"width":620.398425693691,
+"x":4859.825914849148,
+"y":3492.240424216384}],["90",{"height":481.62570406451886,
+"id":"90",
+"type":"move",
+"width":674.8121636601725,
+"x":6698.829024696851,
+"y":76.79220157604671}],["91",{"height":425.66117349679064,
+"id":"91",
+"type":"move",
+"width":613.5659794246412,
+"x":6858.210568323788,
+"y":3527.214243820455}],["92",{"height":426.1543883475552,
+"id":"92",
+"type":"move",
+"width":662.4609841487921,
+"x":8741.432337844391,
+"y":90.53188105423061}],["93",{"height":400,
+"id":"93",
+"type":"move",
+"width":800,
+"x":10472.11149611545,
+"y":115.7160442438437}]]}},
 "titles":{"map":{"__map":true,
 "values":[["3",{"id":"3",
 "state":false,
@@ -79,7 +134,29 @@
 "state":false,
 "title":"Search"}],["82",{"id":"82",
 "state":false,
-"title":"Doc Pane"}]]}},
+"title":"Doc Window"}],["83",{"id":"83",
+"state":false,
+"title":"untitled"}],["84",{"id":"84",
+"state":false,
+"title":"untitled"}],["85",{"id":"85",
+"state":false,
+"title":"untitled"}],["86",{"id":"86",
+"state":false,
+"title":"untitled"}],["87",{"id":"87",
+"state":false,
+"title":"untitled"}],["88",{"id":"88",
+"state":false,
+"title":"untitled"}],["89",{"id":"89",
+"state":false,
+"title":"untitled"}],["90",{"id":"90",
+"state":false,
+"title":"untitled"}],["91",{"id":"91",
+"state":false,
+"title":"untitled"}],["92",{"id":"92",
+"state":false,
+"title":"untitled"}],["93",{"id":"93",
+"state":false,
+"title":"untitled"}]]}},
 "version":3,
 "windowEnabled":{"map":{"__map":true,
 "values":[["3",{"enabled":true,
@@ -93,12 +170,23 @@
 "id":"15"}],["40",{"enabled":true,
 "id":"40"}],["74",{"enabled":true,
 "id":"74"}],["82",{"enabled":true,
-"id":"82"}]]}},
+"id":"82"}],["83",{"enabled":true,
+"id":"83"}],["84",{"enabled":true,
+"id":"84"}],["85",{"enabled":true,
+"id":"85"}],["86",{"enabled":true,
+"id":"86"}],["87",{"enabled":true,
+"id":"87"}],["88",{"enabled":true,
+"id":"88"}],["89",{"enabled":true,
+"id":"89"}],["90",{"enabled":true,
+"id":"90"}],["91",{"enabled":true,
+"id":"91"}],["92",{"enabled":true,
+"id":"92"}],["93",{"enabled":true,
+"id":"93"}]]}},
 "windowTypes":{"map":{"__map":true,
-"values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["15","code"],["40","code"],["74","code"],["82","code"]]}},
-"windows":["3","4","5","6","7","9","11","15","40","74","82"],
+"values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["15","code"],["40","code"],["74","code"],["82","code"],["83","doc"],["84","doc"],["85","doc"],["86","doc"],["87","doc"],["88","doc"],["89","doc"],["90","doc"],["91","doc"],["92","doc"],["93","doc"]]}},
+"windows":["3","4","5","6","7","9","11","15","40","74","82","83","84","85","86","87","88","89","90","91","92","93"],
 "zIndex":{"map":{"__map":true,
-"values":[["3",110],["4",100],["5",104],["6",119],["7",120],["9",111],["11",113],["15",103],["40",114],["74",112],["82",105]]}}}
+"values":[["3",123],["4",105],["5",112],["6",100],["7",120],["9",114],["11",113],["15",119],["40",121],["74",111],["82",104],["83",103],["84",122],["85",110],["86",124],["87",125],["88",127],["89",126],["90",128],["91",129],["92",130],["93",131]]}}}
 {__codeMap: true, value: [[`3`, `const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
 const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
 const addDoc = Events.listener(renkon.querySelector("#addDocButton"), "click", () => "doc");
@@ -2122,7 +2210,7 @@ const _searchGoTo = ((padView, positions, updateEditorSelection, windowContents)
   let y = padView.y;
   if (targetY < visiblePad.y) {
     y = -targetY + 50 / padView.scale;
-  } else if (targetY > visiblePad.y + visiblePad.height) {
+  } else if (targetY - 50 > visiblePad.y + visiblePad.height) {
     y = -targetY + visiblePad.height / 2 / padView.scale;
   }
 
@@ -2456,4 +2544,94 @@ const _handleDocReady = ((readyMessages, windowContents, windowTypes) => {
 const docUpdate = Events.listener(window, "message", evt => {
   if (evt.data.type === "renkon-doc-updated") {return evt.data;}
 });
-`]]}
+`],
+[`83`, `# Initialization
+
+A common pattern is to create a number of actual DOM elements and add to document.body. Later on the \`render\` function of Preact, imported here, will use those elements as a root of the virtual DOM elements.
+
+Like any other nodes, the function may be evaluated multiple times during the life cycle of an application. The lines:
+\`\`\`
+document.body.querySelector("#renkon")?.remove();
+document.body.appendChild(renkon);
+  \`\`\`
+
+mean that a previous element is first removed if exists, and then the new one is added.
+
+(Oh, BTW< "renkon" was originally a pun but you can also think that it is a kind of "root"; so some applications tend to have "renkon" as some sort of "root node".) 
+`],
+[`84`, `# New Component
+
+We use CodeMirror for text editing in windows. renkon-web.js exports the CodeMirror object that has a number of [common extensions](https://github.com/yoshikiohshima/renkon-web). An instance of of EditorView for code editing invokes global search so that a custom \`search\` plugin is added before \`basicSetup\`. It also has lint rules for JavaScript. The Renkon language allows node definitions in TypeScript syntax, though the editor's lint rule does not support it yet.
+
+The runner is an iframe and has the srcdoc property that has the \`onmesseage\` handler to receive code and set up the \`ProgramState\` instance.`],
+[`85`, `# User Interaction
+
+This text box and "Pointer Handling" have most of the handling for user events. 
+
+\`Events.listener\` adds an event listener to a concrete DOM element. The value returned from the callback becomes the value of the event. Most of those have \`evt => evt\` as callback and the event itself becomes the value. However for certain cases, such as wheel and similar ones call \`preventDefault()\` and \`stopPropagation()\` etc. to invoke those in the listener. For \`evt => evt\` case, the "real thing" happens on the event that stored in the internal data structure and later processed by other functions, but \`preventDefault\` cannot work in that way.
+
+The values for the "pan and zoom" feature of the 2D canvas is stored in padView, and the canvas' transform is directly updated in the \`style\` of "#mover" element. We don't want to generate the tree of virtual DOM.
+
+Handling \`wheel\` event is complcated as there are quite a few cases to handle.`],
+[`86`, `# Pointer Handling
+
+An interesting idea about event handling in Renkon-pad is that most basic events such as pointerdown, pointermove and pointerup are handled at the "pad" level, and not individual window. Let us take \`pointermove\` as an example. \`pointermove\` can be used to resize the window by dragging one of the corners, or to move the window by dragging the title bar, or to pan the background by dragging the "pad". One might consider adding a pointermove event handler to each of those small elements such as a resizer or titlebar. But there are two reasons it is cumbersome. One reason is general to any UI; because we support multi-touch, we need to handle cases where the secondary \`pointerdown\` or \`pointermove\` needs a "global" view of where the primary \`pointerdown\` was. The second reason is that the FRP favors known set of event sources so that the "wired" dependency graph does not change all the time.
+
+The \`moveCompute\` node is used by the \`_padMove\` Events.listener node. \`moveCompute\` itself is reactive and becomes different function based on where the last \`pointerdown\` was, for example. Whenever \`moveCompute\` gets a new value, the \`_padMove\` node is updated, which means that the old listener is automatically removed and the new function is added as the listener. That way, there is only one pointer move handler for things on the pad, but its actual behavior changes based on the circumstances.
+
+`],
+[`87`, `# Data Structure
+
+The Data Structure text box contains the definitions of the "fundamental" data of the application. You can think that the values in those nodes are to be saved into the file, and they are enough to reconstruct the application state from them.
+
+Renkon-pad effectively is a list of windows. Each window has position, title, windowType, etc. FRP favors that each property is stored in a separate data structure. Namely if you have two windows with ID = "1" and ID = "2", then those data structures look like:
+
+<code>
+  <pre>
+windows: [“1”, “2”]
+positions: Map(
+	“1” → {x: 100, y: 243, w: 325, h: 96},
+	“2” → {x: 530, y: 330, w: 582, h: 320})
+titles: Map(
+	“1” → “test”,
+	“2” → “my runner”)
+windowTypes: Map(
+	“1”→ “code”,
+	“2” → “runner”)
+windowContents: Map(
+       “1” → EditorView,
+       “2” → iframe)
+</pre>
+</code>
+
+meaning that the "windows" stores only the IDs, and \`positions\`, \`titles\`, etc. are a Map keyed by that ID and have values for that ID. It is like each property is a column in a spread sheet.
+`],
+[`88`, `# Rendering
+
+The rendering involves Preact virtual DOM, but the virtual DOM structure in effect does not change when you just move or resize a window, or pan or zoom the pad. Movement is done by generating a separate CSS in the \`_positionsCss\` node and update the \`style\` node. In this way we bypass the regeneration of the entire virtual DOM tree and diffing when you are just moving a window.
+
+\`_positionCss\` handles the case when a window is "pinned", to keep the window's position and scale in the screen coordinate even when you pan and zoom the background. There are only a handful lines that are crucial to implement this, but they have to be exactly right.`],
+[`89`, `# Search
+
+There is a global search panel that works across multiple text boees. When you look for the next match, the scale of the pad is kept the same but the search logic pans the pad to put the match in the view.
+
+The \`searchState\` node keeps track of where is the starting point when looking for the "next" match. It means that if the user moves the cursor in any of text box, the previous state needs to be cleared and the changed cursor position becomes the next search start position.`],
+[`90`, `# Graph Visualization
+
+Dependency graph visualization first analyzes the dependency relationship. We do this by creating a new \`ProgramState\` instance, feed the content of text boxes to it, and figures out what node names are imported and exported by the text box. (yes, we do this at every pointerEnter and pointerLeave on any text boxes.)
+
+The \`analyzed\` result is then fed to the \`graph\` node, which creates a list of SVG elements. Then the \`_graphRender\` renders the SVG elements to the \`overlay\` element, which is carefully located at the same position ad the \`pad\`.`],
+[`91`, `# Save and Load
+
+The file format has two parts. The first part is a JSON string that stores windows, positions, zIndex, titles, windowTypes, padTitle and windowEnabled. The second part is still JSON like, but the contents of text boxes and docs are stored with line breaks kept so that line oriented diff works better.`],
+[`92`, `# Doc Window
+
+A Doc window is almost like a runner but when it is created, the content of the \`doc\` function is taken as a set of node definitions and sent to the runner.
+
+The parent (Renkon-pad) and the iframe communicate over the window message. when the iframe is loaded it sends a ready message. In response to it, the parent uses \`getFunctionBody\` to extract the node definitions from the \`doc' function and send it to the iframe. When the ProgramState of the iframe evaluates them, the next kind of ready message is sent to the parent from the iframe, and the contents of the doc is then sent.
+
+
+`],
+[`93`, `# CSS
+
+There is not much magic.`]]}
