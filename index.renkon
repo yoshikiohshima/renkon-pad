@@ -4,33 +4,33 @@
 "id":"3",
 "type":"move",
 "width":850.990313975509,
-"x":406.1597398268408,
-"y":146.80221485862992}],["4",{"height":3222.5361581685247,
+"x":52.66578365353155,
+"y":128.147491827803}],["4",{"height":3222.5361581685247,
 "id":"4",
 "type":"move",
 "width":863.4050023688781,
-"x":5502.179118424666,
-"y":94.57117805926673}],["5",{"height":3401.0264740146413,
+"x":5295.022590399252,
+"y":95.10750563991505}],["5",{"height":3401.0264740146413,
 "id":"5",
 "type":"move",
 "width":897.0160173690531,
-"x":7514.980184609792,
-"y":3527.0619348648274}],["6",{"height":7573.274756442699,
+"x":7062.194330582714,
+"y":3525.1186479376724}],["6",{"height":7573.274756442699,
 "id":"6",
 "type":"move",
 "width":1078.9101134895518,
-"x":11360.997099050153,
-"y":97.10594099214364}],["7",{"height":2520.1883142246284,
+"x":10305.11230672419,
+"y":74.84070236473423}],["7",{"height":2520.1883142246284,
 "id":"7",
 "type":"move",
 "width":817.2387935617032,
-"x":7485.339177941496,
-"y":76.89874983936144}],["9",{"height":6626.980772906874,
+"x":7051.2681969107125,
+"y":84.78084981924658}],["9",{"height":6626.980772906874,
 "id":"9",
 "type":"move",
 "width":809.2288262184318,
-"x":3714.9915640035183,
-"y":102.34155787161598}],["11",{"height":1105.7660756214398,
+"x":3595.926841099591,
+"y":107.2642788797095}],["11",{"height":1105.7660756214398,
 "id":"11",
 "type":"move",
 "width":869.2108208710029,
@@ -44,73 +44,73 @@
 "id":"40",
 "type":"move",
 "width":809.0992415272672,
-"x":2215.304420802052,
-"y":139.54930892591472}],["74",{"height":4312.248341148691,
+"x":1792.7271702537896,
+"y":110.90295813305414}],["74",{"height":4312.248341148691,
 "id":"74",
 "type":"move",
 "width":928.6533281314535,
-"x":5544.681325053566,
-"y":3487.4413020762877}],["82",{"height":4590.844232444626,
+"x":5300.993176789124,
+"y":3531.4645909169576}],["82",{"height":5155.4159482716805,
 "id":"82",
-"type":"move",
-"width":837.4205543672468,
-"x":9442.965857712328,
-"y":92.69873461866938}],["83",{"height":807.9386431606836,
+"type":"resize",
+"width":829.0772656583506,
+"x":8632.778004416206,
+"y":77.28956000425276}],["83",{"height":590.6415445155225,
 "id":"83",
-"type":"move",
-"width":588.070775595935,
-"x":-2422.1269558237154,
-"y":148.6739965183759}],["84",{"height":740.0732151000523,
+"type":"resize",
+"width":599.4209122784505,
+"x":-2400.837074428983,
+"y":140.71563609224972}],["84",{"height":740.0732151000523,
 "id":"84",
 "type":"move",
 "width":615.8313099402498,
 "x":-2428.16843048147,
-"y":1445.5916043694926}],["85",{"height":766.6600604588784,
+"y":1439.8620215363317}],["85",{"height":752.4081129685438,
 "id":"85",
 "type":"move",
-"width":820.9114957194115,
-"x":-520.1450808908633,
-"y":145.0683451412429}],["86",{"height":773.412305439708,
+"width":649.4967680095754,
+"x":-655.0330781906887,
+"y":133.62112873596274}],["86",{"height":771.4555163106003,
 "id":"86",
-"type":"resize",
-"width":712.1946997571021,
-"x":1433.8760891741308,
-"y":142.8832103920429}],["87",{"height":764.2567694987133,
+"type":"move",
+"width":614.9748931926002,
+"x":1104.4180261366946,
+"y":118.45595943034823}],["87",{"height":764.2567694987133,
 "id":"87",
 "type":"move",
 "width":598.62741563727,
-"x":3077.2914008412163,
-"y":115.1007211710921}],["88",{"height":499.07562391371164,
+"x":2890.7920964151626,
+"y":105.99045216972196}],["88",{"height":657.2731056485146,
 "id":"88",
 "type":"move",
-"width":683.981902795685,
-"x":4774.536099474353,
-"y":95.69847235399777}],["89",{"height":531.8603215930543,
+"width":535.2659265044863,
+"x":4663.995154191444,
+"y":102.08651693064832}],["89",{"height":531.8603215930543,
 "id":"89",
 "type":"move",
 "width":620.398425693691,
-"x":4859.825914849148,
-"y":3492.240424216384}],["90",{"height":481.62570406451886,
+"x":4619.602070191971,
+"y":3535.203273932816}],["90",{"height":575.9331627545905,
 "id":"90",
 "type":"move",
-"width":674.8121636601725,
-"x":6698.829024696851,
-"y":76.79220157604671}],["91",{"height":425.66117349679064,
+"width":588.37722767176,
+"x":6380.336637295781,
+"y":88.71591296724598}],["91",{"height":425.66117349679064,
 "id":"91",
 "type":"move",
 "width":613.5659794246412,
-"x":6858.210568323788,
-"y":3527.214243820455}],["92",{"height":426.1543883475552,
+"x":6383.115780372974,
+"y":3530.2457714268166}],["92",{"height":536.2547788320747,
 "id":"92",
-"type":"move",
-"width":662.4609841487921,
-"x":8741.432337844391,
-"y":90.53188105423061}],["93",{"height":400,
+"type":"resize",
+"width":557.982455982854,
+"x":8029.093537961163,
+"y":82.95625397757307}],["93",{"height":544.2912120690746,
 "id":"93",
-"type":"move",
-"width":800,
-"x":10472.11149611545,
-"y":115.7160442438437}]]}},
+"type":"resize",
+"width":559.7397228362672,
+"x":9688.378559142711,
+"y":77.7300928064127}]]}},
 "titles":{"map":{"__map":true,
 "values":[["3",{"id":"3",
 "state":false,
@@ -186,7 +186,7 @@
 "values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["15","code"],["40","code"],["74","code"],["82","code"],["83","doc"],["84","doc"],["85","doc"],["86","doc"],["87","doc"],["88","doc"],["89","doc"],["90","doc"],["91","doc"],["92","doc"],["93","doc"]]}},
 "windows":["3","4","5","6","7","9","11","15","40","74","82","83","84","85","86","87","88","89","90","91","92","93"],
 "zIndex":{"map":{"__map":true,
-"values":[["3",123],["4",105],["5",112],["6",100],["7",120],["9",114],["11",113],["15",119],["40",121],["74",111],["82",104],["83",103],["84",122],["85",110],["86",124],["87",125],["88",127],["89",126],["90",128],["91",129],["92",130],["93",131]]}}}
+"values":[["3",124],["4",128],["5",131],["6",126],["7",130],["9",114],["11",113],["15",119],["40",121],["74",129],["82",100],["83",125],["84",110],["85",123],["86",122],["87",127],["88",105],["89",111],["90",120],["91",112],["92",104],["93",103]]}}}
 {__codeMap: true, value: [[`3`, `const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
 const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
 const addDoc = Events.listener(renkon.querySelector("#addDocButton"), "click", () => "doc");
@@ -2425,7 +2425,6 @@ const searchCSS = \`
     width: \${newEditorWidth}px;
     right: \${right}px;
   }
-  
   \`.trim();
         return move;
       }
@@ -2439,18 +2438,49 @@ const searchCSS = \`
   #result {
     width: \${newX}px;
   }
-  
   #editorContainer {
     width: \${newEditorWidth}px;
     right: \${right}px;
   }
-
   \`.trim();
       return old;
     }
   );
 
   const resize = Events.listener(window, "resize", (evt) => ({type: "resize"}));
+
+  Events.listener(document.body, "gesturestart", preventDefaultSafari);
+  Events.listener(document.body, "gesturechange", preventDefaultSafari);
+  Events.listener(document.body, "gestureend", preventDefaultSafari);
+
+  const isSafari = window.navigator.userAgent.includes("Safari") && !window.navigator.userAgent.includes("Chrome");
+  const isMobile = !!("ontouchstart" in window);
+
+  const preventDefault = (evt) => {
+    evt.preventDefault();
+    return evt;
+  };
+
+  const preventDefaultSafari = (evt) => {
+    if (!isSafari || isMobile) {
+      evt.preventDefault();
+    }
+    return evt;
+  };
+
+  const wheel = Events.listener(container, "wheel", (evt) => {
+    let pinch;
+    if (isSafari) {
+      pinch = (Number.isInteger(evt.deltaX) && !Number.isInteger(evt.deltaY)) || evt.metaKey;
+    } else {
+      pinch = evt.ctrlKey || evt.metaKey;
+    }
+    if (pinch) {
+      evt.preventDefault();
+      evt.stopPropagation();
+    }
+    return evt;
+  });
 
   const css = \`
 #container, html, body {
@@ -2468,6 +2498,7 @@ const searchCSS = \`
   width: calc(100% - 220px);
   overflow: scroll;
   scroll-behavior: smooth;
+  font-size: 13px;
 }
 
 #renkon {
@@ -2547,21 +2578,26 @@ const docUpdate = Events.listener(window, "message", evt => {
 `],
 [`83`, `# Initialization
 
-A common pattern is to create a number of actual DOM elements and add to document.body. Later on the \`render\` function of Preact, imported here, will use those elements as a root of the virtual DOM elements.
+A common pattern of setting up an application is to create a number of actual DOM elements and add to document.body. Later on the \`render\` function of Preact, imported here, will use those elements as a root of the virtual DOM elements.
 
-Like any other nodes, the function may be evaluated multiple times during the life cycle of an application. The lines:
+Like any other nodes, the immediately invoked function for the \`renkon\` node may be evaluated multiple times during the life cycle of an application. The lines:
 \`\`\`
 document.body.querySelector("#renkon")?.remove();
 document.body.appendChild(renkon);
   \`\`\`
 
-mean that a previous element is first removed if exists, and then the new one is added.
+mean that the previous element is first removed if exists, and then the new one, potentially has different contents, is added.
 
-(Oh, BTW< "renkon" was originally a pun but you can also think that it is a kind of "root"; so some applications tend to have "renkon" as some sort of "root node".) 
-`],
+The \`pad\` element is a width=100% height=100% that holds the \`mover\` element. The mover element is 0x0, and the parent of all window elements. Its location is transformed when the canvas is panned and zoomed. \`overlay\` is to show the graph lines in front of those windows.
+
+(Oh, BTW, "renkon" was originally a pun but you can also think that it is a kind of "root"; so some applications tend to have "renkon" as some sort of "root nodes.") 
+
+The \`searchPanel\` is a node that holds an actual DOM element. Notice that creation of searchPanel depends on the \`renkon\` node.`],
 [`84`, `# New Component
 
-We use CodeMirror for text editing in windows. renkon-web.js exports the CodeMirror object that has a number of [common extensions](https://github.com/yoshikiohshima/renkon-web). An instance of of EditorView for code editing invokes global search so that a custom \`search\` plugin is added before \`basicSetup\`. It also has lint rules for JavaScript. The Renkon language allows node definitions in TypeScript syntax, though the editor's lint rule does not support it yet.
+The \`newEditor\` node and \`newRunner\` are constants and whose values are functions to create a new object for \`windowContent\`.
+
+We use CodeMirror for text editing in windows. renkon-web.js exports the CodeMirror object that has a number of common extensions. They are exported from renkon-web in <a href="https://github.com/yoshikiohshima/renkon-web/blob/main/src/main.js">this way</a>. An instance of of EditorView for code editing invokes global search so that a custom \`search\` plugin is added before \`basicSetup\`. It also has lint rules for JavaScript. The Renkon language allows node definitions in TypeScript syntax, though the editor's lint rule does not support it yet.
 
 The runner is an iframe and has the srcdoc property that has the \`onmesseage\` handler to receive code and set up the \`ProgramState\` instance.`],
 [`85`, `# User Interaction
@@ -2615,7 +2651,8 @@ The rendering involves Preact virtual DOM, but the virtual DOM structure in effe
 
 There is a global search panel that works across multiple text boees. When you look for the next match, the scale of the pad is kept the same but the search logic pans the pad to put the match in the view.
 
-The \`searchState\` node keeps track of where is the starting point when looking for the "next" match. It means that if the user moves the cursor in any of text box, the previous state needs to be cleared and the changed cursor position becomes the next search start position.`],
+The \`searchState\` node keeps track of where is the starting point when looking for the "next" match. It means that if the user moves the cursor in any of text box, the previous state needs to be cleared and the changed cursor position becomes the next search start position.
+`],
 [`90`, `# Graph Visualization
 
 Dependency graph visualization first analyzes the dependency relationship. We do this by creating a new \`ProgramState\` instance, feed the content of text boxes to it, and figures out what node names are imported and exported by the text box. (yes, we do this at every pointerEnter and pointerLeave on any text boxes.)
@@ -2634,4 +2671,10 @@ The parent (Renkon-pad) and the iframe communicate over the window message. when
 `],
 [`93`, `# CSS
 
-There is not much magic.`]]}
+There is no magic here... Except any advanced feature appears to be a magic in CSS.
+
+\`transform-origin: 0px 0x\` is important for any element that is transformed. 
+
+\`mover\` is an actual element created in \`renkon\`. \`owner\` is a virtual DOM appended to \`mover\` and it is also zero-sized.
+
+SVG icons are created in 24x24 viewport, and converted to the data string.`]]}
