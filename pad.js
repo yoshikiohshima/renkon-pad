@@ -160,7 +160,7 @@ const pinnedPositions = Behaviors.select(
     return {map: prev.map};
   },
   home, (_prev, _home) => {
-    return {map: new Map}
+    return {map: new Map()}
   }
 )
 
@@ -357,17 +357,18 @@ const modifierState = Behaviors.select(
 const padView = Behaviors.select(
   {x: 0, y: 0, scale: 1},
   padViewChange, (prev, view) => {
-    let {x, y, scale} = view;
-
-    if (scale < 0.1) {
-      x = prev.x;
-      y = prev.y;
-      scale = 0.1;
-    }
-    if (scale > 20) {
-      x = prev.x;
-      y = prev.y;
-      scale = 20;
+    let {x, y, scale, force} = view;
+    if (!force) {
+      if (scale < 0.1) {
+        x = prev.x;
+        y = prev.y;
+        scale = 0.1;
+      }
+      if (scale > 20) {
+        x = prev.x;
+        y = prev.y;
+        scale = 20;
+      }
     }
     return {...prev, ...{x, y, scale}};
   }
@@ -582,7 +583,7 @@ const _handleNavigationAction = ((navigationAction, positions, padView) => {
     const centerY = (maxBottom + minTop) / 2;
     let x = (pad.width / 2 / scale - centerX);
     let y = (pad.height / 2 / scale - centerY);
-    Events.send(padViewChange, {x, y, scale});
+    Events.send(padViewChange, {x, y, scale, force: true});
   }
 })(navigationAction, positions, padView);
 
