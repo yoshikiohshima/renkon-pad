@@ -35,10 +35,10 @@
 "type":"move",
 "width":869.2108208710029,
 "x":-1700.696602283183,
-"y":139.98089855490835}],["15",{"height":3238.9035437095645,
+"y":139.98089855490835}],["15",{"height":3564.89231263305,
 "id":"15",
-"type":"move",
-"width":682.9857272228223,
+"type":"resize",
+"width":643.6460459744552,
 "x":-1682.9239773593306,
 "y":1435.210062194688}],["40",{"height":3779.7999188808067,
 "id":"40",
@@ -1824,11 +1824,29 @@ const newRunner = (id) => {
 
             dock.appendChild(dom);
             document.body.appendChild(dock);
-            const result = thisProgramState.order.map((id) => {
-              return [
+            const result = thisProgramState.order.map((id) => [
                 id + " (" + thisProgramState.types.get(id) + ")",
-                thisProgramState.resolved.get(id)
-              ];
+                thisProgramState.resolved.get(id)]);
+            dom.addEventListener('contextmenu', event => {
+              event.preventDefault(); event.stopPropagation();}, {capture: true});
+            dom.addEventListener('pointerup', event => {
+              if (event.button !== 0) {
+                function findFieldElem(elem) {
+                  while (elem) {
+                    if (elem.classList?.contains("observablehq--field")) {return elem;}
+                    elem = elem.parentNode;
+                  }
+                }
+                const fieldElem = findFieldElem(event.target);
+                if (!fieldElem) {return;}
+                const key = fieldElem.querySelector(".observablehq--key");
+                if (!key) {return;}
+                const text = key.textContent;
+                const match = /(.*)\\\\W(Behavior|Event)\\\\W/.exec(text);
+                if (!match) {return;}
+                const keyName = match[1].trim();
+                console.log(window.thisProgramState.resolved.get(keyName)?.value);
+              }
             });
             newInspector(Object.fromEntries(result), dom);
           }

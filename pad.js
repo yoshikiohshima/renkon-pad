@@ -1014,11 +1014,29 @@ const newRunner = (id) => {
 
             dock.appendChild(dom);
             document.body.appendChild(dock);
-            const result = thisProgramState.order.map((id) => {
-              return [
+            const result = thisProgramState.order.map((id) => [
                 id + " (" + thisProgramState.types.get(id) + ")",
-                thisProgramState.resolved.get(id)
-              ];
+                thisProgramState.resolved.get(id)]);
+            dom.addEventListener('contextmenu', event => {
+              event.preventDefault(); event.stopPropagation();}, {capture: true});
+            dom.addEventListener('pointerup', event => {
+              if (event.button !== 0) {
+                function findFieldElem(elem) {
+                  while (elem) {
+                    if (elem.classList?.contains("observablehq--field")) {return elem;}
+                    elem = elem.parentNode;
+                  }
+                }
+                const fieldElem = findFieldElem(event.target);
+                if (!fieldElem) {return;}
+                const key = fieldElem.querySelector(".observablehq--key");
+                if (!key) {return;}
+                const text = key.textContent;
+                const match = /(.*)\\W(Behavior|Event)\\W/.exec(text);
+                if (!match) {return;}
+                const keyName = match[1].trim();
+                console.log(window.thisProgramState.resolved.get(keyName)?.value);
+              }
             });
             newInspector(Object.fromEntries(result), dom);
           }
