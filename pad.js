@@ -2354,7 +2354,7 @@ function doc(id) {
     document.head.appendChild(sepStyle);
   })(css, container);
 
-  return [];
+  return {};
 }
 
 const newDocPane = (id, doc) => {

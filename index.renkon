@@ -2552,7 +2552,7 @@ const searchCSS = \`
     document.head.appendChild(sepStyle);
   })(css, container);
 
-  return [];
+  return {};
 }
 
 const newDocPane = (id, doc) => {
