@@ -4,6 +4,10 @@
 
 Join the [Discord server](https://discord.gg/KKhUjmTn9q) for quick conversations. You are also welcome to [create an issue](https://github.com/yoshikiohshima/renkon-pad/issues) on GitHub.
 
+You can also check out some other examples in [this repo](https://github.com/yoshikiohshima/renkon-pad-examples). You can load a .renkon file.
+
+There are some standalone apps, such as the [Presenter](https://yoshikiohshima.github.io/renkon-presenter/) and [Garupa](https://yoshikiohshima.github.io/renkon-garupa/).
+
 ## Introduction
 
 **Renkon-pad** is a live programming environment that allows you to create graphical, web-based applications interactively. The language used is called **Renkon**—see the [`renkon-core`](https://github.com/yoshikiohshima/renkon) repository for more information.
