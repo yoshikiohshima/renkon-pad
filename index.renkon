@@ -2568,7 +2568,7 @@ const _handleDocReady = ((readyMessages, windowContents, windowTypes) => {
     if (ready.data.type === "runner" && type === "doc") {
       if (content) {
         if (type) {
-          const code = Renkon.getFunctionBody(Renkon.findDecl(type));
+          const {output:code} = Renkon.getFunctionBody(Renkon.findDecl(type));
           content.dom.contentWindow.postMessage({code: [code, \`const id = "\${id}"\`]});
         }
       }
