@@ -110,7 +110,7 @@ To start Renkon-pad and immediately load a file for editing, use:
 
 ### Typical Idioms and Workflow
 
-The implementation of Renkon-pad is in `index.renkon`. Reading its code and document in it gives the general idea of how to organize code for an application. There are smaller examples in https://github.com/yoshikiohshima/renkon-pad-examples.
+The implementation of Renkon-pad is in `index.renkon`. Reading its code and document in it gives the general idea of how to organize code for an application. There are smaller examples in https://github.com/yoshikiohshima/renkon-pad-examples. The `pad-demo-scripts` directory of the repo contains some "party tricks" to illustrate of the power of Renkon-pad.
 
 Unless you've customized `index.html` to have some DOM element by default, the body of the document created from the index.html is empty-you'll need to set up your app’s DOM elements manually. The typical pattern is to use an immediately invoked function expression (IIFE) that creates DOM elements via `createElement`, `appendChild`, etc.
 
