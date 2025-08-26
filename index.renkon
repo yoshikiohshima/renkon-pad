@@ -1616,22 +1616,22 @@ const renkon = (() => {
   renkon.id = "renkon";
   renkon.innerHTML = \`
 <div id="buttonBox">
-   <input class="menuButton" id="padTitle"></input>
-   <button class="menuButton" id="addCodeButton">code</button>
-   <button class="menuButton" id="addDocButton">doc</button>
-   <button class="menuButton" id="addRunnerButton">runner</button>
-   <div class="spacer"></div>
-   <button class="menuButton" id="searchButton">search</button>
-   <button class="menuButton" id="showGraph">show graph</button>
-   <button class="menuButton" id="saveButton">save</button>
-   <button class="menuButton" id="loadButton">load</button>
+  <input class="menuButton" id="padTitle"></input>
+  <button class="menuButton" id="addCodeButton">code</button>
+  <button class="menuButton" id="addDocButton">doc</button>
+  <button class="menuButton" id="addRunnerButton">runner</button>
+  <div class="spacer"></div>
+  <button class="menuButton" id="searchButton">search</button>
+  <button class="menuButton" id="showGraph">show graph</button>
+  <button class="menuButton" id="saveButton">save</button>
+  <button class="menuButton" id="loadButton">load</button>
 </div>
 <div id="pad"><div id="mover"></div></div>
 <div id="overlay"></div>
 <div id="navigationBox">
-   <div class="navigationButton"><div id="homeButton" class="navigationButtonImage"></div></div>
-   <div class="navigationButton with-border"><div id="zoomInButton" class="navigationButtonImage"></div></div>
-   <div class="navigationButton with-border"><div id="zoomOutButton" class="navigationButtonImage"></div></div>
+  <div class="navigationButton"><div id="homeButton" class="navigationButtonImage"></div></div>
+  <div class="navigationButton with-border"><div id="zoomInButton" class="navigationButtonImage"></div></div>
+  <div class="navigationButton with-border"><div id="zoomOutButton" class="navigationButtonImage"></div></div>
 </div>
 
 \`.trim();
