@@ -2384,7 +2384,7 @@ const docUpdate = Events.listener(window, "message", evt => {
   if (evt.data.type === "renkon-doc-updated") {return evt.data;}
 });
 
-return [];
+return {};
 }
 
 /* globals Events Behaviors Renkon */
