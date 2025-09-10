@@ -35,10 +35,10 @@
 "type":"move",
 "width":869.2108208710029,
 "x":-1700.696602283183,
-"y":139.98089855490835}],["15",{"height":4340.607906893181,
+"y":139.98089855490835}],["15",{"height":5286.590328893918,
 "id":"15",
 "type":"resize",
-"width":722.3872565056082,
+"width":809.9511499562532,
 "x":-1682.9239773593306,
 "y":1435.210062194688}],["40",{"height":3779.7999188808067,
 "id":"40",
@@ -1113,7 +1113,7 @@ html, body {
 }
 
 .cm-tooltip-hover:has(.cm-tooltip-dependency) {
-  transform: translate(-10px, 12px)
+  transform: translate(10px, 10px)
 }
 
 .cm-tooltip-cursor-wide {
@@ -1705,6 +1705,38 @@ const gotoDef = ((varName, windowContents) => {
 
 const gotoTarget = Events.or(gotoDef, updateEditorSelection);
 
+const allUseOf = (varName) => {
+  const programState = new Renkon.constructor(0);
+  programState.setLog(() => {});
+
+  // There should be a better way... But this function is used in the function that computes
+  // windowContents so there is a cyclic dependency
+  const windowContents = Renkon.resolved.get("windowContents").value.map;
+
+  const editorsPair = [...windowContents].filter(([_id, content]) => content.state);
+  const uses = [];
+  for (const [id, content] of editorsPair) {
+    try {
+      const decls = programState.findDecls([content.state.doc.toString()]);
+      for (const decl of decls) {
+        programState.setupProgram(decl.code); 
+        for (const jsNode of programState.nodes.values()) {
+          for (const input of jsNode.inputs) {
+            if (/^_[0-9]/.test(input)) {continue;}
+            if (input === varName) {
+              uses.push(...decl.decls);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.log("Dependency analyzer encountered an error in source code:");
+      return [];
+    }
+  }
+  return uses;
+};
+
 const newEditor = (id, doc) => {
   const mirror = window.CodeMirror;
 
@@ -1750,6 +1782,7 @@ const newEditor = (id, doc) => {
       const is = programState.nodes.get(k).inputs;
       deps.push(...is.filter((n) => !/_[0-9]/.exec(n)));
     }
+
     return {deps, name: last}
   }
 
@@ -1757,6 +1790,7 @@ const newEditor = (id, doc) => {
     let node = getDecl(view.state, pos);
     if (!node) return null;
     const {deps, name} = node;
+    const uses = allUseOf(name);
     return {
       pos,
       above: true,
@@ -1780,13 +1814,32 @@ const newEditor = (id, doc) => {
           }
         });
         let tail = document.createElement("span");
-        tail.textContent = \` -> \${name}\`;
+        tail.textContent = \` -> \${name} ->\`;
         dom.appendChild(tail);
+
+        children = uses.map((d) => {
+          const c = document.createElement("span");
+          c.textContent = d;
+          c.onclick = (_evt) => Events.send(goToVarName, c.textContent);
+          c.style.width = "fitContent";
+          c.style.height = "fitContent";
+          c.classList.add("dependency-link");
+          return c;
+        });
+        children.forEach((c, i) => {
+          dom.appendChild(c);
+          if (i !== children.length - 1) {
+            const comma = document.createElement("span");
+            comma.textContent = ", ";
+            dom.appendChild(comma);
+          }
+        });
+        
         dom.className = "cm-tooltip-dependency cm-tooltip-cursor-wide";
         return {dom};
       }
     };
-  });
+  }, { hoverTime: 1000 });
 
   const openSearch = ({_state, _dispatch }) => {
     Events.send(toggleSearchPanel, true);
