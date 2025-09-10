@@ -15,11 +15,11 @@
 "type":"move",
 "width":897.0160173690531,
 "x":7062.194330582714,
-"y":3525.1186479376724}],["6",{"height":7573.274756442699,
+"y":3525.1186479376724}],["6",{"height":7817.5163587831275,
 "id":"6",
-"type":"move",
-"width":1078.9101134895518,
-"x":10305.11230672419,
+"type":"resize",
+"width":1090.3728438938895,
+"x":10301.33815087754,
 "y":74.84070236473423}],["7",{"height":2520.1883142246284,
 "id":"7",
 "type":"move",
@@ -35,10 +35,10 @@
 "type":"move",
 "width":869.2108208710029,
 "x":-1700.696602283183,
-"y":139.98089855490835}],["15",{"height":3564.89231263305,
+"y":139.98089855490835}],["15",{"height":4340.607906893181,
 "id":"15",
 "type":"resize",
-"width":643.6460459744552,
+"width":722.3872565056082,
 "x":-1682.9239773593306,
 "y":1435.210062194688}],["40",{"height":3779.7999188808067,
 "id":"40",
@@ -362,12 +362,12 @@ const _handleNavigationAction = ((navigationAction, positions, padView) => {
 })(navigationAction, positions, padView);
 
 const showGraph = Behaviors.collect(
-  "showGraph",
+  "showDeps",
   Events.listener(renkon.querySelector("#showGraph"), "click", (evt) => evt),
   (now, _click) => {
-    if (now === "showGraph") {return "showDeps";}
-    if (now === "showDeps") {return "hide";}
-    if (now === "hide") {return "showGraph"}
+    if (now === "showGraph") {return "hide";}
+    if (now === "showDeps") {return "showGraph";}
+    if (now === "hide") {return "showDeps"}
     return now;
   }
 );
@@ -1109,10 +1109,25 @@ html, body {
   border: none;
   padding: 2px 7px;
   border-radius: 4px;
+
+}
+
+.cm-tooltip-hover:has(.cm-tooltip-dependency) {
+  transform: translate(-10px, 12px)
 }
 
 .cm-tooltip-cursor-wide {
   text-wrap: nowrap;
+}
+
+.dependency-link {
+  border: 1px solid #66b;
+}
+
+.dependency-link:hover {
+  border: 1px solid #cc7;
+  border-style: outset;
+  background-color: #88c;
 }
 \`;
 
@@ -1668,7 +1683,29 @@ const searchPanel = ((renkon) => {
   return search;
 })(renkon);
 `],
-[`15`, `const newEditor = (id, doc) => {
+[`15`, `const goToVarName = Events.receiver();
+
+const gotoDef = ((varName, windowContents) => {
+  const editorsPair = [...windowContents.map].filter(([_id, content]) => content.state);
+
+  for (const [id, content] of editorsPair) {
+    try {
+      const decls = Renkon.findDecls(content.state.doc.toString());
+      for (const decl of decls) {
+        if (decl.decls.includes(varName)) {
+          return {id, range: {from: decl.start, to: decl.end}, shown: true};
+        }
+      }
+    } catch(e) {
+      console.log("Dependency analyzer encountered an error in source code:");
+    }
+  }
+  return undefined;
+})(goToVarName, windowContents);
+
+const gotoTarget = Events.or(gotoDef, updateEditorSelection);
+
+const newEditor = (id, doc) => {
   const mirror = window.CodeMirror;
 
   const config = {
@@ -1725,7 +1762,26 @@ const searchPanel = ((renkon) => {
       above: true,
       create() {
         let dom = document.createElement("div");
-        dom.textContent = \`\${deps} -> \${name}\`;
+        let children = deps.map((d) => {
+          const c = document.createElement("span");
+          c.textContent = d;
+          c.onclick = (_evt) => Events.send(goToVarName, c.textContent);
+          c.style.width = "fitContent";
+          c.style.height = "fitContent";
+          c.classList.add("dependency-link");
+          return c;
+        });
+        children.forEach((c, i) => {
+          dom.appendChild(c);
+          if (i !== children.length - 1) {
+            const comma = document.createElement("span");
+            comma.textContent = ", ";
+            dom.appendChild(comma);
+          }
+        });
+        let tail = document.createElement("span");
+        tail.textContent = \` -> \${name}\`;
+        dom.appendChild(tail);
         dom.className = "cm-tooltip-dependency cm-tooltip-cursor-wide";
         return {dom};
       }
@@ -2190,7 +2246,7 @@ const updateEditorSelection = ((searchUpdate, windowContents) => {
   return searchUpdate;
 })(searchUpdate, windowContents);
 
-const _searchGoTo = ((padView, positions, updateEditorSelection, windowContents) => {
+const _scrollToEditorPosition = ((padView, positions, gotoTarget, windowContents) => {
   const pad = document.body.querySelector("#pad").getBoundingClientRect();
 
   const visiblePad = {
@@ -2199,16 +2255,16 @@ const _searchGoTo = ((padView, positions, updateEditorSelection, windowContents)
     width: pad.width / padView.scale,
     height: pad.height / padView.scale
   };
-  const position = positions.map.get(\`\${updateEditorSelection.id}\`);
+  const position = positions.map.get(\`\${gotoTarget.id}\`);
 
   const allVisible = position.x >= visiblePad.x && position.y >= visiblePad.y &&
         position.width + position.x <= visiblePad.x + visiblePad.width &&
         position.height + position.y <= visiblePad.y + visiblePad.height;
 
   if (allVisible) {return;}
-  const editor = windowContents.map.get(updateEditorSelection.id);
+  const editor = windowContents.map.get(gotoTarget.id);
 
-  const textPos = editor.coordsAtPos(updateEditorSelection.range.from);
+  const textPos = editor.coordsAtPos(gotoTarget.range.from);
   const scrollRect = editor.scrollDOM.getBoundingClientRect();
   const top = textPos.top - scrollRect.top + editor.scrollDOM.scrollTop;
   const targetY = position.y + top / padView.scale;
@@ -2221,7 +2277,7 @@ const _searchGoTo = ((padView, positions, updateEditorSelection, windowContents)
   }
 
   Events.send(padViewChange, {x: x, y: y, scale: padView.scale})
-})(padView, positions, updateEditorSelection, windowContents);
+})(padView, positions, gotoTarget, windowContents);
 
 const searchCSS = \`
 .search-panels {
