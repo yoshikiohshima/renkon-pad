@@ -39,10 +39,12 @@ The top bar includes one text field and five buttons:
 - The text field lets you enter the name of your project.
 - The first three buttons, **code**, **doc**, and **runner**, create a new text box, a doc box, and a new runner, respectively.
 - The search button brings up the search panel that looks up text from all text boxes.
-- The fourth button cycles through three states: **"show graph"**, **"show deps"**, and **"hide graph"**:
-  - **Show graph**: Hovering over a text box displays its imports and exports.
+- The fourth button cycles through three states: **"show deps"**, **"show graph"**, and **"hide graph"**:
   - **Show deps**: Hovering over a node definition shows its dependencies.
+  - **Show graph**: Hovering over a text box displays its imports and exports.
   - **Hide graph**: Disables both overlays.
+
+You can move to the definition of an input name shown in the blue "show deps" pop up by pressing the name.
 
 - The **"save"** button saves window positions and contents to a file named after the project with a `.renkon` suffix.
 
