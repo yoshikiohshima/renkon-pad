@@ -880,6 +880,39 @@ const gotoDef = ((varName, windowContents) => {
 
 const gotoTarget = Events.or(gotoDef, updateEditorSelection);
 
+const allUseOf = (varName) => {
+  const programState = new Renkon.constructor(0);
+  programState.setLog(() => {});
+
+  // There should be a better way... But this function is used in the function that computes
+  // windowContents so there is a cyclic dependency
+  const windowContents = Renkon.resolved.get("windowContents").value.map;
+
+  const editorsPair = [...windowContents].filter(([_id, content]) => content.state);
+  const uses = [];
+  for (const [_id, content] of editorsPair) {
+    try {
+      const doc = content.state.doc.toString();
+      const decls = programState.findDecls([doc]);
+      for (const decl of decls) {
+        programState.setupProgram([doc.slice(decl.start, decl.end)]);
+        for (const jsNode of programState.nodes.values()) {
+          for (const input of jsNode.inputs) {
+            if (/^_[0-9]/.test(input)) {continue;}
+            if (input === varName) {
+              uses.push(...decl.decls);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.log("Dependency analyzer encountered an error in source code:");
+      return [];
+    }
+  }
+  return uses;
+};
+
 const newEditor = (id, doc) => {
   const mirror = window.CodeMirror;
 
@@ -925,13 +958,14 @@ const newEditor = (id, doc) => {
       const is = programState.nodes.get(k).inputs;
       deps.push(...is.filter((n) => !/_[0-9]/.exec(n)));
     }
+
     return {deps, name: last}
   }
-
   const wordHover = mirror.view.hoverTooltip((view, pos, _side) => {
     let node = getDecl(view.state, pos);
     if (!node) return null;
     const {deps, name} = node;
+    const uses = allUseOf(name);
     return {
       pos,
       above: true,
@@ -955,13 +989,32 @@ const newEditor = (id, doc) => {
           }
         });
         let tail = document.createElement("span");
-        tail.textContent = ` -> ${name}`;
+        tail.textContent = ` -> ${name} -> `;
         dom.appendChild(tail);
+
+        children = uses.map((d) => {
+          const c = document.createElement("span");
+          c.textContent = d;
+          c.onclick = (_evt) => Events.send(goToVarName, c.textContent);
+          c.style.width = "fitContent";
+          c.style.height = "fitContent";
+          c.classList.add("dependency-link");
+          return c;
+        });
+        children.forEach((c, i) => {
+          dom.appendChild(c);
+          if (i !== children.length - 1) {
+            const comma = document.createElement("span");
+            comma.textContent = ", ";
+            dom.appendChild(comma);
+          }
+        });
+
         dom.className = "cm-tooltip-dependency cm-tooltip-cursor-wide";
         return {dom};
       }
     };
-  });
+  }, {hoverTime: 1000, hideOnChange: true});
 
   const openSearch = ({_state, _dispatch }) => {
     Events.send(toggleSearchPanel, true);

@@ -35,7 +35,7 @@
 "type":"move",
 "width":869.2108208710029,
 "x":-1700.696602283183,
-"y":139.98089855490835}],["15",{"height":5286.590328893918,
+"y":139.98089855490835}],["15",{"height":5297.48690406318,
 "id":"15",
 "type":"resize",
 "width":809.9511499562532,
@@ -1715,11 +1715,12 @@ const allUseOf = (varName) => {
 
   const editorsPair = [...windowContents].filter(([_id, content]) => content.state);
   const uses = [];
-  for (const [id, content] of editorsPair) {
+  for (const [_id, content] of editorsPair) {
     try {
-      const decls = programState.findDecls([content.state.doc.toString()]);
+      const doc = content.state.doc.toString();
+      const decls = programState.findDecls([doc]);
       for (const decl of decls) {
-        programState.setupProgram(decl.code); 
+        programState.setupProgram([doc.slice(decl.start, decl.end)]);
         for (const jsNode of programState.nodes.values()) {
           for (const input of jsNode.inputs) {
             if (/^_[0-9]/.test(input)) {continue;}
@@ -1785,7 +1786,6 @@ const newEditor = (id, doc) => {
 
     return {deps, name: last}
   }
-
   const wordHover = mirror.view.hoverTooltip((view, pos, _side) => {
     let node = getDecl(view.state, pos);
     if (!node) return null;
@@ -1814,7 +1814,7 @@ const newEditor = (id, doc) => {
           }
         });
         let tail = document.createElement("span");
-        tail.textContent = \` -> \${name} ->\`;
+        tail.textContent = \` -> \${name} -> \`;
         dom.appendChild(tail);
 
         children = uses.map((d) => {
@@ -1834,12 +1834,12 @@ const newEditor = (id, doc) => {
             dom.appendChild(comma);
           }
         });
-        
+
         dom.className = "cm-tooltip-dependency cm-tooltip-cursor-wide";
         return {dom};
       }
     };
-  }, { hoverTime: 1000 });
+  }, {hoverTime: 1000, hideOnChange: true});
 
   const openSearch = ({_state, _dispatch }) => {
     Events.send(toggleSearchPanel, true);
