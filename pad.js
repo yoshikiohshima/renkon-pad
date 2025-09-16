@@ -1979,7 +1979,7 @@ html, body {
 }
 
 .cm-tooltip-hover:has(.cm-tooltip-dependency) {
-  transform: translate(-10px, 12px)
+  transform: translate(-5px, 5px)
 }
 
 .cm-tooltip-cursor-wide {
@@ -2149,6 +2149,7 @@ const _scrollToEditorPosition = ((padView, positions, gotoTarget, windowContents
   const editor = windowContents.map.get(gotoTarget.id);
 
   const textPos = editor.coordsAtPos(gotoTarget.range.from);
+  if (!textPos) {return;}
   const scrollRect = editor.scrollDOM.getBoundingClientRect();
   const top = textPos.top - scrollRect.top + editor.scrollDOM.scrollTop;
   const targetY = position.y + top / padView.scale;
