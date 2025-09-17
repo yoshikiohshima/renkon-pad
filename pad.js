@@ -73,7 +73,7 @@ const windows = Behaviors.select(
   remove, (prev, removeCommand) => prev.filter((e) => e != removeCommand.id),
 );
 
-// {map: Map<id, type:"code"|"runner">
+// {map: Map<id, type:"code"|"doc"|"runner">
 const windowTypes = Behaviors.select(
   {map: new Map()},
   loadRequest, (_prev, data) => {
