@@ -1,4 +1,4 @@
-{"padTitle":"Renkon-Pad",
+{"padTitle":"Renkon-Pad-Dependency",
 "positions":{"map":{"__map":true,
 "values":[["3",{"height":4332.141632006608,
 "id":"3",
@@ -62,8 +62,8 @@
 "x":-2400.837074428983,
 "y":140.71563609224972}],["84",{"height":740.0732151000523,
 "id":"84",
-"type":"move",
-"width":615.8313099402498,
+"type":"resize",
+"width":619.3818790373572,
 "x":-2428.16843048147,
 "y":1439.8620215363317}],["85",{"height":752.4081129685438,
 "id":"85",
@@ -110,7 +110,12 @@
 "type":"resize",
 "width":559.7397228362672,
 "x":9688.378559142711,
-"y":77.7300928064127}]]}},
+"y":77.7300928064127}],["102",{"height":2541.3674510532965,
+"id":"102",
+"type":"resize",
+"width":807.661764801662,
+"x":-2588.0800714528023,
+"y":2376.448071484308}]]}},
 "titles":{"map":{"__map":true,
 "values":[["3",{"id":"3",
 "state":false,
@@ -156,7 +161,9 @@
 "state":false,
 "title":"untitled"}],["93",{"id":"93",
 "state":false,
-"title":"untitled"}]]}},
+"title":"untitled"}],["102",{"id":"102",
+"state":false,
+"title":"CodeMirror HoverPlugin"}]]}},
 "version":3,
 "windowEnabled":{"map":{"__map":true,
 "values":[["3",{"enabled":true,
@@ -181,12 +188,13 @@
 "id":"90"}],["91",{"enabled":true,
 "id":"91"}],["92",{"enabled":true,
 "id":"92"}],["93",{"enabled":true,
-"id":"93"}]]}},
+"id":"93"}],["102",{"enabled":true,
+"id":"102"}]]}},
 "windowTypes":{"map":{"__map":true,
-"values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["15","code"],["40","code"],["74","code"],["82","code"],["83","doc"],["84","doc"],["85","doc"],["86","doc"],["87","doc"],["88","doc"],["89","doc"],["90","doc"],["91","doc"],["92","doc"],["93","doc"]]}},
-"windows":["3","4","5","6","7","9","11","15","40","74","82","83","84","85","86","87","88","89","90","91","92","93"],
+"values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["15","code"],["40","code"],["74","code"],["82","code"],["83","doc"],["84","doc"],["85","doc"],["86","doc"],["87","doc"],["88","doc"],["89","doc"],["90","doc"],["91","doc"],["92","doc"],["93","doc"],["102","code"]]}},
+"windows":["3","4","5","6","7","9","11","15","40","74","82","83","84","85","86","87","88","89","90","91","92","93","102"],
 "zIndex":{"map":{"__map":true,
-"values":[["3",124],["4",128],["5",131],["6",126],["7",130],["9",114],["11",113],["15",119],["40",121],["74",129],["82",100],["83",125],["84",110],["85",123],["86",122],["87",127],["88",105],["89",111],["90",120],["91",112],["92",104],["93",103]]}}}
+"values":[["3",124],["4",128],["5",131],["6",126],["7",130],["9",114],["11",113],["15",119],["40",121],["74",129],["82",100],["83",125],["84",110],["85",123],["86",122],["87",127],["88",105],["89",111],["90",120],["91",112],["92",104],["93",103],["102",132]]}}}
 {__codeMap: true, value: [[`3`, `const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
 const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
 const addDoc = Events.listener(renkon.querySelector("#addDocButton"), "click", () => "doc");
@@ -1112,8 +1120,8 @@ html, body {
 
 }
 
-.cm-tooltip-hover:has(.cm-tooltip-dependency) {
-  transform: translate(-5px, 5px)
+.cm-tooltip-dependency {
+  transform: translate(20px, 0px)
 }
 
 .cm-tooltip-cursor-wide {
@@ -1786,7 +1794,7 @@ const newEditor = (id, doc) => {
 
     return {deps, name: last}
   }
-  const wordHover = mirror.view.hoverTooltip((view, pos, _side) => {
+  const wordHover = hoverTooltip((view, pos, _side) => {
     let node = getDecl(view.state, pos);
     if (!node) return null;
     const {deps, name} = node;
@@ -2715,7 +2723,9 @@ The \`newEditor\` node and \`newRunner\` are constants and whose values are func
 
 We use CodeMirror for text editing in windows. renkon-web.js exports the CodeMirror object that has a number of common extensions. They are exported from renkon-web in <a href="https://github.com/yoshikiohshima/renkon-web/blob/main/src/main.js">this way</a>. An instance of of EditorView for code editing invokes global search so that a custom \`search\` plugin is added before \`basicSetup\`. It also has lint rules for JavaScript. The Renkon language allows node definitions in TypeScript syntax, though the editor's lint rule does not support it yet.
 
-The runner is an iframe and has the srcdoc property that has the \`onmesseage\` handler to receive code and set up the \`ProgramState\` instance.`],
+The runner is an iframe and has the srcdoc property that has the \`onmesseage\` handler to receive code and set up the \`ProgramState\` instance.
+
+The class in the "CodeMirror HoverPlugin" below is a custom version of CodeMirror tooltip extension. As The dependency tooltip is interactive, the user needs to get to it; but it should go away when the pointer is moved enough. In the current implementation, the tooltip dissapears when the pointer moves to a different line veritally, or large enough amount horizontally.`],
 [`85`, `# User Interaction
 
 This text box and "Pointer Handling" have most of the handling for user events. 
@@ -2793,4 +2803,140 @@ There is no magic here... Except any advanced feature appears to be a magic in C
 
 \`mover\` is an actual element created in \`renkon\`. \`owner\` is a virtual DOM appended to \`mover\` and it is also zero-sized.
 
-SVG icons are created in 24x24 viewport, and converted to the data string.`]]}
+SVG icons are created in 24x24 viewport, and converted to the data string.`],
+[`102`, `function hoverTooltip(source, options = {}) {
+  return {
+    extension: [
+      window.CodeMirror.view.ViewPlugin.define(view => new DependencyPlugin(view, source, {hoverTime: options.hoverTime || 300})),
+    ]
+  }
+}
+
+class DependencyPlugin {
+  constructor(view, source, options) {
+    this.view = view;
+    this.source = source;
+    this.options = options;
+    this.lastMove = {x: 0, y: 0, target: view.dom, time: 0};
+    view.dom.addEventListener("mouseleave", this.mouseleave = this.mouseleave.bind(this));
+    view.dom.addEventListener("mousemove", this.mousemove = this.mousemove.bind(this));
+    this.hoverTimeout = -1;
+    this.hoverTime = options.hoverTime;
+  }
+
+  checkHover() {
+    this.hoverTimeout = -1;
+    if (this.tooltip) return;
+    let hovered = Date.now() - this.lastMove.time;
+    if (hovered < this.hoverTime) {
+      this.hoverTimeout = setTimeout(() => this.checkHover(), this.hoverTime - hovered);
+    } else {
+      this.startHover();
+    }
+  }
+
+  startHover() {
+    clearTimeout(this.restartTimeout);
+    let {view, lastMove} = this;
+    let desc = view.docView.nearest(lastMove.target);
+    if (!desc) return;
+    let pos = view.posAtCoords(lastMove);
+
+    if (pos === null) return;
+    const posCoords = view.coordsAtPos(pos);
+    if (!posCoords ||
+      lastMove.y < posCoords.top || lastMove.y > posCoords.bottom ||
+      lastMove.x < posCoords.left - view.defaultCharacterWidth ||
+      lastMove.x > posCoords.right + view.defaultCharacterWidth) return;
+
+    const line = view.state.doc.lineAt(pos);
+
+    if (!this.tooltip) {
+      const rect = view.dom.getBoundingClientRect();
+      let scaleX = rect.width / view.dom.offsetWidth;
+      let scaleY = rect.height / view.dom.offsetHeight;
+      const tip = this.source(view, pos, 1);
+      if (!tip) {return;}
+      this.tooltip = tip.create();
+      this.tooltip.dom.style.position = "absolute";
+      this.tooltip.dom.classList.add("cm-tooltip-hover");
+      this.tooltip.dom.classList.add("cm-tooltip-above");
+      this.tooltip.dom.style.left = \`\${(posCoords.left - rect.left) / scaleX}px\`;
+      this.tooltip.dom.style.top = \`\${(posCoords.top - rect.top) / scaleY}px\`;
+      view.dom.appendChild(this.tooltip.dom);
+    }
+    this.tooltipPos = {pos, posCoords, line};
+  }
+
+  endHover() {
+    this.hoverTimeout = -1;
+    if (this.tooltip) {
+      this.tooltip.dom?.remove();
+      this.tooltip = null;
+      this.tooltipPos = null;
+    }
+  }
+
+  update(update) {
+    if (update.docChanged) {
+      this.endHover();
+    }
+  }
+
+  isInTooltip(tooltip, event) {
+    const tooltipMargin = 4;
+    let { left, right, top: top2, bottom } = tooltip.getBoundingClientRect();
+    return event.clientX >= left - tooltipMargin && 
+      event.clientX <= right + tooltipMargin && 
+      event.clientY >= top2 - tooltipMargin && 
+      event.clientY <= bottom + tooltipMargin;
+  }
+
+  distance(pos, move) {
+    return Math.sqrt((pos.left - move.x) ** 2 + (pos.top - move.y) ** 2);
+  }
+
+  mousemove(event) {
+    this.lastMove = {x: event.clientX, y: event.clientY, target: event.target, time: Date.now()};
+    const view = this.view;
+    if (this.hoverTimeout < 0) {
+      this.hoverTimeout = setTimeout(() => this.checkHover(), this.hoverTime)
+    }
+    if (this.tooltip && !this.isInTooltip(this.tooltip.dom, event)) {
+      const pos = view.posAtCoords(this.lastMove);
+      if (pos) {
+        const lastPos = this.tooltipPos;
+        const line = view.state.doc.lineAt(pos);
+        if (this.distance(lastPos.posCoords, this.lastMove) > 30 || lastPos.line.number !== line.number) {
+          this.endHover();
+        }
+      }
+    }
+  }
+
+  mouseleave(event) {
+    clearTimeout(this.hoverTimeout);
+    this.hoverTimeout = -1;
+    let inTooltip = this.tooltip && this.tooltip.dom.contains(event.relatedTarget);
+    if (!inTooltip) {
+      this.endHover();
+    } else {
+      this.watchTooltipLeave(this.tooltip.dom);
+    }
+  }
+
+  watchTooltipLeave(tooltip) {
+    let watch = (event) => {
+      tooltip.removeEventListener("mouseleave", watch);
+    }
+    tooltip.addEventListener("mouseleave", watch);
+  }
+
+  destroy() {
+    this.endHover();
+    clearTimeout(this.hoverTimeout);
+    this.view.dom.removeEventListener("mouseleave", this.mouseleave);
+    this.view.dom.removeEventListener("mousemove", this.mousemove);
+  }
+}
+`]]}
