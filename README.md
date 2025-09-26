@@ -81,6 +81,12 @@ A runner is a separate Renkon execution context in an iframe. A runner has:
 
 The **play** button gathers the contents of all enabled text boxes and runs them in the runner iframe as a Renkon program. The **inspector** button toggles the visibility of the resolved stream values.
 
+If you press-hold the play button, you get the secondary button as shown below:
+
+<img src="./doc/secondary.png"></img>
+
+The secondary button fully replaces the runner's iframe along with a fresh one creates a new Renkon execution context and run the program. This is useful when you want to keep the same runner window but avoid carrying over states.
+
 ### Manipulation of windows
 
 You can resize the text box or the runner using the resize handles at four corners. To bring a window to the front, drag the title bar.
