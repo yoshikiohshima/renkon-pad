@@ -1,121 +1,136 @@
 {"padTitle":"Renkon-Pad",
 "positions":{"map":{"__map":true,
-"values":[["3",{"height":4332.141632006608,
+"values":[["3",{"height":4868.821067203595,
 "id":"3",
-"type":"move",
-"width":850.990313975509,
-"x":52.66578365353155,
-"y":128.147491827803}],["4",{"height":3222.5361581685247,
+"type":"resize",
+"width":905.884347110711,
+"x":2157.523832054651,
+"y":73.29562807750499}],["4",{"height":4871.927145013808,
 "id":"4",
-"type":"move",
-"width":863.4050023688781,
-"x":5295.022590399252,
-"y":95.10750563991505}],["5",{"height":3401.0264740146413,
+"type":"resize",
+"width":881.543689999395,
+"x":5728.075959855331,
+"y":66.9574731070507}],["5",{"height":3401.0264740146413,
 "id":"5",
 "type":"move",
 "width":897.0160173690531,
-"x":7062.194330582714,
-"y":3525.1186479376724}],["6",{"height":7817.5163587831275,
+"x":7790.963558635349,
+"y":2692.3209297389017}],["6",{"height":8469.3567933523,
 "id":"6",
 "type":"resize",
-"width":1090.3728438938895,
-"x":10301.33815087754,
-"y":74.84070236473423}],["7",{"height":2520.1883142246284,
+"width":1141.930244701142,
+"x":11334.50043503137,
+"y":47.63987490731455}],["7",{"height":2520.1883142246284,
 "id":"7",
 "type":"move",
 "width":817.2387935617032,
-"x":7051.2681969107125,
-"y":84.78084981924658}],["9",{"height":6391.368396617012,
+"x":7805.4478844107125,
+"y":71.32045578688565}],["9",{"height":6555.500008527299,
 "id":"9",
-"type":"resize",
-"width":721.8624075685257,
-"x":3595.926841099591,
-"y":107.2642788797095}],["11",{"height":1105.7660756214398,
+"type":"move",
+"width":791.1381953324778,
+"x":316.4351179839059,
+"y":69.46880420677473}],["11",{"height":1105.7660756214398,
 "id":"11",
 "type":"move",
 "width":869.2108208710029,
-"x":-1700.696602283183,
-"y":139.98089855490835}],["15",{"height":5297.48690406318,
+"x":-3387.2364982061836,
+"y":70.15864726964261}],["15",{"height":3651.6022577381787,
 "id":"15",
-"type":"resize",
-"width":809.9511499562532,
-"x":-1682.9239773593306,
-"y":1435.210062194688}],["40",{"height":3779.7999188808067,
+"type":"move",
+"width":736.8810187185526,
+"x":-1584.1003781772583,
+"y":67.84078474229996}],["40",{"height":3779.7999188808067,
 "id":"40",
 "type":"move",
 "width":809.0992415272672,
-"x":1792.7271702537896,
-"y":110.90295813305414}],["74",{"height":4312.248341148691,
+"x":4029.7152436757738,
+"y":70.29057908223348}],["74",{"height":4312.248341148691,
 "id":"74",
 "type":"move",
 "width":928.6533281314535,
-"x":5300.993176789124,
-"y":3531.4645909169576}],["82",{"height":5155.4159482716805,
+"x":4023.8347274924404,
+"y":3921.6449546856998}],["82",{"height":5155.4159482716805,
 "id":"82",
-"type":"resize",
+"type":"move",
 "width":829.0772656583506,
-"x":8632.778004416206,
-"y":77.28956000425276}],["83",{"height":590.6415445155225,
+"x":9572.569379229404,
+"y":50.144368806907835}],["83",{"height":590.6415445155225,
 "id":"83",
-"type":"resize",
+"type":"move",
 "width":599.4209122784505,
-"x":-2400.837074428983,
-"y":140.71563609224972}],["84",{"height":740.0732151000523,
+"x":-4113.399846872952,
+"y":60.74214032468536}],["84",{"height":740.0732151000523,
 "id":"84",
-"type":"resize",
+"type":"move",
 "width":619.3818790373572,
-"x":-2428.16843048147,
-"y":1439.8620215363317}],["85",{"height":752.4081129685438,
+"x":-2305.0067065494477,
+"y":58.90499143476521}],["85",{"height":752.4081129685438,
 "id":"85",
 "type":"move",
 "width":649.4967680095754,
-"x":-655.0330781906887,
-"y":133.62112873596274}],["86",{"height":771.4555163106003,
+"x":1402.9295729184694,
+"y":67.74786175389437}],["86",{"height":771.4555163106003,
 "id":"86",
 "type":"move",
 "width":614.9748931926002,
-"x":1104.4180261366946,
-"y":118.45595943034823}],["87",{"height":764.2567694987133,
+"x":3298.0993555977784,
+"y":60.25885646207719}],["87",{"height":764.2567694987133,
 "id":"87",
 "type":"move",
 "width":598.62741563727,
-"x":2890.7920964151626,
-"y":105.99045216972196}],["88",{"height":657.2731056485146,
+"x":-447.41273809102574,
+"y":70.20771517852907}],["88",{"height":657.2731056485146,
 "id":"88",
 "type":"move",
 "width":535.2659265044863,
-"x":4663.995154191444,
-"y":102.08651693064832}],["89",{"height":531.8603215930543,
+"x":5109.930838375804,
+"y":63.463194708379206}],["89",{"height":531.8603215930543,
 "id":"89",
 "type":"move",
 "width":620.398425693691,
-"x":4619.602070191971,
-"y":3535.203273932816}],["90",{"height":575.9331627545905,
+"x":3319.8148333165154,
+"y":3915.872358813035}],["90",{"height":575.9331627545905,
 "id":"90",
 "type":"move",
 "width":588.37722767176,
-"x":6380.336637295781,
-"y":88.71591296724598}],["91",{"height":425.66117349679064,
+"x":7031.772423286907,
+"y":68.3525730283474}],["91",{"height":425.66117349679064,
 "id":"91",
 "type":"move",
 "width":613.5659794246412,
-"x":6383.115780372974,
-"y":3530.2457714268166}],["92",{"height":536.2547788320747,
+"x":7022.8766215065325,
+"y":2702.1559131660492}],["92",{"height":536.2547788320747,
 "id":"92",
-"type":"resize",
+"type":"move",
 "width":557.982455982854,
-"x":8029.093537961163,
-"y":82.95625397757307}],["93",{"height":544.2912120690746,
+"x":8900.460725461162,
+"y":49.430710788939294}],["93",{"height":544.2912120690746,
 "id":"93",
-"type":"resize",
+"type":"move",
 "width":559.7397228362672,
-"x":9688.378559142711,
-"y":77.7300928064127}],["102",{"height":2541.3674510532965,
+"x":10622.149606379542,
+"y":46.65632429135232}],["102",{"height":2541.841216397801,
 "id":"102",
+"type":"move",
+"width":776.8885521972683,
+"x":-1597.3585193814326,
+"y":3905.0132249604476}],["159",{"height":1695.076873851642,
+"id":"159",
+"type":"move",
+"width":710.5835480226499,
+"x":-3393.8754826497357,
+"y":1266.1864188829784}],["160",{"height":482.98527760265216,
+"id":"160",
 "type":"resize",
-"width":807.661764801662,
-"x":-2588.0800714528023,
-"y":2376.448071484308}]]}},
+"width":680.207872863857,
+"x":-4166.529036062263,
+"y":1256.2778380413192}],["161",{"height":541.8625746828695,
+"id":"161",
+"type":"resize",
+"width":800,
+"x":-2499.521868618796,
+"y":3910.9616798805278}]]}},
 "titles":{"map":{"__map":true,
 "values":[["3",{"id":"3",
 "state":false,
@@ -133,7 +148,7 @@
 "state":false,
 "title":"Initialization"}],["15",{"id":"15",
 "state":false,
-"title":"New Component"}],["40",{"id":"40",
+"title":"Code Mirror Editor"}],["40",{"id":"40",
 "state":false,
 "title":"Pointer Handling"}],["74",{"id":"74",
 "state":false,
@@ -163,7 +178,13 @@
 "state":false,
 "title":"untitled"}],["102",{"id":"102",
 "state":false,
-"title":"CodeMirror HoverPlugin"}]]}},
+"title":"CodeMirror HoverPlugin"}],["159",{"id":"159",
+"state":false,
+"title":"Runner"}],["160",{"id":"160",
+"state":false,
+"title":"untitled"}],["161",{"id":"161",
+"state":false,
+"title":"untitled"}]]}},
 "version":3,
 "windowEnabled":{"map":{"__map":true,
 "values":[["3",{"enabled":true,
@@ -189,12 +210,15 @@
 "id":"91"}],["92",{"enabled":true,
 "id":"92"}],["93",{"enabled":true,
 "id":"93"}],["102",{"enabled":true,
-"id":"102"}]]}},
+"id":"102"}],["159",{"enabled":true,
+"id":"159"}],["160",{"enabled":true,
+"id":"160"}],["161",{"enabled":true,
+"id":"161"}]]}},
 "windowTypes":{"map":{"__map":true,
-"values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["15","code"],["40","code"],["74","code"],["82","code"],["83","doc"],["84","doc"],["85","doc"],["86","doc"],["87","doc"],["88","doc"],["89","doc"],["90","doc"],["91","doc"],["92","doc"],["93","doc"],["102","code"]]}},
-"windows":["3","4","5","6","7","9","11","15","40","74","82","83","84","85","86","87","88","89","90","91","92","93","102"],
+"values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["15","code"],["40","code"],["74","code"],["82","code"],["83","doc"],["84","doc"],["85","doc"],["86","doc"],["87","doc"],["88","doc"],["89","doc"],["90","doc"],["91","doc"],["92","doc"],["93","doc"],["102","code"],["159","code"],["160","doc"],["161","doc"]]}},
+"windows":["3","4","5","6","7","9","11","15","40","74","82","83","84","85","86","87","88","89","90","91","92","93","102","159","160","161"],
 "zIndex":{"map":{"__map":true,
-"values":[["3",124],["4",128],["5",131],["6",126],["7",130],["9",114],["11",113],["15",119],["40",121],["74",129],["82",100],["83",125],["84",110],["85",123],["86",122],["87",127],["88",105],["89",111],["90",120],["91",112],["92",104],["93",103],["102",132]]}}}
+"values":[["3",122],["4",128],["5",120],["6",133],["7",103],["9",114],["11",132],["15",123],["40",129],["74",105],["82",104],["83",121],["84",110],["85",113],["86",126],["87",127],["88",100],["89",125],["90",131],["91",112],["92",130],["93",124],["102",111],["159",119],["160",134],["161",135]]}}}
 {__codeMap: true, value: [[`3`, `const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
 const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
 const addDoc = Events.listener(renkon.querySelector("#addDocButton"), "click", () => "doc");
@@ -397,6 +421,33 @@ const _onRun = ((runRequest, windowContents, windowEnabled) => {
   iframe.dom.contentWindow.postMessage({code: code, path: id});
 })(runRequest, windowContents, windowEnabled);
 
+const resetHandler = Events.select(
+  {},
+  resetRequest, (prev, reset) => {
+    if (prev.ready) {
+      if (prev.ready.includes(reset.id)) {
+        Events.send(doReset, reset);
+        return {};
+      }
+    }
+    return {resetRequest: reset};
+  },
+  readyMessages, (prev, ready) => {
+    const readyIds = ready.map((r) => r.data.id);
+    if (prev.resetRequest) {
+      if (readyIds.includes(prev.resetRequest.id)) {
+        Events.send(doReset, prev.resetRequest);
+      }
+    }
+    return {};
+  },
+  windowContents, (_prev, _win) => ({})
+);
+
+const doReset = Events.receiver();
+
+const _onReset = Events.send(runRequest, doReset);
+
 const _onInspect = ((inspectRequest) => {
   const id = inspectRequest.id;
   const iframe = windowContents.map.get(id);
@@ -408,6 +459,7 @@ const titleEditChange = Events.receiver();
 const enabledChange = Events.receiver();
 const pinRequest = Events.receiver();
 const runRequest = Events.receiver();
+const resetRequest = Events.receiver();
 const inspectRequest = Events.receiver();
 
 const _goTo = ((padView, positions, dblClick) => {
@@ -443,6 +495,78 @@ const _goTo = ((padView, positions, dblClick) => {
     evt.target.textContent = "";
   }
 };
+
+const playDown = Events.receiver();
+const dismissDelayedButton = Events.receiver();
+const playLeave = Events.receiver();
+const playUp = Events.receiver();
+
+const playClickHandler = (evt, delayed) => {
+  if (delayed) {
+    return;
+  }
+  Events.send(runRequest, {id: \`\${Number.parseInt(evt.target.id)}\`});
+}
+
+const playDownHandler = (evt) => {
+  evt.stopPropagation();
+  if (evt.isPrimary) {
+      evt.target.setPointerCapture(evt.pointerId);
+  }
+  Events.send(playDown, evt);
+};
+
+
+const playUpHandler = (evt) => {
+  evt.target.releasePointerCapture(evt.pointerId);
+  // console.log(evt.target.id, evt.currentTarget.id)
+  Events.send(playUp, evt);
+};
+
+const playLeaveHandler = (evt) => {
+  // console.log("leave");
+  // evt.target.releasePointerCapture(evt.pointerId);
+  Events.send(playLeave, evt);  
+};
+
+const resetRunnerHandler = (evt) => {
+  // console.log("reset")
+  Events.send(dismissDelayedButton, evt.target.id);
+  Events.send(resetRequest, {id: \`\${Number.parseInt(evt.target.id)}\`});
+}
+
+const delayedPlayDown = Events.delay(playDown, 500);
+
+const delayedButtonJudge = Events.select(
+  {result: null, queue: []},
+  playDown, (_prev, down) => ({result: null, queue: [down]}),
+  playUp, (prev, up) => ({result: prev.result, queue: [up]}),
+  playLeave, (prev, leave) => ({result: prev.result, queue: [...prev.queue, leave]}),
+  delayedPlayDown, (prev, down) => {
+    if (prev.queue.length === 0) return [];
+    if (prev.queue.length === 1) {
+      if (prev.queue[0] === down) {return {result: down, queue: [down]};}
+      return {result: null, queue: []}
+    }
+    if ([prev.length - 1].type === "pointerup") {return {result: null, queue: []};}
+    if ([prev.length - 1].type === "pointerleave") {return prev;}
+  },
+  dismissDelayedButton, (_prev, _dismiss) => ({result: null, queue: []})
+);
+
+const delayed = Behaviors.select(
+  null,
+  Events.or(delayedButtonJudge), (_prev, judge) => {
+    const evt = judge.result;
+    if (evt && evt.type === "pointerdown") {
+      evt.target.releasePointerCapture(evt.pointerId);
+      return \`\${Number.parseInt(evt.target.id)}\`;
+    }
+    return null;
+  },
+  playUp, (prev, evt) => {return prev},
+  playLeave, (prev, evt) => {return prev}
+)
 
 const _positionsCss = ((positions, zIndex, pinnedPositions, padView) => {
   let style = document.body.querySelector("#positions-css");
@@ -482,7 +606,7 @@ const _positionsCss = ((positions, zIndex, pinnedPositions, padView) => {
   style.textContent = css;
 })(positions, zIndex, pinnedPositions, padView);
 
-const windowDOM = (id, title, windowContent, type, windowEnabled, pinnedPosition) => {
+const windowDOM = (id, title, windowContent, type, windowEnabled, pinnedPosition, delayed) => {
   return h("div", {
     key: \`\${id}\`,
     id: \`\${id}-win\`,
@@ -490,8 +614,12 @@ const windowDOM = (id, title, windowContent, type, windowEnabled, pinnedPosition
     pinned: !!pinnedPosition,
     ref: (ref) => {
       if (ref) {
-        if (ref.querySelector(".windowHolder") !== windowContent.dom.parentNode) {
-          ref.querySelector(".windowHolder").appendChild(windowContent.dom);
+        const holder = ref.querySelector(".windowHolder");
+        if (holder.firstChild && holder.firstChild !== windowContent.dom) {
+          holder.firstChild.remove();
+        }
+        if (holder !== windowContent.dom.parentNode) {
+          holder.appendChild(windowContent.dom);
         }
       }
     },
@@ -516,13 +644,28 @@ const windowDOM = (id, title, windowContent, type, windowEnabled, pinnedPosition
         },
       }),
       h("div", {
-        id: \`\${id}-runButton\`,
-        "class": "titlebarButton runButton",
-        type,
-        onClick: (evt) => {
-          Events.send(runRequest, {id: \`\${Number.parseInt(evt.target.id)}\`});
-        },
-      }),
+        id: \`\${id}-runButtonContainer\`,
+        "class": "runButtonContainer",
+      }, [
+        h("div", {
+          id: \`\${id}-runButton\`,
+          "class": "titlebarButton runButtonBackground runButton",
+          type,
+          onClick: (evt) => playClickHandler(evt, delayed),
+          onPointerDown: playDownHandler,
+          onPointerUp: playUpHandler,
+          onPointerLeave: playLeaveHandler,
+        }),
+        h("div", {
+          id: \`\${id}-runButton2\`,
+          "class": "titlebarButton resetButton runButton2",
+          type,
+          delayed: delayed === id,
+          onPoionterUp: resetRunnerHandler,
+          onClick: resetRunnerHandler,
+        })
+        ]
+      ),
       h("div", {
         id: \`\${id}-inspectorButton\`,
         "class": "titlebarButton inspectorButton",
@@ -593,15 +736,15 @@ const windowDOM = (id, title, windowContent, type, windowEnabled, pinnedPosition
   ])
 };
 
-const windowElements = ((windows, titles, windowContents, windowTypes, windowEnabled, pinnedPositions) => {
+const windowElements = ((windows, titles, windowContents, windowTypes, windowEnabled, pinnedPositions, delayed) => {
   return h("div", {id: "owner", "class": "owner"}, windows.map((id) => {
     return windowDOM(
       id,
       titles.map.get(id), windowContents.map.get(id),
       windowTypes.map.get(id), windowEnabled.map.get(id),
-      pinnedPositions.map.get(id));
+      pinnedPositions.map.get(id), delayed)
   }));
-})(windows, titles, windowContents, windowTypes, windowEnabled, pinnedPositions);
+})(windows, titles, windowContents, windowTypes, windowEnabled, pinnedPositions, delayed);
 
 const _windowRender = render(windowElements, document.querySelector("#mover"));
 
@@ -911,7 +1054,7 @@ html, body {
   border-radius: 6px 6px 0px 0px;
   cursor: -webkit-grab;
   cursor: grab;
-  overflow: hidden;
+  /*overflow: hidden;*/
 }
 
 .title {
@@ -935,6 +1078,11 @@ html, body {
 .titleSpacer {
   flex-grow: 1;
   pointer-events: none;
+}
+
+.runButtonContainer {
+  display: flex;
+  flex-direction: column;
 }
 
 .titlebarButton {
@@ -963,9 +1111,17 @@ html, body {
 }
 
 .runButton {
-  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3C!--%20Box%20outline%20--%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2218%22%20height%3D%2218%22%20rx%3D%222%22%20ry%3D%222%22%2F%3E%3C!--%20Right-pointing%20triangle%20(play%20icon)%20--%3E%3Cpath%20d%3D%22M9%207L17%2012L9%2017Z%22%20fill%3D%22%234D4D4D%22%20stroke%3D%22none%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
   display: none;
   pointer-events: none;
+}
+
+.runButtonBackground {
+  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3C!--%20Box%20outline%20--%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2218%22%20height%3D%2218%22%20rx%3D%222%22%20ry%3D%222%22%2F%3E%3C!--%20Right-pointing%20triangle%20(play%20icon)%20--%3E%3Cpath%20d%3D%22M9%207L17%2012L9%2017Z%22%20fill%3D%22%234D4D4D%22%20stroke%3D%22none%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+
+.resetButton {
+  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3C!--%20Box%20outline%20--%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2218%22%20height%3D%2218%22%20rx%3D%222%22%20ry%3D%222%22%2F%3E%3C%2Fg%3E%3C!--%20Play%20triangle%20(moved%20upward)%20--%3E%3Cpath%20d%3D%22M9%206L17%2011L9%2016Z%22%20fill%3D%22%234D4D4D%22%2F%3E%3C!--%20Rewind%20arrow%20shaft%20(moved%20up%20to%20y%3D18)%20--%3E%3Cpath%20d%3D%22M18%2018%20L7%2018%22%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%221.2%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C!--%20Arrowhead%20(moved%20up%20accordingly)%20--%3E%3Cpath%20d%3D%22M7%2018%20L8.5%2016.5%22%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%221.2%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M7%2018%20L8.5%2019.5%22%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%221.2%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
 }
 
 .pinButton {
@@ -980,6 +1136,22 @@ html, body {
 .runButton[type="runner"] {
   display: inherit;
   pointer-events: all;
+}
+
+.runButton2[delayed="true"] {
+  display: inline;
+  pointer-events: all;
+}
+
+.runButton2 {
+  display: none;
+  pointer-events: all;
+  position: relative;
+}
+
+.runButton2[delayed="true"] {
+  display: block;
+
 }
 
 .resizeHandler {
@@ -1101,6 +1273,7 @@ html, body {
   display: none;
   pointer-events: none;
 }
+
 
 .inspectorButton[type="runner"] {
   display: inherit;
@@ -1511,7 +1684,7 @@ const windowContents = Behaviors.select(
       } else if (type === "doc") {
         elem = newDocPane(id ,"");
       } else {
-        elem = newEditor(id)
+        elem = newEditor(id);
       }
       prev.map.set(id, elem);
     });
@@ -1522,6 +1695,11 @@ const windowContents = Behaviors.select(
     let elem = prev.map.get(id);
     if (!elem) {return prev;}
     elem.doc = code;
+    return {map: prev.map};
+  },
+  resetRequest, (prev, resetRequest) => {
+    const id = resetRequest.id;
+    prev.map.set(id, newRunner(id));
     return {map: prev.map};
   }
 );
@@ -1887,96 +2065,6 @@ const newEditor = (id, doc) => {
   });
   editor.dom.id = \`\${id}-editor\`;
   return editor;
-};
-
-const newRunner = (id) => {
-  const runnerIframe = document.createElement("iframe");
-  runnerIframe.srcdoc = \`
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <style>
-      .dock {
-        position: fixed;
-        top: 0px;
-        right: 0px;
-        width: 35%;
-        height: 80%;
-        display: flex;
-        box-shadow: 10px 10px 5px #4d4d4d, -10px -10px 5px #dddddd;
-        transition: left 0.5s;
-        background-color: white;
-        z-index: 1000000;
-        overflow-y: scroll;
-      }
-
-      .dock #inspector {
-        flex-grow: 1;
-        margin: 0px 20px 0px 20px;
-        background-color: #ffffff;
-        border: 1px solid black;
-      }
-    </style>
-    <script type="module">
-      import {ProgramState, CodeMirror, newInspector} from "./renkon-web.js";
-      window.thisProgramState = new ProgramState(Date.now());
-      window.CodeMirror = CodeMirror;
-      window.newInspector = newInspector;
-
-      window.onmessage = (evt) => {
-        if (evt.data && Array.isArray(evt.data.code)) {
-          window.thisProgramState.updateProgram(evt.data.code, evt.data.path);
-        }
-        if (evt.data && typeof evt.data.inspector === "boolean") {
-          if (window.thisProgramState) {
-            if (document.body.querySelector(".dock")) {
-              document.body.querySelector(".dock").remove();
-              return;
-            }
-            const dock = document.createElement("div");
-            dock.classList.add("dock");
-            const dom = document.createElement("div");
-            dom.id = "renkonInspector";
-
-            dock.appendChild(dom);
-            document.body.appendChild(dock);
-            const result = thisProgramState.order.map((id) => [
-                id + " (" + thisProgramState.types.get(id) + ")",
-                thisProgramState.resolved.get(id)]);
-            dom.addEventListener('contextmenu', event => {
-              event.preventDefault(); event.stopPropagation();}, {capture: true});
-            dom.addEventListener('pointerup', event => {
-              if (event.button !== 0) {
-                function findFieldElem(elem) {
-                  while (elem) {
-                    if (elem.classList?.contains("observablehq--field")) {return elem;}
-                    elem = elem.parentNode;
-                  }
-                }
-                const fieldElem = findFieldElem(event.target);
-                if (!fieldElem) {return;}
-                const key = fieldElem.querySelector(".observablehq--key");
-                if (!key) {return;}
-                const text = key.textContent;
-                const match = /(.*)\\\\W(Behavior|Event)\\\\W/.exec(text);
-                if (!match) {return;}
-                const keyName = match[1].trim();
-                console.log(window.thisProgramState.resolved.get(keyName)?.value);
-              }
-            });
-            newInspector(Object.fromEntries(result), dom);
-          }
-        }
-      };
-      window.parent.postMessage({ready: "renkon-ready", type: "runner", id: "\${id}"});
-    </script>
-  </head>
-  <body></body>
-</html>\`.trim();
-  runnerIframe.classList = "runnerIframe";
-  runnerIframe.id = \`runner-\${id}\`;
-  return {dom: runnerIframe};
 };
 `],
 [`40`, `const dblClick = Events.listener(renkon.querySelector("#pad"), "dblclick", (evt) => evt);
@@ -2702,9 +2790,9 @@ const docUpdate = Events.listener(window, "message", evt => {
 `],
 [`83`, `# Initialization
 
-A common pattern of setting up an application is to create a number of actual DOM elements and add to document.body. Later on the \`render\` function of Preact, imported here, will use those elements as a root of the virtual DOM elements.
+A common pattern of setting up an application is to create a number of actual DOM elements and add them to document.body. Later on the \`render\` function of Preact, imported here, will use those elements as roots of the virtual DOM elements.
 
-Like any other nodes, the immediately invoked function for the \`renkon\` node may be evaluated multiple times during the life cycle of an application. The lines:
+Like any other nodes, the immediately invoked function for the \`renkon\` node may be evaluated multiple times during the life cycle of an application. So, the lines:
 \`\`\`
 document.body.querySelector("#renkon")?.remove();
 document.body.appendChild(renkon);
@@ -2717,15 +2805,12 @@ The \`pad\` element is a width=100% height=100% that holds the \`mover\` element
 (Oh, BTW, "renkon" was originally a pun but you can also think that it is a kind of "root"; so some applications tend to have "renkon" as some sort of "root nodes.") 
 
 The \`searchPanel\` is a node that holds an actual DOM element. Notice that creation of searchPanel depends on the \`renkon\` node.`],
-[`84`, `# New Component
+[`84`, `# Code Mirror Editor
 
 The \`newEditor\` node and \`newRunner\` are constants and whose values are functions to create a new object for \`windowContent\`.
 
 We use CodeMirror for text editing in windows. renkon-web.js exports the CodeMirror object that has a number of common extensions. They are exported from renkon-web in <a href="https://github.com/yoshikiohshima/renkon-web/blob/main/src/main.js">this way</a>. An instance of of EditorView for code editing invokes global search so that a custom \`search\` plugin is added before \`basicSetup\`. It also has lint rules for JavaScript. The Renkon language allows node definitions in TypeScript syntax, though the editor's lint rule does not support it yet.
-
-The runner is an iframe and has the srcdoc property that has the \`onmesseage\` handler to receive code and set up the \`ProgramState\` instance.
-
-The class in the "CodeMirror HoverPlugin" below is a custom version of CodeMirror tooltip extension. As The dependency tooltip is interactive, the user needs to get to it; but it should go away when the pointer is moved enough. In the current implementation, the tooltip dissapears when the pointer moves to a different line veritally, or large enough amount horizontally.`],
+`],
 [`85`, `# User Interaction
 
 This text box and "Pointer Handling" have most of the handling for user events. 
@@ -2939,4 +3024,101 @@ class DependencyPlugin {
     this.view.dom.removeEventListener("mousemove", this.mousemove);
   }
 }
-`]]}
+`],
+[`159`, `const newRunner = (id) => {
+  const runnerIframe = document.createElement("iframe");
+  runnerIframe.srcdoc = \`
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <style>
+      .dock {
+        position: fixed;
+        top: 0px;
+        right: 0px;
+        width: 35%;
+        height: 80%;
+        display: flex;
+        box-shadow: 10px 10px 5px #4d4d4d, -10px -10px 5px #dddddd;
+        transition: left 0.5s;
+        background-color: white;
+        z-index: 1000000;
+        overflow-y: scroll;
+      }
+
+      .dock #inspector {
+        flex-grow: 1;
+        margin: 0px 20px 0px 20px;
+        background-color: #ffffff;
+        border: 1px solid black;
+      }
+    </style>
+    <script type="module">
+      import {ProgramState, CodeMirror, newInspector} from "./renkon-web.js";
+      window.thisProgramState = new ProgramState(Date.now());
+      window.CodeMirror = CodeMirror;
+      window.newInspector = newInspector;
+
+      window.onmessage = (evt) => {
+        if (evt.data && Array.isArray(evt.data.code)) {
+          window.thisProgramState.updateProgram(evt.data.code, evt.data.path);
+        }
+        if (evt.data && typeof evt.data.inspector === "boolean") {
+          if (window.thisProgramState) {
+            if (document.body.querySelector(".dock")) {
+              document.body.querySelector(".dock").remove();
+              return;
+            }
+            const dock = document.createElement("div");
+            dock.classList.add("dock");
+            const dom = document.createElement("div");
+            dom.id = "renkonInspector";
+
+            dock.appendChild(dom);
+            document.body.appendChild(dock);
+            const result = thisProgramState.order.map((id) => [
+                id + " (" + thisProgramState.types.get(id) + ")",
+                thisProgramState.resolved.get(id)]);
+            dom.addEventListener('contextmenu', event => {
+              event.preventDefault(); event.stopPropagation();}, {capture: true});
+            dom.addEventListener('pointerup', event => {
+              if (event.button !== 0) {
+                function findFieldElem(elem) {
+                  while (elem) {
+                    if (elem.classList?.contains("observablehq--field")) {return elem;}
+                    elem = elem.parentNode;
+                  }
+                }
+                const fieldElem = findFieldElem(event.target);
+                if (!fieldElem) {return;}
+                const key = fieldElem.querySelector(".observablehq--key");
+                if (!key) {return;}
+                const text = key.textContent;
+                const match = /(.*)\\\\W(Behavior|Event)\\\\W/.exec(text);
+                if (!match) {return;}
+                const keyName = match[1].trim();
+                console.log(window.thisProgramState.resolved.get(keyName)?.value);
+              }
+            });
+            newInspector(Object.fromEntries(result), dom);
+          }
+        }
+      };
+
+      window.parent.postMessage({ready: "renkon-ready", type: "runner", id: "\${id}"});
+    </script>
+  </head>
+  <body></body>
+</html>\`.trim();
+  runnerIframe.classList = "runnerIframe";
+  runnerIframe.id = \`runner-\${id}\`;
+  return {dom: runnerIframe};
+};
+`],
+[`160`, `# Runner
+
+The Runner is an iframe with a message handler that receives Renkon code from the editor and runs it. Also the document window is uses this with the markdown editor code.`],
+[`161`, `# HoverPlugin
+
+The class in the "CodeMirror HoverPlugin" below is a custom version of CodeMirror tooltip extension. As The dependency tooltip is interactive, the user needs to get to it; but it should go away when the pointer is moved enough. In the current implementation, the tooltip dissapears when the pointer moves to a different line veritally, or large enough amount horizontally.`]]}
