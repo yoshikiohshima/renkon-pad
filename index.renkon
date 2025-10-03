@@ -110,10 +110,10 @@
 "type":"move",
 "width":559.7397228362672,
 "x":10622.149606379542,
-"y":46.65632429135232}],["102",{"height":2541.841216397801,
+"y":46.65632429135232}],["102",{"height":2870.6226213712894,
 "id":"102",
-"type":"move",
-"width":776.8885521972683,
+"type":"resize",
+"width":830.0989848267543,
 "x":-1597.3585193814326,
 "y":3905.0132249604476}],["159",{"height":1695.076873851642,
 "id":"159",
@@ -2890,17 +2890,35 @@ There is no magic here... Except any advanced feature appears to be a magic in C
 
 SVG icons are created in 24x24 viewport, and converted to the data string.`],
 [`102`, `function hoverTooltip(source, options = {}) {
+  let setHover = window.CodeMirror.state.StateEffect.define();
+  let hoverState = window.CodeMirror.state.StateField.define({
+    create() {
+      return null;
+    },
+    update(value, tr) {
+      for (let effect of tr.effects) {
+        if (effect.is(setHover)) {
+          // console.log("effect", effect)
+          return effect.value;
+        }
+      }
+    }
+  })
   return {
+    hoverState: hoverState,
     extension: [
-      window.CodeMirror.view.ViewPlugin.define(view => new DependencyPlugin(view, source, {hoverTime: options.hoverTime || 300})),
+      hoverState,
+      window.CodeMirror.view.ViewPlugin.define(view => new DependencyPlugin(view, source, setHover, hoverState, {hoverTime: options.hoverTime || 300})),
     ]
   }
 }
 
 class DependencyPlugin {
-  constructor(view, source, options) {
+  constructor(view, source, setHover, hoverState, options) {
     this.view = view;
     this.source = source;
+    this.setHover = setHover;
+    this.hoverState = hoverState;
     this.options = options;
     this.lastMove = {x: 0, y: 0, target: view.dom, time: 0};
     view.dom.addEventListener("mouseleave", this.mouseleave = this.mouseleave.bind(this));
@@ -2949,8 +2967,9 @@ class DependencyPlugin {
       this.tooltip.dom.style.left = \`\${(posCoords.left - rect.left) / scaleX}px\`;
       this.tooltip.dom.style.top = \`\${(posCoords.top - rect.top) / scaleY}px\`;
       view.dom.appendChild(this.tooltip.dom);
+      this.tooltipPos = {pos, posCoords, line};
+      view.dispatch({effects: this.setHover.of({tooltip: this.tooltip, tooltipPos: this.tooltipPos})});
     }
-    this.tooltipPos = {pos, posCoords, line};
   }
 
   endHover() {
@@ -2959,6 +2978,7 @@ class DependencyPlugin {
       this.tooltip.dom?.remove();
       this.tooltip = null;
       this.tooltipPos = null;
+      this.view.dispatch({effects: this.setHover.of(null)});
     }
   }
 
