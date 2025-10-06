@@ -156,33 +156,33 @@
 "state":false,
 "title":"Doc Window"}],["83",{"id":"83",
 "state":false,
-"title":"untitled"}],["84",{"id":"84",
+"title":"Initialization"}],["84",{"id":"84",
 "state":false,
-"title":"untitled"}],["85",{"id":"85",
+"title":"Code MIrror Editor"}],["85",{"id":"85",
 "state":false,
-"title":"untitled"}],["86",{"id":"86",
+"title":"User Interaction"}],["86",{"id":"86",
 "state":false,
-"title":"untitled"}],["87",{"id":"87",
+"title":"Pointer Handling"}],["87",{"id":"87",
 "state":false,
-"title":"untitled"}],["88",{"id":"88",
+"title":"Data Structure"}],["88",{"id":"88",
 "state":false,
-"title":"untitled"}],["89",{"id":"89",
+"title":"Rendering"}],["89",{"id":"89",
 "state":false,
-"title":"untitled"}],["90",{"id":"90",
+"title":"Search"}],["90",{"id":"90",
 "state":false,
-"title":"untitled"}],["91",{"id":"91",
+"title":"Graph Visualization"}],["91",{"id":"91",
 "state":false,
-"title":"untitled"}],["92",{"id":"92",
+"title":"Save and Load"}],["92",{"id":"92",
 "state":false,
-"title":"untitled"}],["93",{"id":"93",
+"title":"Doc Window"}],["93",{"id":"93",
 "state":false,
-"title":"untitled"}],["102",{"id":"102",
+"title":"CSS"}],["102",{"id":"102",
 "state":false,
 "title":"CodeMirror HoverPlugin"}],["159",{"id":"159",
 "state":false,
 "title":"Runner"}],["160",{"id":"160",
 "state":false,
-"title":"untitled"}],["161",{"id":"161",
+"title":"Runner"}],["161",{"id":"161",
 "state":false,
 "title":"untitled"}]]}},
 "version":3,
@@ -526,7 +526,7 @@ const playUpHandler = (evt) => {
 const playLeaveHandler = (evt) => {
   // console.log("leave");
   // evt.target.releasePointerCapture(evt.pointerId);
-  Events.send(playLeave, evt);  
+  Events.send(playLeave, evt);
 };
 
 const resetRunnerHandler = (evt) => {
@@ -564,8 +564,8 @@ const delayed = Behaviors.select(
     }
     return null;
   },
-  playUp, (prev, evt) => {return prev},
-  playLeave, (prev, evt) => {return prev}
+  playUp, (prev, _evt) => {return prev},
+  playLeave, (prev, _evt) => {return prev}
 )
 
 const _positionsCss = ((positions, zIndex, pinnedPositions, padView) => {
@@ -664,8 +664,7 @@ const windowDOM = (id, title, windowContent, type, windowEnabled, pinnedPosition
           onPoionterUp: resetRunnerHandler,
           onClick: resetRunnerHandler,
         })
-        ]
-      ),
+      ]),
       h("div", {
         id: \`\${id}-inspectorButton\`,
         "class": "titlebarButton inspectorButton",
@@ -2978,7 +2977,7 @@ class DependencyPlugin {
       this.tooltip.dom?.remove();
       this.tooltip = null;
       this.tooltipPos = null;
-      this.view.dispatch({effects: this.setHover.of(null)});
+      // this.view.dispatch({effects: this.setHover.of(null)});
     }
   }
 
@@ -2991,9 +2990,9 @@ class DependencyPlugin {
   isInTooltip(tooltip, event) {
     const tooltipMargin = 4;
     let { left, right, top: top2, bottom } = tooltip.getBoundingClientRect();
-    return event.clientX >= left - tooltipMargin && 
-      event.clientX <= right + tooltipMargin && 
-      event.clientY >= top2 - tooltipMargin && 
+    return event.clientX >= left - tooltipMargin &&
+      event.clientX <= right + tooltipMargin &&
+      event.clientY >= top2 - tooltipMargin &&
       event.clientY <= bottom + tooltipMargin;
   }
 
@@ -3031,7 +3030,7 @@ class DependencyPlugin {
   }
 
   watchTooltipLeave(tooltip) {
-    let watch = (event) => {
+    let watch = (_event) => {
       tooltip.removeEventListener("mouseleave", watch);
     }
     tooltip.addEventListener("mouseleave", watch);

@@ -61,6 +61,457 @@ const searchPanel = ((renkon) => {
   return search;
 })(renkon);
 
+// Runner
+
+const newRunner = (id) => {
+  const runnerIframe = document.createElement("iframe");
+  runnerIframe.srcdoc = `
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <style>
+      .dock {
+        position: fixed;
+        top: 0px;
+        right: 0px;
+        width: 35%;
+        height: 80%;
+        display: flex;
+        box-shadow: 10px 10px 5px #4d4d4d, -10px -10px 5px #dddddd;
+        transition: left 0.5s;
+        background-color: white;
+        z-index: 1000000;
+        overflow-y: scroll;
+      }
+
+      .dock #inspector {
+        flex-grow: 1;
+        margin: 0px 20px 0px 20px;
+        background-color: #ffffff;
+        border: 1px solid black;
+      }
+    </style>
+    <script type="module">
+      import {ProgramState, CodeMirror, newInspector} from "./renkon-web.js";
+      window.thisProgramState = new ProgramState(Date.now());
+      window.CodeMirror = CodeMirror;
+      window.newInspector = newInspector;
+
+      window.onmessage = (evt) => {
+        if (evt.data && Array.isArray(evt.data.code)) {
+          window.thisProgramState.updateProgram(evt.data.code, evt.data.path);
+        }
+        if (evt.data && typeof evt.data.inspector === "boolean") {
+          if (window.thisProgramState) {
+            if (document.body.querySelector(".dock")) {
+              document.body.querySelector(".dock").remove();
+              return;
+            }
+            const dock = document.createElement("div");
+            dock.classList.add("dock");
+            const dom = document.createElement("div");
+            dom.id = "renkonInspector";
+
+            dock.appendChild(dom);
+            document.body.appendChild(dock);
+            const result = thisProgramState.order.map((id) => [
+                id + " (" + thisProgramState.types.get(id) + ")",
+                thisProgramState.resolved.get(id)]);
+            dom.addEventListener('contextmenu', event => {
+              event.preventDefault(); event.stopPropagation();}, {capture: true});
+            dom.addEventListener('pointerup', event => {
+              if (event.button !== 0) {
+                function findFieldElem(elem) {
+                  while (elem) {
+                    if (elem.classList?.contains("observablehq--field")) {return elem;}
+                    elem = elem.parentNode;
+                  }
+                }
+                const fieldElem = findFieldElem(event.target);
+                if (!fieldElem) {return;}
+                const key = fieldElem.querySelector(".observablehq--key");
+                if (!key) {return;}
+                const text = key.textContent;
+                const match = /(.*)\\W(Behavior|Event)\\W/.exec(text);
+                if (!match) {return;}
+                const keyName = match[1].trim();
+                console.log(window.thisProgramState.resolved.get(keyName)?.value);
+              }
+            });
+            newInspector(Object.fromEntries(result), dom);
+          }
+        }
+      };
+
+      window.parent.postMessage({ready: "renkon-ready", type: "runner", id: "${id}"});
+    </script>
+  </head>
+  <body></body>
+</html>`.trim();
+  runnerIframe.classList = "runnerIframe";
+  runnerIframe.id = `runner-${id}`;
+  return {dom: runnerIframe};
+};
+
+// Code Mirror Editor
+
+const goToVarName = Events.receiver();
+
+const gotoDef = ((varName, windowContents) => {
+  const editorsPair = [...windowContents.map].filter(([_id, content]) => content.state);
+
+  for (const [id, content] of editorsPair) {
+    try {
+      const decls = Renkon.findDecls(content.state.doc.toString());
+      for (const decl of decls) {
+        if (decl.decls.includes(varName)) {
+          return {id, range: {from: decl.start, to: decl.end}, shown: true};
+        }
+      }
+    } catch(e) {
+      console.log("Dependency analyzer encountered an error in source code:");
+    }
+  }
+  return undefined;
+})(goToVarName, windowContents);
+
+const gotoTarget = Events.or(gotoDef, updateEditorSelection);
+
+const allUseOf = (varName) => {
+  const programState = new Renkon.constructor(0);
+  programState.setLog(() => {});
+
+  // There should be a better way... But this function is used in the function that computes
+  // windowContents so there is a cyclic dependency
+  const windowContents = Renkon.resolved.get("windowContents").value.map;
+
+  const editorsPair = [...windowContents].filter(([_id, content]) => content.state);
+  const uses = [];
+  for (const [_id, content] of editorsPair) {
+    try {
+      const doc = content.state.doc.toString();
+      const decls = programState.findDecls([doc]);
+      for (const decl of decls) {
+        programState.setupProgram([doc.slice(decl.start, decl.end)]);
+        for (const jsNode of programState.nodes.values()) {
+          for (const input of jsNode.inputs) {
+            if (/^_[0-9]/.test(input)) {continue;}
+            if (input === varName) {
+              uses.push(...decl.decls);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.log("Dependency analyzer encountered an error in source code:");
+      return [];
+    }
+  }
+  return uses;
+};
+
+const newEditor = (id, doc) => {
+  const mirror = window.CodeMirror;
+
+  const config = {
+    // eslint configuration
+    languageOptions: {
+      globals: mirror.globals,
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: "module",
+      },
+    },
+    rules: {
+    },
+  };
+
+  const getDecl = (state, pos) => {
+    const showDependency = Renkon.resolved.get("showGraph")?.value;
+    if (!showDependency || showDependency !== "showDeps") {return;}
+    let decls;
+    try {
+      decls = Renkon.findDecls(state.doc.toString());
+    } catch(e) {
+      console.log("Dependency analyzer encountered an error in source code:");
+      return;
+    }
+    const head = pos !== undefined ? pos : state.selection.ranges[0]?.head;
+    if (typeof head !== "number") {return;}
+    const decl = decls.find((d) => d.start <= head && head < d.end);
+    if (!decl) {return;}
+    const programState = new Renkon.constructor(0);
+    programState.setLog(() => {});
+    try {
+      programState.setupProgram([decl.code]);
+    } catch (e) {
+      console.log("could not find the declarations as there is a syntax error");
+      return;
+    }
+    const keys = [...programState.nodes.keys()];
+    const last = keys[keys.length - 1];
+    const deps = [];
+    for (const k of keys) {
+      const is = programState.nodes.get(k).inputs;
+      deps.push(...is.filter((n) => !/_[0-9]/.exec(n)));
+    }
+
+    return {deps, name: last}
+  }
+  const wordHover = hoverTooltip((view, pos, _side) => {
+    let node = getDecl(view.state, pos);
+    if (!node) return null;
+    const {deps, name} = node;
+    const uses = allUseOf(name);
+    return {
+      pos,
+      above: true,
+      create() {
+        let dom = document.createElement("div");
+        let children = deps.map((d) => {
+          const c = document.createElement("span");
+          c.textContent = d;
+          c.onclick = (_evt) => Events.send(goToVarName, c.textContent);
+          c.style.width = "fitContent";
+          c.style.height = "fitContent";
+          c.classList.add("dependency-link");
+          return c;
+        });
+        children.forEach((c, i) => {
+          dom.appendChild(c);
+          if (i !== children.length - 1) {
+            const comma = document.createElement("span");
+            comma.textContent = ", ";
+            dom.appendChild(comma);
+          }
+        });
+        let tail = document.createElement("span");
+        tail.textContent = ` -> ${name} -> `;
+        dom.appendChild(tail);
+
+        children = uses.map((d) => {
+          const c = document.createElement("span");
+          c.textContent = d;
+          c.onclick = (_evt) => Events.send(goToVarName, c.textContent);
+          c.style.width = "fitContent";
+          c.style.height = "fitContent";
+          c.classList.add("dependency-link");
+          return c;
+        });
+        children.forEach((c, i) => {
+          dom.appendChild(c);
+          if (i !== children.length - 1) {
+            const comma = document.createElement("span");
+            comma.textContent = ", ";
+            dom.appendChild(comma);
+          }
+        });
+
+        dom.className = "cm-tooltip-dependency cm-tooltip-cursor-wide";
+        return {dom};
+      }
+    };
+  }, {hoverTime: 1000, hideOnChange: true});
+
+  const openSearch = ({_state, _dispatch }) => {
+    Events.send(toggleSearchPanel, true);
+    return true;
+  };
+
+  const search = {key: "Mod-f", run: openSearch, shift: openSearch};
+
+  const cursorChange = mirror.view.ViewPlugin.fromClass(class {
+    update(update) {
+      if (update.selectionSet || update.docChanged) {
+        this.reportCursor(update.view);
+      }
+    }
+
+    reportCursor(view) {
+      const pos = view.state.selection.main.head;
+      Events.send(cursorChanged, {id: id, position: pos});
+    }
+  });
+
+  const editor = new mirror.EditorView({
+    doc: doc || `console.log("hello")`,
+    extensions: [
+      mirror.view.keymap.of([search]),
+      mirror.basicSetup,
+      mirror["lang-javascript"].javascript({typescript: true}),
+      mirror.EditorView.lineWrapping,
+      mirror.EditorView.editorAttributes.of({"class": "editor"}),
+      mirror.view.keymap.of([mirror.commands.indentWithTab]),
+      mirror.lint.linter(
+        mirror["lang-javascript"]
+          .esLint(new mirror["eslint-linter-browserify"].Linter(), config)),
+      wordHover,
+      cursorChange,
+    ],
+  });
+  editor.dom.id = `${id}-editor`;
+  return editor;
+};
+
+// CodeMirror HoverPlugin
+
+function hoverTooltip(source, options = {}) {
+  let setHover = window.CodeMirror.state.StateEffect.define();
+  let hoverState = window.CodeMirror.state.StateField.define({
+    create() {
+      return null;
+    },
+    update(value, tr) {
+      for (let effect of tr.effects) {
+        if (effect.is(setHover)) {
+          // console.log("effect", effect)
+          return effect.value;
+        }
+      }
+    }
+  })
+  return {
+    hoverState: hoverState,
+    extension: [
+      hoverState,
+      window.CodeMirror.view.ViewPlugin.define(view => new DependencyPlugin(view, source, setHover, hoverState, {hoverTime: options.hoverTime || 300})),
+    ]
+  }
+}
+
+class DependencyPlugin {
+  constructor(view, source, setHover, hoverState, options) {
+    this.view = view;
+    this.source = source;
+    this.setHover = setHover;
+    this.hoverState = hoverState;
+    this.options = options;
+    this.lastMove = {x: 0, y: 0, target: view.dom, time: 0};
+    view.dom.addEventListener("mouseleave", this.mouseleave = this.mouseleave.bind(this));
+    view.dom.addEventListener("mousemove", this.mousemove = this.mousemove.bind(this));
+    this.hoverTimeout = -1;
+    this.hoverTime = options.hoverTime;
+  }
+
+  checkHover() {
+    this.hoverTimeout = -1;
+    if (this.tooltip) return;
+    let hovered = Date.now() - this.lastMove.time;
+    if (hovered < this.hoverTime) {
+      this.hoverTimeout = setTimeout(() => this.checkHover(), this.hoverTime - hovered);
+    } else {
+      this.startHover();
+    }
+  }
+
+  startHover() {
+    clearTimeout(this.restartTimeout);
+    let {view, lastMove} = this;
+    let desc = view.docView.nearest(lastMove.target);
+    if (!desc) return;
+    let pos = view.posAtCoords(lastMove);
+
+    if (pos === null) return;
+    const posCoords = view.coordsAtPos(pos);
+    if (!posCoords ||
+      lastMove.y < posCoords.top || lastMove.y > posCoords.bottom ||
+      lastMove.x < posCoords.left - view.defaultCharacterWidth ||
+      lastMove.x > posCoords.right + view.defaultCharacterWidth) return;
+
+    const line = view.state.doc.lineAt(pos);
+
+    if (!this.tooltip) {
+      const rect = view.dom.getBoundingClientRect();
+      let scaleX = rect.width / view.dom.offsetWidth;
+      let scaleY = rect.height / view.dom.offsetHeight;
+      const tip = this.source(view, pos, 1);
+      if (!tip) {return;}
+      this.tooltip = tip.create();
+      this.tooltip.dom.style.position = "absolute";
+      this.tooltip.dom.classList.add("cm-tooltip-hover");
+      this.tooltip.dom.classList.add("cm-tooltip-above");
+      this.tooltip.dom.style.left = `${(posCoords.left - rect.left) / scaleX}px`;
+      this.tooltip.dom.style.top = `${(posCoords.top - rect.top) / scaleY}px`;
+      view.dom.appendChild(this.tooltip.dom);
+      this.tooltipPos = {pos, posCoords, line};
+      view.dispatch({effects: this.setHover.of({tooltip: this.tooltip, tooltipPos: this.tooltipPos})});
+    }
+  }
+
+  endHover() {
+    this.hoverTimeout = -1;
+    if (this.tooltip) {
+      this.tooltip.dom?.remove();
+      this.tooltip = null;
+      this.tooltipPos = null;
+      // this.view.dispatch({effects: this.setHover.of(null)});
+    }
+  }
+
+  update(update) {
+    if (update.docChanged) {
+      this.endHover();
+    }
+  }
+
+  isInTooltip(tooltip, event) {
+    const tooltipMargin = 4;
+    let { left, right, top: top2, bottom } = tooltip.getBoundingClientRect();
+    return event.clientX >= left - tooltipMargin &&
+      event.clientX <= right + tooltipMargin &&
+      event.clientY >= top2 - tooltipMargin &&
+      event.clientY <= bottom + tooltipMargin;
+  }
+
+  distance(pos, move) {
+    return Math.sqrt((pos.left - move.x) ** 2 + (pos.top - move.y) ** 2);
+  }
+
+  mousemove(event) {
+    this.lastMove = {x: event.clientX, y: event.clientY, target: event.target, time: Date.now()};
+    const view = this.view;
+    if (this.hoverTimeout < 0) {
+      this.hoverTimeout = setTimeout(() => this.checkHover(), this.hoverTime)
+    }
+    if (this.tooltip && !this.isInTooltip(this.tooltip.dom, event)) {
+      const pos = view.posAtCoords(this.lastMove);
+      if (pos) {
+        const lastPos = this.tooltipPos;
+        const line = view.state.doc.lineAt(pos);
+        if (this.distance(lastPos.posCoords, this.lastMove) > 30 || lastPos.line.number !== line.number) {
+          this.endHover();
+        }
+      }
+    }
+  }
+
+  mouseleave(event) {
+    clearTimeout(this.hoverTimeout);
+    this.hoverTimeout = -1;
+    let inTooltip = this.tooltip && this.tooltip.dom.contains(event.relatedTarget);
+    if (!inTooltip) {
+      this.endHover();
+    } else {
+      this.watchTooltipLeave(this.tooltip.dom);
+    }
+  }
+
+  watchTooltipLeave(tooltip) {
+    let watch = (event) => {
+      tooltip.removeEventListener("mouseleave", watch);
+    }
+    tooltip.addEventListener("mouseleave", watch);
+  }
+
+  destroy() {
+    this.endHover();
+    clearTimeout(this.hoverTimeout);
+    this.view.dom.removeEventListener("mouseleave", this.mouseleave);
+    this.view.dom.removeEventListener("mousemove", this.mousemove);
+  }
+}
+
 // Data Structure
 
 // [id:string]
@@ -291,7 +742,7 @@ const windowContents = Behaviors.select(
       } else if (type === "doc") {
         elem = newDocPane(id ,"");
       } else {
-        elem = newEditor(id)
+        elem = newEditor(id);
       }
       prev.map.set(id, elem);
     });
@@ -302,6 +753,11 @@ const windowContents = Behaviors.select(
     let elem = prev.map.get(id);
     if (!elem) {return prev;}
     elem.doc = code;
+    return {map: prev.map};
+  },
+  resetRequest, (prev, resetRequest) => {
+    const id = resetRequest.id;
+    prev.map.set(id, newRunner(id));
     return {map: prev.map};
   }
 );
@@ -615,6 +1071,33 @@ const _onRun = ((runRequest, windowContents, windowEnabled) => {
   iframe.dom.contentWindow.postMessage({code: code, path: id});
 })(runRequest, windowContents, windowEnabled);
 
+const resetHandler = Events.select(
+  {},
+  resetRequest, (prev, reset) => {
+    if (prev.ready) {
+      if (prev.ready.includes(reset.id)) {
+        Events.send(doReset, reset);
+        return {};
+      }
+    }
+    return {resetRequest: reset};
+  },
+  readyMessages, (prev, ready) => {
+    const readyIds = ready.map((r) => r.data.id);
+    if (prev.resetRequest) {
+      if (readyIds.includes(prev.resetRequest.id)) {
+        Events.send(doReset, prev.resetRequest);
+      }
+    }
+    return {};
+  },
+  windowContents, (_prev, _win) => ({})
+);
+
+const doReset = Events.receiver();
+
+const _onReset = Events.send(runRequest, doReset);
+
 const _onInspect = ((inspectRequest) => {
   const id = inspectRequest.id;
   const iframe = windowContents.map.get(id);
@@ -626,6 +1109,7 @@ const titleEditChange = Events.receiver();
 const enabledChange = Events.receiver();
 const pinRequest = Events.receiver();
 const runRequest = Events.receiver();
+const resetRequest = Events.receiver();
 const inspectRequest = Events.receiver();
 
 const _goTo = ((padView, positions, dblClick) => {
@@ -855,1155 +1339,6 @@ const moveCompute = ((downOrUpOrResize, positions, padView) => {
     return (move) => move;
   }
 })(downOrUpOrResize, positions, padView);
-
-// New Component
-
-const goToVarName = Events.receiver();
-
-const gotoDef = ((varName, windowContents) => {
-  const editorsPair = [...windowContents.map].filter(([_id, content]) => content.state);
-
-  for (const [id, content] of editorsPair) {
-    try {
-      const decls = Renkon.findDecls(content.state.doc.toString());
-      for (const decl of decls) {
-        if (decl.decls.includes(varName)) {
-          return {id, range: {from: decl.start, to: decl.end}, shown: true};
-        }
-      }
-    } catch(e) {
-      console.log("Dependency analyzer encountered an error in source code:");
-    }
-  }
-  return undefined;
-})(goToVarName, windowContents);
-
-const gotoTarget = Events.or(gotoDef, updateEditorSelection);
-
-const allUseOf = (varName) => {
-  const programState = new Renkon.constructor(0);
-  programState.setLog(() => {});
-
-  // There should be a better way... But this function is used in the function that computes
-  // windowContents so there is a cyclic dependency
-  const windowContents = Renkon.resolved.get("windowContents").value.map;
-
-  const editorsPair = [...windowContents].filter(([_id, content]) => content.state);
-  const uses = [];
-  for (const [_id, content] of editorsPair) {
-    try {
-      const doc = content.state.doc.toString();
-      const decls = programState.findDecls([doc]);
-      for (const decl of decls) {
-        programState.setupProgram([doc.slice(decl.start, decl.end)]);
-        for (const jsNode of programState.nodes.values()) {
-          for (const input of jsNode.inputs) {
-            if (/^_[0-9]/.test(input)) {continue;}
-            if (input === varName) {
-              uses.push(...decl.decls);
-            }
-          }
-        }
-      }
-    } catch (e) {
-      console.log("Dependency analyzer encountered an error in source code:");
-      return [];
-    }
-  }
-  return uses;
-};
-
-const newEditor = (id, doc) => {
-  const mirror = window.CodeMirror;
-
-  const config = {
-    // eslint configuration
-    languageOptions: {
-      globals: mirror.globals,
-      parserOptions: {
-        ecmaVersion: 2022,
-        sourceType: "module",
-      },
-    },
-    rules: {
-    },
-  };
-
-  const getDecl = (state, pos) => {
-    const showDependency = Renkon.resolved.get("showGraph")?.value;
-    if (!showDependency || showDependency !== "showDeps") {return;}
-    let decls;
-    try {
-      decls = Renkon.findDecls(state.doc.toString());
-    } catch(e) {
-      console.log("Dependency analyzer encountered an error in source code:");
-      return;
-    }
-    const head = pos !== undefined ? pos : state.selection.ranges[0]?.head;
-    if (typeof head !== "number") {return;}
-    const decl = decls.find((d) => d.start <= head && head < d.end);
-    if (!decl) {return;}
-    const programState = new Renkon.constructor(0);
-    programState.setLog(() => {});
-    try {
-      programState.setupProgram([decl.code]);
-    } catch (e) {
-      console.log("could not find the declarations as there is a syntax error");
-      return;
-    }
-    const keys = [...programState.nodes.keys()];
-    const last = keys[keys.length - 1];
-    const deps = [];
-    for (const k of keys) {
-      const is = programState.nodes.get(k).inputs;
-      deps.push(...is.filter((n) => !/_[0-9]/.exec(n)));
-    }
-
-    return {deps, name: last}
-  }
-  const wordHover = mirror.view.hoverTooltip((view, pos, _side) => {
-    let node = getDecl(view.state, pos);
-    if (!node) return null;
-    const {deps, name} = node;
-    const uses = allUseOf(name);
-    return {
-      pos,
-      above: true,
-      create() {
-        let dom = document.createElement("div");
-        let children = deps.map((d) => {
-          const c = document.createElement("span");
-          c.textContent = d;
-          c.onclick = (_evt) => Events.send(goToVarName, c.textContent);
-          c.style.width = "fitContent";
-          c.style.height = "fitContent";
-          c.classList.add("dependency-link");
-          return c;
-        });
-        children.forEach((c, i) => {
-          dom.appendChild(c);
-          if (i !== children.length - 1) {
-            const comma = document.createElement("span");
-            comma.textContent = ", ";
-            dom.appendChild(comma);
-          }
-        });
-        let tail = document.createElement("span");
-        tail.textContent = ` -> ${name} -> `;
-        dom.appendChild(tail);
-
-        children = uses.map((d) => {
-          const c = document.createElement("span");
-          c.textContent = d;
-          c.onclick = (_evt) => Events.send(goToVarName, c.textContent);
-          c.style.width = "fitContent";
-          c.style.height = "fitContent";
-          c.classList.add("dependency-link");
-          return c;
-        });
-        children.forEach((c, i) => {
-          dom.appendChild(c);
-          if (i !== children.length - 1) {
-            const comma = document.createElement("span");
-            comma.textContent = ", ";
-            dom.appendChild(comma);
-          }
-        });
-
-        dom.className = "cm-tooltip-dependency cm-tooltip-cursor-wide";
-        return {dom};
-      }
-    };
-  }, {hoverTime: 1000, hideOnChange: true});
-
-  const openSearch = ({_state, _dispatch }) => {
-    Events.send(toggleSearchPanel, true);
-    return true;
-  };
-
-  const search = {key: "Mod-f", run: openSearch, shift: openSearch};
-
-  const cursorChange = mirror.view.ViewPlugin.fromClass(class {
-    update(update) {
-      if (update.selectionSet || update.docChanged) {
-        this.reportCursor(update.view);
-      }
-    }
-
-    reportCursor(view) {
-      const pos = view.state.selection.main.head;
-      Events.send(cursorChanged, {id: id, position: pos});
-    }
-  });
-
-  const editor = new mirror.EditorView({
-    doc: doc || `console.log("hello")`,
-    extensions: [
-      mirror.view.keymap.of([search]),
-      mirror.basicSetup,
-      mirror["lang-javascript"].javascript({typescript: true}),
-      mirror.EditorView.lineWrapping,
-      mirror.EditorView.editorAttributes.of({"class": "editor"}),
-      mirror.view.keymap.of([mirror.commands.indentWithTab]),
-      mirror.lint.linter(
-        mirror["lang-javascript"]
-          .esLint(new mirror["eslint-linter-browserify"].Linter(), config)),
-      wordHover,
-      cursorChange,
-    ],
-  });
-  editor.dom.id = `${id}-editor`;
-  return editor;
-};
-
-const newRunner = (id) => {
-  const runnerIframe = document.createElement("iframe");
-  runnerIframe.srcdoc = `
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <style>
-      .dock {
-        position: fixed;
-        top: 0px;
-        right: 0px;
-        width: 35%;
-        height: 80%;
-        display: flex;
-        box-shadow: 10px 10px 5px #4d4d4d, -10px -10px 5px #dddddd;
-        transition: left 0.5s;
-        background-color: white;
-        z-index: 1000000;
-        overflow-y: scroll;
-      }
-
-      .dock #inspector {
-        flex-grow: 1;
-        margin: 0px 20px 0px 20px;
-        background-color: #ffffff;
-        border: 1px solid black;
-      }
-    </style>
-    <script type="module">
-      import {ProgramState, CodeMirror, newInspector} from "./renkon-web.js";
-      window.thisProgramState = new ProgramState(Date.now());
-      window.CodeMirror = CodeMirror;
-      window.newInspector = newInspector;
-
-      window.onmessage = (evt) => {
-        if (evt.data && Array.isArray(evt.data.code)) {
-          window.thisProgramState.updateProgram(evt.data.code, evt.data.path);
-        }
-        if (evt.data && typeof evt.data.inspector === "boolean") {
-          if (window.thisProgramState) {
-            if (document.body.querySelector(".dock")) {
-              document.body.querySelector(".dock").remove();
-              return;
-            }
-            const dock = document.createElement("div");
-            dock.classList.add("dock");
-            const dom = document.createElement("div");
-            dom.id = "renkonInspector";
-
-            dock.appendChild(dom);
-            document.body.appendChild(dock);
-            const result = thisProgramState.order.map((id) => [
-                id + " (" + thisProgramState.types.get(id) + ")",
-                thisProgramState.resolved.get(id)]);
-            dom.addEventListener('contextmenu', event => {
-              event.preventDefault(); event.stopPropagation();}, {capture: true});
-            dom.addEventListener('pointerup', event => {
-              if (event.button !== 0) {
-                function findFieldElem(elem) {
-                  while (elem) {
-                    if (elem.classList?.contains("observablehq--field")) {return elem;}
-                    elem = elem.parentNode;
-                  }
-                }
-                const fieldElem = findFieldElem(event.target);
-                if (!fieldElem) {return;}
-                const key = fieldElem.querySelector(".observablehq--key");
-                if (!key) {return;}
-                const text = key.textContent;
-                const match = /(.*)\\W(Behavior|Event)\\W/.exec(text);
-                if (!match) {return;}
-                const keyName = match[1].trim();
-                console.log(window.thisProgramState.resolved.get(keyName)?.value);
-              }
-            });
-            newInspector(Object.fromEntries(result), dom);
-          }
-        }
-      };
-      window.parent.postMessage({ready: "renkon-ready", type: "runner", id: "${id}"});
-    </script>
-  </head>
-  <body></body>
-</html>`.trim();
-  runnerIframe.classList = "runnerIframe";
-  runnerIframe.id = `runner-${id}`;
-  return {dom: runnerIframe};
-};
-
-// Rendering
-
-const inputHandler = (evt) => {
-  if (evt.key === "Enter") {
-    evt.preventDefault();
-    evt.stopPropagation();
-    Events.send(titleEditChange, {
-      id: `${Number.parseInt(evt.target.id)}`,
-      title: evt.target.textContent,
-      state: false
-    });
-    evt.target.textContent = "";
-  }
-};
-
-const _positionsCss = ((positions, zIndex, pinnedPositions, padView) => {
-  let style = document.body.querySelector("#positions-css");
-  if (!style) {
-    style = document.createElement("style");
-    style.id = "positions-css";
-    document.body.appendChild(style);
-  }
-
-  const css = [...positions.map].map(([id, rect]) => {
-    let x;
-    let y;
-    let scale;
-    const pinned = pinnedPositions.map.get(id);
-    if (!pinned) {
-      x = rect.x;
-      y = rect.y;
-      scale = 1;
-    } else {
-      // t(x) = pinned.x
-      // t(a) = a * padView.scale + padView.x;
-      // x * padView.scale + padView.x = pinned.x;
-      // x = pinned.x / padView.scale - padView.x;
-      scale = pinned.scale / padView.scale;
-      x = pinned.x / padView.scale - padView.x;
-      y = pinned.y / padView.scale - padView.y;
-      // console.log(pinned.x, scale, x, padView.x);
-    }
-    return `
-[id="${id}-win"] {
-    transform: translate(${x}px, ${y}px) scale(${scale});
-    width: ${rect.width}px;
-    height: ${rect.height}px;
-    z-index: ${zIndex.map.get(id)};
-}`.trim();
-  }).join("\n");
-  style.textContent = css;
-})(positions, zIndex, pinnedPositions, padView);
-
-const windowDOM = (id, title, windowContent, type, windowEnabled, pinnedPosition) => {
-  return h("div", {
-    key: `${id}`,
-    id: `${id}-win`,
-    "class": "window",
-    pinned: !!pinnedPosition,
-    ref: (ref) => {
-      if (ref) {
-        if (ref.querySelector(".windowHolder") !== windowContent.dom.parentNode) {
-          ref.querySelector(".windowHolder").appendChild(windowContent.dom);
-        }
-      }
-    },
-    onPointerEnter: (evt) => Events.send(hovered, `${Number.parseInt(evt.target.id)}`),
-    onPointerLeave: (_evt) => Events.send(hovered, null)
-  }, [
-    h("div", {
-      id: `${id}-titleBar`,
-      "class": "titleBar",
-    }, [
-      h("div", {
-        id: `${id}-enabledButton`,
-        disabled: !!(windowEnabled && !windowEnabled.enabled),
-        style: {
-          display: `${type !== "code" ? "none" : "inheirt"}`
-        },
-        "class": "titlebarButton enabledButton",
-        onClick: (evt) => {
-          Events.send(enabledChange, {
-            id: `${Number.parseInt(evt.target.id)}`,
-            enabled: !windowEnabled || !windowEnabled.enabled});
-        },
-      }),
-      h("div", {
-        id: `${id}-runButton`,
-        "class": "titlebarButton runButton",
-        type,
-        onClick: (evt) => {
-          Events.send(runRequest, {id: `${Number.parseInt(evt.target.id)}`});
-        },
-      }),
-      h("div", {
-        id: `${id}-inspectorButton`,
-        "class": "titlebarButton inspectorButton",
-        type,
-        onClick: (evt) => {
-          Events.send(inspectRequest, {id: `${Number.parseInt(evt.target.id)}`});
-        },
-      }),
-      h("div", {
-        id: `${id}-title`,
-        "class": "title",
-        contentEditable: `${title.state}`,
-        onKeydown: inputHandler,
-      }, title.title),
-      h("div", {
-        id: `${id}-titleSpacer`,
-        "class": "titleSpacer",
-      }),
-      h("div", {
-        id: `${id}-edit`,
-        "class": `titlebarButton editButton`,
-        onClick: (evt) => {
-          // console.log(evt);
-          Events.send(titleEditChange, {id: `${Number.parseInt(evt.target.id)}`, state: !title.state});
-        },
-      }, []),
-      h("div", {
-        id: `${id}-pin`,
-        "class": "titlebarButton pinButton",
-        state: pinnedPosition ? "off" : "on",
-        onClick: (evt) => {
-          Events.send(pinRequest, {id: `${Number.parseInt(evt.target.id)}`})
-        }
-      }),
-      h("div", {
-        id: `${id}-close`,
-        "class": "titlebarButton closeButton",
-        onClick: (evt) => {
-          Events.send(remove, {id: `${Number.parseInt(evt.target.id)}`, type: "remove"})
-        }
-      }),
-    ]),
-    h("div", {
-      id: `${id}-bottomRight-resize`,
-      corner: "bottomRight",
-      "class": "resizeHandler",
-    }, []),
-    h("div", {
-      id: `${id}-topLeft-resize`,
-      corner: "topLeft",
-      "class": "resizeHandler",
-    }, []),
-    h("div", {
-      id: `${id}-bottomLeft-resize`,
-      corner: "bottomLeft",
-      "class": "resizeHandler",
-    }, []),
-    h("div", {
-      id: `${id}-topRight-resize`,
-      corner: "topRight",
-      "class": "resizeHandler",
-    }, []),
-    h("div", {
-      id: `${id}-windowHolder`,
-      blurred: `${type !== "code" ? false : (windowEnabled ? !windowEnabled.enabled : false)}`,
-      "class": "windowHolder",
-    }, [])
-  ])
-};
-
-const windowElements = ((windows, titles, windowContents, windowTypes, windowEnabled, pinnedPositions) => {
-  return h("div", {id: "owner", "class": "owner"}, windows.map((id) => {
-    return windowDOM(
-      id,
-      titles.map.get(id), windowContents.map.get(id),
-      windowTypes.map.get(id), windowEnabled.map.get(id),
-      pinnedPositions.map.get(id));
-  }));
-})(windows, titles, windowContents, windowTypes, windowEnabled, pinnedPositions);
-
-const _windowRender = render(windowElements, document.querySelector("#mover"));
-
-/// Save and Load
-
-const loadRequest = Events.receiver();
-
-const saveData = (windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
-  const code = new Map(
-    [...windowContents.map].map(([id, content]) => {
-      if (content.state) {
-        return [id, content.state.doc.toString()];
-      } else if (content.doc) {
-        return [id, content.doc];
-      } else {
-        return null;
-      }
-    }).filter(item => item !== null));
-  const myTitles = new Map([...titles.map].map(([id, obj]) => ([id, {...obj, state: false}])));
-  const data1 = stringify({
-    version: 3,
-    windows,
-    positions,
-    zIndex,
-    titles: {map: myTitles},
-    windowTypes,
-    padTitle,
-    windowEnabled
-  });
-
-  const data2 = stringifyCodeMap(code);
-
-  return encodeURIComponent(data1) + encodeURIComponent(data2);
-};
-
-const _saver2 = ((windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
-  const data = saveData(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled);
-
-  const dataStr = "data:text/plain;charset=utf-8," + data;
-  const div = document.createElement("a");
-  div.setAttribute("href", dataStr);
-  div.setAttribute("download", `${padTitle}.renkon`);
-  div.click();
-})(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled, save);
-
-const _loader = (() => {
-  const input = document.createElement("div");
-  input.innerHTML = `<input id="imageinput" type="file" accept=".json,.renkon">`;
-  const imageInput = input.firstChild;
-
-  imageInput.onchange = () => {
-    const file = imageInput.files[0];
-    if (!file) {imageInput.remove(); return;}
-    new Promise(resolve => {
-      let reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.readAsArrayBuffer(file);
-    }).then((data) => {
-      const result = new TextDecoder("utf-8").decode(data);
-      loadData(result, imageInput);
-    });
-    imageInput.value = "";
-  };
-  imageInput.oncancel = () => imageInput.remove();
-  document.body.appendChild(imageInput);
-  imageInput.click();
-})(load);
-
-const nameFromUrl = (() => {
-  const maybeUrl = new URL(window.location).searchParams.get("file");
-  if (maybeUrl) {
-    return maybeUrl;
-  }
-  return undefined;
-})();
-
-const loadData = (result, maybeImageInput) => {
-  const index = result.indexOf("{__codeMap: true, value:");
-  if (index < 0) {
-    const loaded = parse(result);
-    if (loaded.version === 1) {
-      Events.send(loadRequest, loaded);
-      maybeImageInput?.remove();
-      return;
-    }
-    console.log("unknown type of data");
-    maybeImageInput?.remove();
-    return;
-  }
-
-  const data1 = result.slice(0, index);
-  const data2 = result.slice(index);
-
-  const loaded = parse(data1);
-
-  if (loaded.version === 2 || loaded.version === 3) {
-    const code = parseCodeMap(data2);
-    loaded.code = code;
-    Events.send(loadRequest, loaded);
-    maybeImageInput?.remove();
-    return;
-  }
-  console.log("unknown type of data");
-  maybeImageInput.remove();
-}
-
-const _loadFromUrl = fetch(nameFromUrl).then((resp) => resp.text()).then((result) => {
-  loadData(result, null);
-});
-
-const stringifyInner = (node, seen) => {
-  if (node === undefined) return undefined;
-  if (typeof node === 'number') return Number.isFinite(node) ? `${node}` : 'null';
-  if (typeof node !== 'object') return JSON.stringify(node, null, 4);
-
-  let out;
-  if (Array.isArray(node)) {
-    out = '[';
-    for (let i = 0; i < node.length; i++) {
-      if (i > 0) out += ',';
-      out += stringifyInner(node[i], seen) || 'null';
-    }
-    return out + ']';
-  }
-
-  if (node === null) return 'null';
-
-  if (seen.has(node)) {
-    throw new TypeError('Converting circular structure to JSON');
-  }
-
-  seen.add(node);
-
-  if (node.constructor === window.Map) {
-    let replacement = {__map: true, values: [...node]};
-    return stringifyInner(replacement, seen);
-  }
-
-  if (node.constructor === window.Set) {
-    let replacement = {__set: true, values: [...node]};
-    return stringifyInner(replacement, seen);
-  }
-
-  let keys = Object.keys(node).sort();
-  out = '';
-  for (let i = 0; i < keys.length; i++) {
-    let key = keys[i];
-    let value = stringifyInner(node[key], seen, out);
-    if (!value) continue;
-    if (out !== '') out += ',\n';
-    out += JSON.stringify(key) + ':' + value;
-  }
-  seen.delete(node);
-  return '{' + out + '}';
-}
-
-const stringify = (obj) => {
-  let seen = new Set();
-  return stringifyInner(obj, seen);
-}
-
-const parse = (string) => {
-  return JSON.parse(string, (_key, value) => {
-    if (typeof value === "object" && value !== null && value.__map) {
-      return new Map(value.values);
-    } else if (typeof value === "object" && value !== null && value.__set) {
-      return new Set(value.values);
-    }
-    return value;
-  });
-}
-
-const stringifyCodeMap = (map) => {
-  const replace = (str) => {
-    return str.replaceAll("\\", "\\\\").replaceAll("`", "\\`").replaceAll("$", "\\$");
-  }
-
-  return "\n{__codeMap: true, value: " + "[" +
-    [...map].map(([key, value]) => ("[" + "`" + replace(key) + "`" + ", " + "`" +
-                                    replace(value) + "`" + "]")).join(",\n") + "]" + "}"
-}
-
-const parseCodeMap = (string) => {
-  const array = eval("(" + string + ")");
-  return new Map(array.value);
-}
-
-// Graph Visualization
-
-const analyzed = ((windowContents, windowEnabled, trigger, showGraph) => {
-  if (!showGraph) {return new Map()}
-  if (trigger === null) {return new Map()}
-  if (typeof trigger === "object" && trigger.id) {return new Map();}
-  const programState = new Renkon.constructor(0);
-  programState.setLog(() => {});
-
-  const blockMap = new Map() // name -> blockId
-  const nodes = new Map(); // blockId -> {exports:Set, imports: Set}
-  const edges = new Map(); // blockId -> {edgesOut: [{id, dest}], edgesIn: [{id, origin}], exports: [id]}
-
-  const code = [...windowContents.map].filter(
-    ([id, editor]) => editor.state && windowEnabled.map.get(id)?.enabled)
-    .map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
-  try {
-    code.forEach(info => {
-      const blockId = info.blockId;
-      programState.setupProgram([info.code]);
-      nodes.set(blockId, {exports: new Set(), imports: new Set()});
-      edges.set(blockId, {edgesOut: [], edgesIn: [], exports: []});
-      const obj = nodes.get(blockId);
-      for (const jsNode of programState.nodes.values()) {
-        for (const input of jsNode.inputs) {
-          if (/^_[0-9]/.test(input)) {continue;}
-          obj.imports.add(input)
-        }
-        if (jsNode.outputs === "") {continue;}
-        if (/^_[0-9]/.test(jsNode.outputs)) {continue;}
-        blockMap.set(jsNode.outputs, blockId)
-        obj.exports.add(jsNode.outputs);
-      }
-    });
-  } catch(e) {
-    console.log("Graph analyzer encountered an error in source code:");
-    return new Map();
-  }
-
-  for (let [id, obj] of nodes) {
-    for (const exported of obj.exports) {//exported:string
-      const edgesOut = edges.get(id).edgesOut;
-      const exports = edges.get(id).exports;
-      for (let [importId, importObj] of nodes) {
-        if (importId === id) {continue;}
-        const edgesIn = edges.get(importId).edgesIn;
-        if (importObj.imports.has(exported)) {
-          if (edgesOut.findIndex((already) => already.id === exported && already.dest === importId) < 0) {
-            edgesOut.push({id: exported, dest: importId});
-            if (exports.indexOf(exported) < 0) {
-              exports.push(exported);
-            }
-          }
-          if (edgesIn.findIndex((already) => already.id === exported && already.origin === id) < 0) {
-            edgesIn.push({id: exported, origin: id});
-          }
-        }
-      }
-    }
-  }
-  return edges;
-})(windowContents, windowEnabled, Events.or(remove, hovered), showGraph === "showGraph");
-
-const line = (p1, p2, color, label) => {
-  let pl;
-  let pr;
-  if (p1.x < p2.x) {
-    pl = p1;
-    pr = p2;
-  } else {
-    pl = p2;
-    pr = p1;
-  }
-  const c0 = `${pl.x} ${pl.y}`;
-  const c1 = `${pl.x + (pr.x - pl.x) * 0.5} ${pl.y + (pr.y - pl.y) * 0.2}`;
-  const c2 = `${pr.x - (pr.x - pl.x) * 0.2} ${pl.y + (pr.y - pl.y) * 0.6}`;
-  const c3 = `${pr.x} ${pr.y}`;
-  return html`<path d="M ${c0} C ${c1} ${c2} ${c3}" stroke="${color}"
-    fill="transparent" stroke-width="2" stroke-linecap="round"></path><text
-    x="${p1.x + 5}" y="${p1.y}">${label}</text>`;
-};
-
-const hovered = Events.receiver();
-const hoveredB = Behaviors.keep(hovered);
-
-const graph = ((positions, padView, analyzed, hoveredB, showGraph) => {
-  if (hoveredB === null) {return [];}
-  if (!showGraph) {return [];}
-
-  const edges = analyzed.get(hoveredB);
-
-  if (!edges) {return [];} // runner does not have edges
-
-  const exportEdges = new Set();
-  const importEdges = new Set();
-
-  const outEdges = edges.edgesOut.map((edge) => {
-    const ind = edges.exports.indexOf(edge.id);
-    let p1 = positions.map.get(hoveredB);
-    p1 = {x: p1.x + p1.width, y: p1.y};
-    // p1 = {x: p1.x * padView.scale + padView.x, y: p1.y * padView.scale + padView.y};
-    p1 = {x: (p1.x + padView.x) * padView.scale, y: (p1.y + padView.y) * padView.scale};
-    p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
-    let p2 = positions.map.get(edge.dest);
-    p2 = {x: (p2.x + padView.x) * padView.scale, y: (p2.y + padView.y) * padView.scale};
-    p2 = {x: p2.x, y: p2.y + 10};
-    let e = "";
-    if (!exportEdges.has(edge.id)) {
-      exportEdges.add(edge.id);
-      e = edge.id;
-    }
-    return line(p1, p2, "#d88", e);
-  });
-
-  const inEdges = edges.edgesIn.map((edge) => {
-    const exporter = analyzed.get(edge.origin);
-    const ind = exporter.exports.indexOf(edge.id);
-    let p1 = positions.map.get(edge.origin);
-    p1 = {x: p1.x + p1.width, y: p1.y};
-    p1 = {x: (p1.x + padView.x) * padView.scale , y: (p1.y + padView.y) * padView.scale};
-    p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
-    let p2 = positions.map.get(hoveredB);
-    p2 = {x: (p2.x + padView.x) * padView.scale, y: (p2.y + padView.y) * padView.scale};
-    p2 = {x: p2.x, y: p2.y + 10};
-    let e = "";
-    if (!importEdges.has(edge.id)) {
-      importEdges.add(edge.id);
-      e = edge.id;
-    }
-    return line(p1, p2, "#88d", e);
-  });
-
-  return html`<svg viewBox="0 0 ${window.innerWidth} ${window.innerHeight}"
-                     xmlns="http://www.w3.org/2000/svg">${outEdges}${inEdges}</svg>`;
-})(positions, padView, Behaviors.keep(analyzed), hoveredB, showGraph === "showGraph");
-
-const _graphRender = render(graph, document.querySelector("#overlay"));
-
-// CSS
-
-const css = `
-@font-face {
-  font-family: "OpenSans-Regular";
-  src: url("./assets/fonts/open-sans-v17-latin-ext_latin-regular.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: 'OpenSans-SemiBold';
-  src: url("./assets/fonts/open-sans-v17-latin-ext_latin-600.woff2") format('woff2');
-}
-
-html, body, #renkon {
-  overflow: hidden;
-  height: 100%;
-  margin: 0px;
-}
-
-html, body {
-  overscroll-behavior-x: none;
-  touch-action: none;
-}
-
-#pad {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAjElEQVR4XuXQAQ0AAAgCQfoHpYbOGt5vEODSdgovd3I+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+wIcWxEeefYmM2dAAAAAASUVORK5CYII=);
-}
-
-#mover {
-  pointer-events: none;
-  position:absolute;
-  transform-origin: 0px 0px;
-}
-
-#owner {
-  position: absolute;
-  pointer-events: initial;
-}
-
-.editor {
-  height: 100%;
-  border-radius: 0px 0px 6px 6px;
-}
-
-#overlay {
-  pointer-events: none;
-  height: 100%;
-  width: 100%;
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  z-index: 10000;
-}
-
-.window {
-  position: absolute;
-  transform-origin: 0px 0px;
-  background-color: #eee;
-  border-radius: 6px;
-  box-shadow: inset 0 2px 2px 0 rgba(255, 255, 255, 0.8), 1px 1px 8px 0 rgba(0, 35, 46, 0.2);
-}
-
-.window[pinned="true"] {
-  box-shadow: inset 0 4px 4px 0 rgba(255, 255, 255, 0.8), 8px 8px 8px 0 rgb(208 53 53 / 20%);
-}
-
-#buttonBox {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  row-gap: 8px;
-  left: 0px;
-  top: 0px;
-  width: 100%;
-  padding-bottom: 8px;
-  padding-top: 8px;
-  border-bottom: 1px solid black;
-  background-color: white;
-  position: absolute;
-  z-index: 200000;
-}
-
-#padTitle {
-  margin-left: 24px;
-}
-
-.spacer {
-  flex-grow: 1;
-}
-
-.menuButton {
-  font-family: 'OpenSans-SemiBold';
-  color: black;
-  margin-left: 4px;
-  margin-right: 4px;
-  border-radius: 4px;
-  cursor: pointer;
-  border: 2px solid #555;
-}
-
-.runnerIframe {
-  width: 100%;
-  height: 100%;
-  border: 2px solid black;
-  box-sizing: border-box;
-  border-radius: 0px 0px 6px 6px;
-  background-color: #fff;
-  user-select: none;
-}
-
-.titleBar {
-  background-color: #bbb;
-  width: 100%;
-  height: 28px;
-  display: flex;
-  /* border: 2px ridge #ccc;*/
-  /* box-sizing: border-box; */
-  border-radius: 6px 6px 0px 0px;
-  cursor: -webkit-grab;
-  cursor: grab;
-  overflow: hidden;
-}
-
-.title {
-  font-family: OpenSans-Regular;
-  pointer-events: none;
-  margin-right: 10px;
-  margin-left: 10px;
-  margin-top: 2px;
-  padding-left: 10px;
-  padding-right: 10px;
-  max-width: calc(100% - 150px);
-  text-wrap: nowrap;
-}
-
-.title[contentEditable="true"] {
-  background-color: #eee;
-  pointer-events: all;
-  user-select: all;
-}
-
-.titleSpacer {
-  flex-grow: 1;
-  pointer-events: none;
-}
-
-.titlebarButton {
-  height: 19px;
-  width: 19px;
-  min-width: 19px;
-  min-height: 19px;
-  margin: 2px;
-  margin-top: 4px;
-  pointer-events: all;
-  border-radius: 4px;
-  background-position: center;
-  cursor: pointer;
-}
-
-.titlebarButton:hover {
-  background-color: #eee;
-}
-
-.closeButton {
-  background-image: url("data:image/svg+xml,%3Csvg%20id%3D%22Layer_1%22%20data-name%3D%22Layer%201%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M8.48%2C12.25C6.4%2C10.17%2C4.37%2C8.16%2C2.35%2C6.15c-.34-.34-.68-.69-1-1.05a2.34%2C2.34%2C0%2C0%2C1%2C.17-3.26%2C2.3%2C2.3%2C0%2C0%2C1%2C3.25-.09C7%2C3.93%2C9.23%2C6.14%2C11.45%2C8.34a5.83%2C5.83%2C0%2C0%2C1%2C.43.58c.36-.4.62-.71.9-1%2C2-2%2C4.12-4%2C6.12-6.08a2.51%2C2.51%2C0%2C0%2C1%2C3.41%2C0%2C2.37%2C2.37%2C0%2C0%2C1%2C0%2C3.43c-2.18%2C2.22-4.39%2C4.41-6.58%2C6.62-.11.1-.21.22-.34.35l.44.48L22.09%2C19A2.7%2C2.7%2C0%2C0%2C1%2C23%2C20.56a2.49%2C2.49%2C0%2C0%2C1-1.29%2C2.54A2.36%2C2.36%2C0%2C0%2C1%2C19%2C22.69c-2-2-4-4-6.06-6-.33-.33-.62-.68-1-1.12-1.63%2C1.66-3.17%2C3.25-4.73%2C4.82-.79.8-1.6%2C1.59-2.42%2C2.36a2.32%2C2.32%2C0%2C0%2C1-3.21-.1%2C2.3%2C2.3%2C0%2C0%2C1-.19-3.25c2.14-2.2%2C4.31-4.36%2C6.48-6.54Z%22%20fill%3D%22%234D4D4D%22%2F%3E%3C%2Fsvg%3E");
-}
-
-.editButton {
-  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3C!--%20Generator%3A%20Sketch%2064%20(93537)%20-%20https%3A%2F%2Fsketch.com%20--%3E%3Ctitle%3Eicon%2Fmaterial%2Fedit%3C%2Ftitle%3E%3Cdesc%3ECreated%20with%20Sketch.%3C%2Fdesc%3E%3Cg%20id%3D%22icon%2Fmaterial%2Fedit%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22ic-round-edit%22%3E%3Cg%20id%3D%22Icon%22%20fill%3D%22%234D4D4D%22%3E%3Cpath%20d%3D%22M3%2C17.46%20L3%2C20.5%20C3%2C20.78%203.22%2C21%203.5%2C21%20L6.54%2C21%20C6.67%2C21%206.8%2C20.95%206.89%2C20.85%20L17.81%2C9.94%20L14.06%2C6.19%20L3.15%2C17.1%20C3.05%2C17.2%203%2C17.32%203%2C17.46%20Z%20M20.71%2C7.04%20C20.8972281%2C6.85315541%2021.002444%2C6.59950947%2021.002444%2C6.335%20C21.002444%2C6.07049053%2020.8972281%2C5.81684459%2020.71%2C5.63%20L18.37%2C3.29%20C18.1831554%2C3.10277191%2017.9295095%2C2.99755597%2017.665%2C2.99755597%20C17.4004905%2C2.99755597%2017.1468446%2C3.10277191%2016.96%2C3.29%20L15.13%2C5.12%20L18.88%2C8.87%20L20.71%2C7.04%20Z%22%20id%3D%22Icon-Shape%22%3E%3C%2Fpath%3E%3C%2Fg%3E%3Crect%20id%3D%22ViewBox%22%20fill-rule%3D%22nonzero%22%20x%3D%220%22%20y%3D%220%22%20width%3D%2224%22%20height%3D%2224%22%3E%3C%2Frect%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
-}
-
-.runButton {
-  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3C!--%20Box%20outline%20--%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2218%22%20height%3D%2218%22%20rx%3D%222%22%20ry%3D%222%22%2F%3E%3C!--%20Right-pointing%20triangle%20(play%20icon)%20--%3E%3Cpath%20d%3D%22M9%207L17%2012L9%2017Z%22%20fill%3D%22%234D4D4D%22%20stroke%3D%22none%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
-  display: none;
-  pointer-events: none;
-}
-
-.pinButton {
-  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%234D4D4D%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3C!--%20Scaled%20filled%20top%20--%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%226.5%22%20rx%3D%223.2%22%20ry%3D%221.6%22%2F%3E%3C!--%20Scaled%20neck%20as%20filled%20trapezoid%20--%3E%3Cpolygon%20points%3D%229.8%2C8.3%2014.2%2C8.3%2014.8%2C11.5%209.2%2C11.5%22%2F%3E%3C!--%20Scaled%20filled%20base%20--%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%2213.2%22%20rx%3D%225%22%20ry%3D%221.8%22%2F%3E%3C!--%20Scaled%20short%20pin%20--%3E%3Cline%20x1%3D%2212%22%20y1%3D%2214.9%22%20x2%3D%2212%22%20y2%3D%2220%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
-}
-
-.pinButton[state="off"] {
-  transform-origin: center;
-  transform: rotate(40deg);
-}
-
-.runButton[type="runner"] {
-  display: inherit;
-  pointer-events: all;
-}
-
-.resizeHandler {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  border-radius: 6px;
-  z-index: 10000;
-  background-color: rgba(0.1, 0.1, 0.1, 0.03);
-}
-
-.resizeHandler[corner="bottomRight"] {
-  cursor: se-resize;
-  bottom: -15px;
-  right: -15px;
-}
-
-.resizeHandler[corner="topLeft"] {
-  cursor: nw-resize;
-  top: -15px;
-  left: -15px;
-}
-
-.resizeHandler[corner="bottomLeft"] {
-  cursor: sw-resize;
-  bottom: -15px;
-  left: -15px;
-}
-
-.resizeHandler[corner="topRight"] {
-  cursor: ne-resize;
-  top: -15px;
-  right: -15px;
-}
-
-.resizeHandler:hover {
-  background-color: rgba(0.1, 0.4, 0.1, 0.3);
-}
-
-.windowHolder {
-  height: calc(100% - 24px);
-  box-sizing: border
-}
-
-.windowHolder[blurred="true"] {
-  filter: blur(4px)
-}
-
-#navigationBox {
-  display: flex;
-  flex-direction: column;
-  right: 20px;
-  gap: 10px;
-  bottom: 80px;
-  align-items: center;
-  width: 40px;
-  border: 1px solid black;
-  background-color: #d2d2d2;
-  position: absolute;
-  z-index: 200000;
-  border-radius: 8px;
-  box-shadow: 4px 5px 8px -2px rgba(0,0,0,.15);
-}
-
-.navigationButton {
-  width: 30px;
-  height: 30px;
-  display: flex;
-  cursor: pointer;
-}
-
-.with-border {
-  border: 1px solid #4D4D4D;
-  border-radius: 15px;
-  background-color: white;
-}
-
-.navigationButton:hover {
-  background-color: #eaeaea;
-}
-
-.navigationButton:first-child {
-  margin-top: 10px;
-}
-
-.navigationButton:last-child {
-  margin-bottom: 10px;
-}
-
-.navigationButtonImage {
-  width: 100%;
-  height: 100%;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-#zoomInButton {
-  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3Ctitle%3Eicon%2Fmaterial%2Fview_zoom-in%3C%2Ftitle%3E%3Cg%20id%3D%22icon%2Fmaterial%2Fview_zoom-in%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22ic-baseline-add%22%3E%3Cg%20id%3D%22Icon%22%20fill%3D%22%234D4D4D%22%3E%3Cpolygon%20id%3D%22Icon-Path%22%20points%3D%2219%2013%2013%2013%2013%2019%2011%2019%2011%2013%205%2013%205%2011%2011%2011%2011%205%2013%205%2013%2011%2019%2011%22%3E%3C%2Fpolygon%3E%3C%2Fg%3E%3Crect%20id%3D%22ViewBox%22%20fill-rule%3D%22nonzero%22%20x%3D%220%22%20y%3D%220%22%20width%3D%2224%22%20height%3D%2224%22%3E%3C%2Frect%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
-}
-
-#zoomOutButton {
-  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3Ctitle%3Eicon%2Fmaterial%2Fview_zoom-out%3C%2Ftitle%3E%3Cg%20id%3D%22icon%2Fmaterial%2Fview_zoom-out%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22ic-baseline-minus%22%3E%3Cg%20id%3D%22Icon%22%20fill%3D%22%234D4D4D%22%3E%3Cpolygon%20id%3D%22Icon-Path%22%20points%3D%2219%2012.998%205%2012.998%205%2010.998%2019%2010.998%22%3E%3C%2Fpolygon%3E%3C%2Fg%3E%3Crect%20id%3D%22ViewBox%22%20fill-rule%3D%22nonzero%22%20x%3D%220%22%20y%3D%220%22%20width%3D%2224%22%20height%3D%2224%22%3E%3C%2Frect%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
-}
-
-#homeButton {
-  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3Ctitle%3Eicon%2Fview-centered%3C%2Ftitle%3E%3Cg%20id%3D%22icon%2Fview-centered%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22Group-3%22%20transform%3D%22translate(2.000000%2C%204.000000)%22%20fill%3D%22%234D4D4D%22%3E%3Cpath%20d%3D%22M0%2C9%20L3%2C9%20L3%2C7%20L0%2C7%20L0%2C9%20Z%20M17%2C9%20L20.001%2C9%20L20.001%2C7%20L17%2C7%20L17%2C9%20Z%20M9%2C3%20L11%2C3%20L11%2C0%20L9%2C0%20L9%2C3%20Z%20M13%2C9%20L11%2C9%20L11%2C11%20L9%2C11%20L9%2C9%20L7%2C9%20L7%2C7%20L9%2C7%20L9%2C5%20L11%2C5%20L11%2C7%20L13%2C7%20L13%2C9%20Z%20M9%2C16%20L11%2C16%20L11%2C13%20L9%2C13%20L9%2C16%20Z%20M13%2C0%20L13%2C2%20L18%2C2%20L18%2C5%20L20%2C5%20L20%2C0%20L13%2C0%20Z%20M18%2C14%20L13%2C14%20L13%2C16%20L20%2C16%20L20%2C11%20L18%2C11%20L18%2C14%20Z%20M0%2C5%20L2%2C5%20L2%2C2%20L7%2C2%20L7%2C0%20L0%2C0%20L0%2C5%20Z%20M2%2C11%20L0%2C11%20L0%2C16%20L7%2C16%20L7%2C14%20L2%2C14%20L2%2C11%20Z%22%20id%3D%22Fill-1%22%3E%3C%2Fpath%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
-}
-
-.enabledButton {
-  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3C!--%20Box%20outline%20--%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2218%22%20height%3D%2218%22%20rx%3D%222%22%20ry%3D%222%22%20stroke-width%3D%222%22%2F%3E%3C!--%20Thicker%20checkmark%20--%3E%3Cpath%20d%3D%22M5.5%2012.5L10.5%2017.5L18.5%207.5%22%20stroke-width%3D%223%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
-}
-
-.enabledButton[disabled="true"] {
-  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2218%22%20height%3D%2218%22%20rx%3D%222%22%20ry%3D%222%22%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-}
-
-.inspectorButton {
-  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3C!--%20Line%201%20--%3E%3Ccircle%20cx%3D%225%22%20cy%3D%227%22%20r%3D%221.5%22%20fill%3D%22%234D4D4D%22%20stroke%3D%22none%22%2F%3E%3Cline%20x1%3D%228%22%20y1%3D%227%22%20x2%3D%2219%22%20y2%3D%227%22%2F%3E%3C!--%20Line%202%20--%3E%3Ccircle%20cx%3D%225%22%20cy%3D%2212%22%20r%3D%221.5%22%20fill%3D%22%234D4D4D%22%20stroke%3D%22none%22%2F%3E%3Cline%20x1%3D%228%22%20y1%3D%2212%22%20x2%3D%2219%22%20y2%3D%2212%22%2F%3E%3C!--%20Line%203%20--%3E%3Ccircle%20cx%3D%225%22%20cy%3D%2217%22%20r%3D%221.5%22%20fill%3D%22%234D4D4D%22%20stroke%3D%22none%22%2F%3E%3Cline%20x1%3D%228%22%20y1%3D%2217%22%20x2%3D%2219%22%20y2%3D%2217%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
-  display: none;
-  pointer-events: none;
-}
-
-.inspectorButton[type="runner"] {
-  display: inherit;
-  pointer-events: all;
-}
-
-.cm-tooltip-lint {
-  font-size: 12px;
-}
-
-.cm-tooltip-dependency {
-  background-color: #66b;
-  color: white;
-  border: none;
-  padding: 2px 7px;
-  border-radius: 4px;
-
-}
-
-.cm-tooltip-hover:has(.cm-tooltip-dependency) {
-  transform: translate(-5px, 5px)
-}
-
-.cm-tooltip-cursor-wide {
-  text-wrap: nowrap;
-}
-
-.dependency-link {
-  border: 1px solid #66b;
-}
-
-.dependency-link:hover {
-  border: 1px solid #cc7;
-  border-style: outset;
-  background-color: #88c;
-}
-`;
-
-((css, renkon) => {
-  const style = document.createElement("style");
-  style.id = "pad-css";
-  style.textContent = css;
-  renkon.querySelector("#pad-css")?.remove();
-  renkon.appendChild(style);
-})(css, renkon);
 
 // Search
 
@@ -2242,7 +1577,595 @@ const searchCSS = `
   renkon.appendChild(style);
 })(searchCSS, renkon);
 
-  // Doc Pane
+// Rendering
+
+const inputHandler = (evt) => {
+  if (evt.key === "Enter") {
+    evt.preventDefault();
+    evt.stopPropagation();
+    Events.send(titleEditChange, {
+      id: `${Number.parseInt(evt.target.id)}`,
+      title: evt.target.textContent,
+      state: false
+    });
+    evt.target.textContent = "";
+  }
+};
+
+const playDown = Events.receiver();
+const dismissDelayedButton = Events.receiver();
+const playLeave = Events.receiver();
+const playUp = Events.receiver();
+
+const playClickHandler = (evt, delayed) => {
+  if (delayed) {
+    return;
+  }
+  Events.send(runRequest, {id: `${Number.parseInt(evt.target.id)}`});
+}
+
+const playDownHandler = (evt) => {
+  evt.stopPropagation();
+  if (evt.isPrimary) {
+    evt.target.setPointerCapture(evt.pointerId);
+  }
+  Events.send(playDown, evt);
+};
+
+
+const playUpHandler = (evt) => {
+  evt.target.releasePointerCapture(evt.pointerId);
+  // console.log(evt.target.id, evt.currentTarget.id)
+  Events.send(playUp, evt);
+};
+
+const playLeaveHandler = (evt) => {
+  // console.log("leave");
+  // evt.target.releasePointerCapture(evt.pointerId);
+  Events.send(playLeave, evt);
+};
+
+const resetRunnerHandler = (evt) => {
+  // console.log("reset")
+  Events.send(dismissDelayedButton, evt.target.id);
+  Events.send(resetRequest, {id: `${Number.parseInt(evt.target.id)}`});
+}
+
+const delayedPlayDown = Events.delay(playDown, 500);
+
+const delayedButtonJudge = Events.select(
+  {result: null, queue: []},
+  playDown, (_prev, down) => ({result: null, queue: [down]}),
+  playUp, (prev, up) => ({result: prev.result, queue: [up]}),
+  playLeave, (prev, leave) => ({result: prev.result, queue: [...prev.queue, leave]}),
+  delayedPlayDown, (prev, down) => {
+    if (prev.queue.length === 0) return [];
+    if (prev.queue.length === 1) {
+      if (prev.queue[0] === down) {return {result: down, queue: [down]};}
+      return {result: null, queue: []}
+    }
+    if ([prev.length - 1].type === "pointerup") {return {result: null, queue: []};}
+    if ([prev.length - 1].type === "pointerleave") {return prev;}
+  },
+  dismissDelayedButton, (_prev, _dismiss) => ({result: null, queue: []})
+);
+
+const delayed = Behaviors.select(
+  null,
+  Events.or(delayedButtonJudge), (_prev, judge) => {
+    const evt = judge.result;
+    if (evt && evt.type === "pointerdown") {
+      evt.target.releasePointerCapture(evt.pointerId);
+      return `${Number.parseInt(evt.target.id)}`;
+    }
+    return null;
+  },
+  playUp, (prev, _evt) => {return prev},
+  playLeave, (prev, _evt) => {return prev}
+)
+
+const _positionsCss = ((positions, zIndex, pinnedPositions, padView) => {
+  let style = document.body.querySelector("#positions-css");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "positions-css";
+    document.body.appendChild(style);
+  }
+
+  const css = [...positions.map].map(([id, rect]) => {
+    let x;
+    let y;
+    let scale;
+    const pinned = pinnedPositions.map.get(id);
+    if (!pinned) {
+      x = rect.x;
+      y = rect.y;
+      scale = 1;
+    } else {
+      // t(x) = pinned.x
+      // t(a) = a * padView.scale + padView.x;
+      // x * padView.scale + padView.x = pinned.x;
+      // x = pinned.x / padView.scale - padView.x;
+      scale = pinned.scale / padView.scale;
+      x = pinned.x / padView.scale - padView.x;
+      y = pinned.y / padView.scale - padView.y;
+      // console.log(pinned.x, scale, x, padView.x);
+    }
+    return `
+[id="${id}-win"] {
+    transform: translate(${x}px, ${y}px) scale(${scale});
+    width: ${rect.width}px;
+    height: ${rect.height}px;
+    z-index: ${zIndex.map.get(id)};
+}`.trim();
+  }).join("\n");
+  style.textContent = css;
+})(positions, zIndex, pinnedPositions, padView);
+
+const windowDOM = (id, title, windowContent, type, windowEnabled, pinnedPosition, delayed) => {
+  return h("div", {
+    key: `${id}`,
+    id: `${id}-win`,
+    "class": "window",
+    pinned: !!pinnedPosition,
+    ref: (ref) => {
+      if (ref) {
+        const holder = ref.querySelector(".windowHolder");
+        if (holder.firstChild && holder.firstChild !== windowContent.dom) {
+          holder.firstChild.remove();
+        }
+        if (holder !== windowContent.dom.parentNode) {
+          holder.appendChild(windowContent.dom);
+        }
+      }
+    },
+    onPointerEnter: (evt) => Events.send(hovered, `${Number.parseInt(evt.target.id)}`),
+    onPointerLeave: (_evt) => Events.send(hovered, null)
+  }, [
+    h("div", {
+      id: `${id}-titleBar`,
+      "class": "titleBar",
+    }, [
+      h("div", {
+        id: `${id}-enabledButton`,
+        disabled: !!(windowEnabled && !windowEnabled.enabled),
+        style: {
+          display: `${type !== "code" ? "none" : "inheirt"}`
+        },
+        "class": "titlebarButton enabledButton",
+        onClick: (evt) => {
+          Events.send(enabledChange, {
+            id: `${Number.parseInt(evt.target.id)}`,
+            enabled: !windowEnabled || !windowEnabled.enabled});
+        },
+      }),
+      h("div", {
+        id: `${id}-runButtonContainer`,
+        "class": "runButtonContainer",
+      }, [
+        h("div", {
+          id: `${id}-runButton`,
+          "class": "titlebarButton runButtonBackground runButton",
+          type,
+          onClick: (evt) => playClickHandler(evt, delayed),
+          onPointerDown: playDownHandler,
+          onPointerUp: playUpHandler,
+          onPointerLeave: playLeaveHandler,
+        }),
+        h("div", {
+          id: `${id}-runButton2`,
+          "class": "titlebarButton resetButton runButton2",
+          type,
+          delayed: delayed === id,
+          onPoionterUp: resetRunnerHandler,
+          onClick: resetRunnerHandler,
+        })
+      ]),
+      h("div", {
+        id: `${id}-inspectorButton`,
+        "class": "titlebarButton inspectorButton",
+        type,
+        onClick: (evt) => {
+          Events.send(inspectRequest, {id: `${Number.parseInt(evt.target.id)}`});
+        },
+      }),
+      h("div", {
+        id: `${id}-title`,
+        "class": "title",
+        contentEditable: `${title.state}`,
+        onKeydown: inputHandler,
+      }, title.title),
+      h("div", {
+        id: `${id}-titleSpacer`,
+        "class": "titleSpacer",
+      }),
+      h("div", {
+        id: `${id}-edit`,
+        "class": `titlebarButton editButton`,
+        onClick: (evt) => {
+          // console.log(evt);
+          Events.send(titleEditChange, {id: `${Number.parseInt(evt.target.id)}`, state: !title.state});
+        },
+      }, []),
+      h("div", {
+        id: `${id}-pin`,
+        "class": "titlebarButton pinButton",
+        state: pinnedPosition ? "off" : "on",
+        onClick: (evt) => {
+          Events.send(pinRequest, {id: `${Number.parseInt(evt.target.id)}`})
+        }
+      }),
+      h("div", {
+        id: `${id}-close`,
+        "class": "titlebarButton closeButton",
+        onClick: (evt) => {
+          Events.send(remove, {id: `${Number.parseInt(evt.target.id)}`, type: "remove"})
+        }
+      }),
+    ]),
+    h("div", {
+      id: `${id}-bottomRight-resize`,
+      corner: "bottomRight",
+      "class": "resizeHandler",
+    }, []),
+    h("div", {
+      id: `${id}-topLeft-resize`,
+      corner: "topLeft",
+      "class": "resizeHandler",
+    }, []),
+    h("div", {
+      id: `${id}-bottomLeft-resize`,
+      corner: "bottomLeft",
+      "class": "resizeHandler",
+    }, []),
+    h("div", {
+      id: `${id}-topRight-resize`,
+      corner: "topRight",
+      "class": "resizeHandler",
+    }, []),
+    h("div", {
+      id: `${id}-windowHolder`,
+      blurred: `${type !== "code" ? false : (windowEnabled ? !windowEnabled.enabled : false)}`,
+      "class": "windowHolder",
+    }, [])
+  ])
+};
+
+const windowElements = ((windows, titles, windowContents, windowTypes, windowEnabled, pinnedPositions, delayed) => {
+  return h("div", {id: "owner", "class": "owner"}, windows.map((id) => {
+    return windowDOM(
+      id,
+      titles.map.get(id), windowContents.map.get(id),
+      windowTypes.map.get(id), windowEnabled.map.get(id),
+      pinnedPositions.map.get(id), delayed)
+  }));
+})(windows, titles, windowContents, windowTypes, windowEnabled, pinnedPositions, delayed);
+
+const _windowRender = render(windowElements, document.querySelector("#mover"));
+
+// Graph Visualization
+
+const analyzed = ((windowContents, windowEnabled, trigger, showGraph) => {
+  if (!showGraph) {return new Map()}
+  if (trigger === null) {return new Map()}
+  if (typeof trigger === "object" && trigger.id) {return new Map();}
+  const programState = new Renkon.constructor(0);
+  programState.setLog(() => {});
+
+  const blockMap = new Map() // name -> blockId
+  const nodes = new Map(); // blockId -> {exports:Set, imports: Set}
+  const edges = new Map(); // blockId -> {edgesOut: [{id, dest}], edgesIn: [{id, origin}], exports: [id]}
+
+  const code = [...windowContents.map].filter(
+    ([id, editor]) => editor.state && windowEnabled.map.get(id)?.enabled)
+    .map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
+  try {
+    code.forEach(info => {
+      const blockId = info.blockId;
+      programState.setupProgram([info.code]);
+      nodes.set(blockId, {exports: new Set(), imports: new Set()});
+      edges.set(blockId, {edgesOut: [], edgesIn: [], exports: []});
+      const obj = nodes.get(blockId);
+      for (const jsNode of programState.nodes.values()) {
+        for (const input of jsNode.inputs) {
+          if (/^_[0-9]/.test(input)) {continue;}
+          obj.imports.add(input)
+        }
+        if (jsNode.outputs === "") {continue;}
+        if (/^_[0-9]/.test(jsNode.outputs)) {continue;}
+        blockMap.set(jsNode.outputs, blockId)
+        obj.exports.add(jsNode.outputs);
+      }
+    });
+  } catch(e) {
+    console.log("Graph analyzer encountered an error in source code:");
+    return new Map();
+  }
+
+  for (let [id, obj] of nodes) {
+    for (const exported of obj.exports) {//exported:string
+      const edgesOut = edges.get(id).edgesOut;
+      const exports = edges.get(id).exports;
+      for (let [importId, importObj] of nodes) {
+        if (importId === id) {continue;}
+        const edgesIn = edges.get(importId).edgesIn;
+        if (importObj.imports.has(exported)) {
+          if (edgesOut.findIndex((already) => already.id === exported && already.dest === importId) < 0) {
+            edgesOut.push({id: exported, dest: importId});
+            if (exports.indexOf(exported) < 0) {
+              exports.push(exported);
+            }
+          }
+          if (edgesIn.findIndex((already) => already.id === exported && already.origin === id) < 0) {
+            edgesIn.push({id: exported, origin: id});
+          }
+        }
+      }
+    }
+  }
+  return edges;
+})(windowContents, windowEnabled, Events.or(remove, hovered), showGraph === "showGraph");
+
+const line = (p1, p2, color, label) => {
+  let pl;
+  let pr;
+  if (p1.x < p2.x) {
+    pl = p1;
+    pr = p2;
+  } else {
+    pl = p2;
+    pr = p1;
+  }
+  const c0 = `${pl.x} ${pl.y}`;
+  const c1 = `${pl.x + (pr.x - pl.x) * 0.5} ${pl.y + (pr.y - pl.y) * 0.2}`;
+  const c2 = `${pr.x - (pr.x - pl.x) * 0.2} ${pl.y + (pr.y - pl.y) * 0.6}`;
+  const c3 = `${pr.x} ${pr.y}`;
+  return html`<path d="M ${c0} C ${c1} ${c2} ${c3}" stroke="${color}"
+    fill="transparent" stroke-width="2" stroke-linecap="round"></path><text
+    x="${p1.x + 5}" y="${p1.y}">${label}</text>`;
+};
+
+const hovered = Events.receiver();
+const hoveredB = Behaviors.keep(hovered);
+
+const graph = ((positions, padView, analyzed, hoveredB, showGraph) => {
+  if (hoveredB === null) {return [];}
+  if (!showGraph) {return [];}
+
+  const edges = analyzed.get(hoveredB);
+
+  if (!edges) {return [];} // runner does not have edges
+
+  const exportEdges = new Set();
+  const importEdges = new Set();
+
+  const outEdges = edges.edgesOut.map((edge) => {
+    const ind = edges.exports.indexOf(edge.id);
+    let p1 = positions.map.get(hoveredB);
+    p1 = {x: p1.x + p1.width, y: p1.y};
+    // p1 = {x: p1.x * padView.scale + padView.x, y: p1.y * padView.scale + padView.y};
+    p1 = {x: (p1.x + padView.x) * padView.scale, y: (p1.y + padView.y) * padView.scale};
+    p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
+    let p2 = positions.map.get(edge.dest);
+    p2 = {x: (p2.x + padView.x) * padView.scale, y: (p2.y + padView.y) * padView.scale};
+    p2 = {x: p2.x, y: p2.y + 10};
+    let e = "";
+    if (!exportEdges.has(edge.id)) {
+      exportEdges.add(edge.id);
+      e = edge.id;
+    }
+    return line(p1, p2, "#d88", e);
+  });
+
+  const inEdges = edges.edgesIn.map((edge) => {
+    const exporter = analyzed.get(edge.origin);
+    const ind = exporter.exports.indexOf(edge.id);
+    let p1 = positions.map.get(edge.origin);
+    p1 = {x: p1.x + p1.width, y: p1.y};
+    p1 = {x: (p1.x + padView.x) * padView.scale , y: (p1.y + padView.y) * padView.scale};
+    p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
+    let p2 = positions.map.get(hoveredB);
+    p2 = {x: (p2.x + padView.x) * padView.scale, y: (p2.y + padView.y) * padView.scale};
+    p2 = {x: p2.x, y: p2.y + 10};
+    let e = "";
+    if (!importEdges.has(edge.id)) {
+      importEdges.add(edge.id);
+      e = edge.id;
+    }
+    return line(p1, p2, "#88d", e);
+  });
+
+  return html`<svg viewBox="0 0 ${window.innerWidth} ${window.innerHeight}"
+                     xmlns="http://www.w3.org/2000/svg">${outEdges}${inEdges}</svg>`;
+})(positions, padView, Behaviors.keep(analyzed), hoveredB, showGraph === "showGraph");
+
+const _graphRender = render(graph, document.querySelector("#overlay"));
+
+/// Save and Load
+
+const loadRequest = Events.receiver();
+
+const saveData = (windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
+  const code = new Map(
+    [...windowContents.map].map(([id, content]) => {
+      if (content.state) {
+        return [id, content.state.doc.toString()];
+      } else if (content.doc) {
+        return [id, content.doc];
+      } else {
+        return null;
+      }
+    }).filter(item => item !== null));
+  const myTitles = new Map([...titles.map].map(([id, obj]) => ([id, {...obj, state: false}])));
+  const data1 = stringify({
+    version: 3,
+    windows,
+    positions,
+    zIndex,
+    titles: {map: myTitles},
+    windowTypes,
+    padTitle,
+    windowEnabled
+  });
+
+  const data2 = stringifyCodeMap(code);
+
+  return encodeURIComponent(data1) + encodeURIComponent(data2);
+};
+
+const _saver2 = ((windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
+  const data = saveData(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled);
+
+  const dataStr = "data:text/plain;charset=utf-8," + data;
+  const div = document.createElement("a");
+  div.setAttribute("href", dataStr);
+  div.setAttribute("download", `${padTitle}.renkon`);
+  div.click();
+})(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled, save);
+
+const _loader = (() => {
+  const input = document.createElement("div");
+  input.innerHTML = `<input id="imageinput" type="file" accept=".json,.renkon">`;
+  const imageInput = input.firstChild;
+
+  imageInput.onchange = () => {
+    const file = imageInput.files[0];
+    if (!file) {imageInput.remove(); return;}
+    new Promise(resolve => {
+      let reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.readAsArrayBuffer(file);
+    }).then((data) => {
+      const result = new TextDecoder("utf-8").decode(data);
+      loadData(result, imageInput);
+    });
+    imageInput.value = "";
+  };
+  imageInput.oncancel = () => imageInput.remove();
+  document.body.appendChild(imageInput);
+  imageInput.click();
+})(load);
+
+const nameFromUrl = (() => {
+  const maybeUrl = new URL(window.location).searchParams.get("file");
+  if (maybeUrl) {
+    return maybeUrl;
+  }
+  return undefined;
+})();
+
+const loadData = (result, maybeImageInput) => {
+  const index = result.indexOf("{__codeMap: true, value:");
+  if (index < 0) {
+    const loaded = parse(result);
+    if (loaded.version === 1) {
+      Events.send(loadRequest, loaded);
+      maybeImageInput?.remove();
+      return;
+    }
+    console.log("unknown type of data");
+    maybeImageInput?.remove();
+    return;
+  }
+
+  const data1 = result.slice(0, index);
+  const data2 = result.slice(index);
+
+  const loaded = parse(data1);
+
+  if (loaded.version === 2 || loaded.version === 3) {
+    const code = parseCodeMap(data2);
+    loaded.code = code;
+    Events.send(loadRequest, loaded);
+    maybeImageInput?.remove();
+    return;
+  }
+  console.log("unknown type of data");
+  maybeImageInput.remove();
+}
+
+const _loadFromUrl = fetch(nameFromUrl).then((resp) => resp.text()).then((result) => {
+  loadData(result, null);
+});
+
+const stringifyInner = (node, seen) => {
+  if (node === undefined) return undefined;
+  if (typeof node === 'number') return Number.isFinite(node) ? `${node}` : 'null';
+  if (typeof node !== 'object') return JSON.stringify(node, null, 4);
+
+  let out;
+  if (Array.isArray(node)) {
+    out = '[';
+    for (let i = 0; i < node.length; i++) {
+      if (i > 0) out += ',';
+      out += stringifyInner(node[i], seen) || 'null';
+    }
+    return out + ']';
+  }
+
+  if (node === null) return 'null';
+
+  if (seen.has(node)) {
+    throw new TypeError('Converting circular structure to JSON');
+  }
+
+  seen.add(node);
+
+  if (node.constructor === window.Map) {
+    let replacement = {__map: true, values: [...node]};
+    return stringifyInner(replacement, seen);
+  }
+
+  if (node.constructor === window.Set) {
+    let replacement = {__set: true, values: [...node]};
+    return stringifyInner(replacement, seen);
+  }
+
+  let keys = Object.keys(node).sort();
+  out = '';
+  for (let i = 0; i < keys.length; i++) {
+    let key = keys[i];
+    let value = stringifyInner(node[key], seen, out);
+    if (!value) continue;
+    if (out !== '') out += ',\n';
+    out += JSON.stringify(key) + ':' + value;
+  }
+  seen.delete(node);
+  return '{' + out + '}';
+}
+
+const stringify = (obj) => {
+  let seen = new Set();
+  return stringifyInner(obj, seen);
+}
+
+const parse = (string) => {
+  return JSON.parse(string, (_key, value) => {
+    if (typeof value === "object" && value !== null && value.__map) {
+      return new Map(value.values);
+    } else if (typeof value === "object" && value !== null && value.__set) {
+      return new Set(value.values);
+    }
+    return value;
+  });
+}
+
+const stringifyCodeMap = (map) => {
+  const replace = (str) => {
+    return str.replaceAll("\\", "\\\\").replaceAll("`", "\\`").replaceAll("$", "\\$");
+  }
+
+  return "\n{__codeMap: true, value: " + "[" +
+    [...map].map(([key, value]) => ("[" + "`" + replace(key) + "`" + ", " + "`" +
+                                    replace(value) + "`" + "]")).join(",\n") + "]" + "}"
+}
+
+const parseCodeMap = (string) => {
+  const array = eval("(" + string + ")");
+  return new Map(array.value);
+}
+
+// Doc Window
 
 function doc(id) {
   const init = (() => {
@@ -2374,7 +2297,6 @@ function doc(id) {
     width: ${newEditorWidth}px;
     right: ${right}px;
   }
-  
   `.trim();
         return move;
       }
@@ -2388,18 +2310,49 @@ function doc(id) {
   #result {
     width: ${newX}px;
   }
-  
   #editorContainer {
     width: ${newEditorWidth}px;
     right: ${right}px;
   }
-
   `.trim();
       return old;
     }
   );
 
   const resize = Events.listener(window, "resize", (evt) => ({type: "resize"}));
+
+  Events.listener(document.body, "gesturestart", preventDefaultSafari);
+  Events.listener(document.body, "gesturechange", preventDefaultSafari);
+  Events.listener(document.body, "gestureend", preventDefaultSafari);
+
+  const isSafari = window.navigator.userAgent.includes("Safari") && !window.navigator.userAgent.includes("Chrome");
+  const isMobile = !!("ontouchstart" in window);
+
+  const preventDefault = (evt) => {
+    evt.preventDefault();
+    return evt;
+  };
+
+  const preventDefaultSafari = (evt) => {
+    if (!isSafari || isMobile) {
+      evt.preventDefault();
+    }
+    return evt;
+  };
+
+  const wheel = Events.listener(container, "wheel", (evt) => {
+    let pinch;
+    if (isSafari) {
+      pinch = (Number.isInteger(evt.deltaX) && !Number.isInteger(evt.deltaY)) || evt.metaKey;
+    } else {
+      pinch = evt.ctrlKey || evt.metaKey;
+    }
+    if (pinch) {
+      evt.preventDefault();
+      evt.stopPropagation();
+    }
+    return evt;
+  });
 
   const css = `
 #container, html, body {
@@ -2417,6 +2370,7 @@ function doc(id) {
   width: calc(100% - 220px);
   overflow: scroll;
   scroll-behavior: smooth;
+  font-size: 13px;
 }
 
 #renkon {
@@ -2493,6 +2447,397 @@ const _handleDocReady = ((readyMessages, windowContents, windowTypes) => {
 const docUpdate = Events.listener(window, "message", evt => {
   if (evt.data.type === "renkon-doc-updated") {return evt.data;}
 });
+
+// CSS
+
+const css = `
+@font-face {
+  font-family: "OpenSans-Regular";
+  src: url("./assets/fonts/open-sans-v17-latin-ext_latin-regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: 'OpenSans-SemiBold';
+  src: url("./assets/fonts/open-sans-v17-latin-ext_latin-600.woff2") format('woff2');
+}
+
+html, body, #renkon {
+  overflow: hidden;
+  height: 100%;
+  margin: 0px;
+}
+
+html, body {
+  overscroll-behavior-x: none;
+  touch-action: none;
+}
+
+#pad {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAjElEQVR4XuXQAQ0AAAgCQfoHpYbOGt5vEODSdgovd3I+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+gA/gA/gAPoAP4AP4AD6AD+AD+AA+wIcWxEeefYmM2dAAAAAASUVORK5CYII=);
+}
+
+#mover {
+  pointer-events: none;
+  position:absolute;
+  transform-origin: 0px 0px;
+}
+
+#owner {
+  position: absolute;
+  pointer-events: initial;
+}
+
+.editor {
+  height: 100%;
+  border-radius: 0px 0px 6px 6px;
+}
+
+#overlay {
+  pointer-events: none;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 10000;
+}
+
+.window {
+  position: absolute;
+  transform-origin: 0px 0px;
+  background-color: #eee;
+  border-radius: 6px;
+  box-shadow: inset 0 2px 2px 0 rgba(255, 255, 255, 0.8), 1px 1px 8px 0 rgba(0, 35, 46, 0.2);
+}
+
+.window[pinned="true"] {
+  box-shadow: inset 0 4px 4px 0 rgba(255, 255, 255, 0.8), 8px 8px 8px 0 rgb(208 53 53 / 20%);
+}
+
+#buttonBox {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  row-gap: 8px;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  padding-bottom: 8px;
+  padding-top: 8px;
+  border-bottom: 1px solid black;
+  background-color: white;
+  position: absolute;
+  z-index: 200000;
+}
+
+#padTitle {
+  margin-left: 24px;
+}
+
+.spacer {
+  flex-grow: 1;
+}
+
+.menuButton {
+  font-family: 'OpenSans-SemiBold';
+  color: black;
+  margin-left: 4px;
+  margin-right: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 2px solid #555;
+}
+
+.runnerIframe {
+  width: 100%;
+  height: 100%;
+  border: 2px solid black;
+  box-sizing: border-box;
+  border-radius: 0px 0px 6px 6px;
+  background-color: #fff;
+  user-select: none;
+}
+
+.titleBar {
+  background-color: #bbb;
+  width: 100%;
+  height: 28px;
+  display: flex;
+  /* border: 2px ridge #ccc;*/
+  /* box-sizing: border-box; */
+  border-radius: 6px 6px 0px 0px;
+  cursor: -webkit-grab;
+  cursor: grab;
+  /*overflow: hidden;*/
+}
+
+.title {
+  font-family: OpenSans-Regular;
+  pointer-events: none;
+  margin-right: 10px;
+  margin-left: 10px;
+  margin-top: 2px;
+  padding-left: 10px;
+  padding-right: 10px;
+  max-width: calc(100% - 150px);
+  text-wrap: nowrap;
+}
+
+.title[contentEditable="true"] {
+  background-color: #eee;
+  pointer-events: all;
+  user-select: all;
+}
+
+.titleSpacer {
+  flex-grow: 1;
+  pointer-events: none;
+}
+
+.runButtonContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.titlebarButton {
+  height: 19px;
+  width: 19px;
+  min-width: 19px;
+  min-height: 19px;
+  margin: 2px;
+  margin-top: 4px;
+  pointer-events: all;
+  border-radius: 4px;
+  background-position: center;
+  cursor: pointer;
+}
+
+.titlebarButton:hover {
+  background-color: #eee;
+}
+
+.closeButton {
+  background-image: url("data:image/svg+xml,%3Csvg%20id%3D%22Layer_1%22%20data-name%3D%22Layer%201%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M8.48%2C12.25C6.4%2C10.17%2C4.37%2C8.16%2C2.35%2C6.15c-.34-.34-.68-.69-1-1.05a2.34%2C2.34%2C0%2C0%2C1%2C.17-3.26%2C2.3%2C2.3%2C0%2C0%2C1%2C3.25-.09C7%2C3.93%2C9.23%2C6.14%2C11.45%2C8.34a5.83%2C5.83%2C0%2C0%2C1%2C.43.58c.36-.4.62-.71.9-1%2C2-2%2C4.12-4%2C6.12-6.08a2.51%2C2.51%2C0%2C0%2C1%2C3.41%2C0%2C2.37%2C2.37%2C0%2C0%2C1%2C0%2C3.43c-2.18%2C2.22-4.39%2C4.41-6.58%2C6.62-.11.1-.21.22-.34.35l.44.48L22.09%2C19A2.7%2C2.7%2C0%2C0%2C1%2C23%2C20.56a2.49%2C2.49%2C0%2C0%2C1-1.29%2C2.54A2.36%2C2.36%2C0%2C0%2C1%2C19%2C22.69c-2-2-4-4-6.06-6-.33-.33-.62-.68-1-1.12-1.63%2C1.66-3.17%2C3.25-4.73%2C4.82-.79.8-1.6%2C1.59-2.42%2C2.36a2.32%2C2.32%2C0%2C0%2C1-3.21-.1%2C2.3%2C2.3%2C0%2C0%2C1-.19-3.25c2.14-2.2%2C4.31-4.36%2C6.48-6.54Z%22%20fill%3D%22%234D4D4D%22%2F%3E%3C%2Fsvg%3E");
+}
+
+.editButton {
+  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3C!--%20Generator%3A%20Sketch%2064%20(93537)%20-%20https%3A%2F%2Fsketch.com%20--%3E%3Ctitle%3Eicon%2Fmaterial%2Fedit%3C%2Ftitle%3E%3Cdesc%3ECreated%20with%20Sketch.%3C%2Fdesc%3E%3Cg%20id%3D%22icon%2Fmaterial%2Fedit%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22ic-round-edit%22%3E%3Cg%20id%3D%22Icon%22%20fill%3D%22%234D4D4D%22%3E%3Cpath%20d%3D%22M3%2C17.46%20L3%2C20.5%20C3%2C20.78%203.22%2C21%203.5%2C21%20L6.54%2C21%20C6.67%2C21%206.8%2C20.95%206.89%2C20.85%20L17.81%2C9.94%20L14.06%2C6.19%20L3.15%2C17.1%20C3.05%2C17.2%203%2C17.32%203%2C17.46%20Z%20M20.71%2C7.04%20C20.8972281%2C6.85315541%2021.002444%2C6.59950947%2021.002444%2C6.335%20C21.002444%2C6.07049053%2020.8972281%2C5.81684459%2020.71%2C5.63%20L18.37%2C3.29%20C18.1831554%2C3.10277191%2017.9295095%2C2.99755597%2017.665%2C2.99755597%20C17.4004905%2C2.99755597%2017.1468446%2C3.10277191%2016.96%2C3.29%20L15.13%2C5.12%20L18.88%2C8.87%20L20.71%2C7.04%20Z%22%20id%3D%22Icon-Shape%22%3E%3C%2Fpath%3E%3C%2Fg%3E%3Crect%20id%3D%22ViewBox%22%20fill-rule%3D%22nonzero%22%20x%3D%220%22%20y%3D%220%22%20width%3D%2224%22%20height%3D%2224%22%3E%3C%2Frect%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+.runButton {
+  display: none;
+  pointer-events: none;
+}
+
+.runButtonBackground {
+  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3C!--%20Box%20outline%20--%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2218%22%20height%3D%2218%22%20rx%3D%222%22%20ry%3D%222%22%2F%3E%3C!--%20Right-pointing%20triangle%20(play%20icon)%20--%3E%3Cpath%20d%3D%22M9%207L17%2012L9%2017Z%22%20fill%3D%22%234D4D4D%22%20stroke%3D%22none%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+
+.resetButton {
+  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3C!--%20Box%20outline%20--%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2218%22%20height%3D%2218%22%20rx%3D%222%22%20ry%3D%222%22%2F%3E%3C%2Fg%3E%3C!--%20Play%20triangle%20(moved%20upward)%20--%3E%3Cpath%20d%3D%22M9%206L17%2011L9%2016Z%22%20fill%3D%22%234D4D4D%22%2F%3E%3C!--%20Rewind%20arrow%20shaft%20(moved%20up%20to%20y%3D18)%20--%3E%3Cpath%20d%3D%22M18%2018%20L7%2018%22%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%221.2%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C!--%20Arrowhead%20(moved%20up%20accordingly)%20--%3E%3Cpath%20d%3D%22M7%2018%20L8.5%2016.5%22%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%221.2%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M7%2018%20L8.5%2019.5%22%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%221.2%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+}
+
+.pinButton {
+  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22%234D4D4D%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%221.8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3C!--%20Scaled%20filled%20top%20--%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%226.5%22%20rx%3D%223.2%22%20ry%3D%221.6%22%2F%3E%3C!--%20Scaled%20neck%20as%20filled%20trapezoid%20--%3E%3Cpolygon%20points%3D%229.8%2C8.3%2014.2%2C8.3%2014.8%2C11.5%209.2%2C11.5%22%2F%3E%3C!--%20Scaled%20filled%20base%20--%3E%3Cellipse%20cx%3D%2212%22%20cy%3D%2213.2%22%20rx%3D%225%22%20ry%3D%221.8%22%2F%3E%3C!--%20Scaled%20short%20pin%20--%3E%3Cline%20x1%3D%2212%22%20y1%3D%2214.9%22%20x2%3D%2212%22%20y2%3D%2220%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+.pinButton[state="off"] {
+  transform-origin: center;
+  transform: rotate(40deg);
+}
+
+.runButton[type="runner"] {
+  display: inherit;
+  pointer-events: all;
+}
+
+.runButton2[delayed="true"] {
+  display: inline;
+  pointer-events: all;
+}
+
+.runButton2 {
+  display: none;
+  pointer-events: all;
+  position: relative;
+}
+
+.runButton2[delayed="true"] {
+  display: block;
+
+}
+
+.resizeHandler {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  z-index: 10000;
+  background-color: rgba(0.1, 0.1, 0.1, 0.03);
+}
+
+.resizeHandler[corner="bottomRight"] {
+  cursor: se-resize;
+  bottom: -15px;
+  right: -15px;
+}
+
+.resizeHandler[corner="topLeft"] {
+  cursor: nw-resize;
+  top: -15px;
+  left: -15px;
+}
+
+.resizeHandler[corner="bottomLeft"] {
+  cursor: sw-resize;
+  bottom: -15px;
+  left: -15px;
+}
+
+.resizeHandler[corner="topRight"] {
+  cursor: ne-resize;
+  top: -15px;
+  right: -15px;
+}
+
+.resizeHandler:hover {
+  background-color: rgba(0.1, 0.4, 0.1, 0.3);
+}
+
+.windowHolder {
+  height: calc(100% - 24px);
+  box-sizing: border
+}
+
+.windowHolder[blurred="true"] {
+  filter: blur(4px)
+}
+
+#navigationBox {
+  display: flex;
+  flex-direction: column;
+  right: 20px;
+  gap: 10px;
+  bottom: 80px;
+  align-items: center;
+  width: 40px;
+  border: 1px solid black;
+  background-color: #d2d2d2;
+  position: absolute;
+  z-index: 200000;
+  border-radius: 8px;
+  box-shadow: 4px 5px 8px -2px rgba(0,0,0,.15);
+}
+
+.navigationButton {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  cursor: pointer;
+}
+
+.with-border {
+  border: 1px solid #4D4D4D;
+  border-radius: 15px;
+  background-color: white;
+}
+
+.navigationButton:hover {
+  background-color: #eaeaea;
+}
+
+.navigationButton:first-child {
+  margin-top: 10px;
+}
+
+.navigationButton:last-child {
+  margin-bottom: 10px;
+}
+
+.navigationButtonImage {
+  width: 100%;
+  height: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+#zoomInButton {
+  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3Ctitle%3Eicon%2Fmaterial%2Fview_zoom-in%3C%2Ftitle%3E%3Cg%20id%3D%22icon%2Fmaterial%2Fview_zoom-in%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22ic-baseline-add%22%3E%3Cg%20id%3D%22Icon%22%20fill%3D%22%234D4D4D%22%3E%3Cpolygon%20id%3D%22Icon-Path%22%20points%3D%2219%2013%2013%2013%2013%2019%2011%2019%2011%2013%205%2013%205%2011%2011%2011%2011%205%2013%205%2013%2011%2019%2011%22%3E%3C%2Fpolygon%3E%3C%2Fg%3E%3Crect%20id%3D%22ViewBox%22%20fill-rule%3D%22nonzero%22%20x%3D%220%22%20y%3D%220%22%20width%3D%2224%22%20height%3D%2224%22%3E%3C%2Frect%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+#zoomOutButton {
+  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3Ctitle%3Eicon%2Fmaterial%2Fview_zoom-out%3C%2Ftitle%3E%3Cg%20id%3D%22icon%2Fmaterial%2Fview_zoom-out%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22ic-baseline-minus%22%3E%3Cg%20id%3D%22Icon%22%20fill%3D%22%234D4D4D%22%3E%3Cpolygon%20id%3D%22Icon-Path%22%20points%3D%2219%2012.998%205%2012.998%205%2010.998%2019%2010.998%22%3E%3C%2Fpolygon%3E%3C%2Fg%3E%3Crect%20id%3D%22ViewBox%22%20fill-rule%3D%22nonzero%22%20x%3D%220%22%20y%3D%220%22%20width%3D%2224%22%20height%3D%2224%22%3E%3C%2Frect%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+#homeButton {
+  background-image: url("data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%3E%3Ctitle%3Eicon%2Fview-centered%3C%2Ftitle%3E%3Cg%20id%3D%22icon%2Fview-centered%22%20stroke%3D%22none%22%20stroke-width%3D%221%22%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20id%3D%22Group-3%22%20transform%3D%22translate(2.000000%2C%204.000000)%22%20fill%3D%22%234D4D4D%22%3E%3Cpath%20d%3D%22M0%2C9%20L3%2C9%20L3%2C7%20L0%2C7%20L0%2C9%20Z%20M17%2C9%20L20.001%2C9%20L20.001%2C7%20L17%2C7%20L17%2C9%20Z%20M9%2C3%20L11%2C3%20L11%2C0%20L9%2C0%20L9%2C3%20Z%20M13%2C9%20L11%2C9%20L11%2C11%20L9%2C11%20L9%2C9%20L7%2C9%20L7%2C7%20L9%2C7%20L9%2C5%20L11%2C5%20L11%2C7%20L13%2C7%20L13%2C9%20Z%20M9%2C16%20L11%2C16%20L11%2C13%20L9%2C13%20L9%2C16%20Z%20M13%2C0%20L13%2C2%20L18%2C2%20L18%2C5%20L20%2C5%20L20%2C0%20L13%2C0%20Z%20M18%2C14%20L13%2C14%20L13%2C16%20L20%2C16%20L20%2C11%20L18%2C11%20L18%2C14%20Z%20M0%2C5%20L2%2C5%20L2%2C2%20L7%2C2%20L7%2C0%20L0%2C0%20L0%2C5%20Z%20M2%2C11%20L0%2C11%20L0%2C16%20L7%2C16%20L7%2C14%20L2%2C14%20L2%2C11%20Z%22%20id%3D%22Fill-1%22%3E%3C%2Fpath%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+.enabledButton {
+  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3C!--%20Box%20outline%20--%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2218%22%20height%3D%2218%22%20rx%3D%222%22%20ry%3D%222%22%20stroke-width%3D%222%22%2F%3E%3C!--%20Thicker%20checkmark%20--%3E%3Cpath%20d%3D%22M5.5%2012.5L10.5%2017.5L18.5%207.5%22%20stroke-width%3D%223%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+
+.enabledButton[disabled="true"] {
+  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2218%22%20height%3D%2218%22%20rx%3D%222%22%20ry%3D%222%22%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+}
+
+.inspectorButton {
+  background-image: url("data:image/svg+xml,%3Csvg%20width%3D%2224px%22%20height%3D%2224px%22%20viewBox%3D%220%200%2024%2024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%234D4D4D%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3C!--%20Line%201%20--%3E%3Ccircle%20cx%3D%225%22%20cy%3D%227%22%20r%3D%221.5%22%20fill%3D%22%234D4D4D%22%20stroke%3D%22none%22%2F%3E%3Cline%20x1%3D%228%22%20y1%3D%227%22%20x2%3D%2219%22%20y2%3D%227%22%2F%3E%3C!--%20Line%202%20--%3E%3Ccircle%20cx%3D%225%22%20cy%3D%2212%22%20r%3D%221.5%22%20fill%3D%22%234D4D4D%22%20stroke%3D%22none%22%2F%3E%3Cline%20x1%3D%228%22%20y1%3D%2212%22%20x2%3D%2219%22%20y2%3D%2212%22%2F%3E%3C!--%20Line%203%20--%3E%3Ccircle%20cx%3D%225%22%20cy%3D%2217%22%20r%3D%221.5%22%20fill%3D%22%234D4D4D%22%20stroke%3D%22none%22%2F%3E%3Cline%20x1%3D%228%22%20y1%3D%2217%22%20x2%3D%2219%22%20y2%3D%2217%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  display: none;
+  pointer-events: none;
+}
+
+
+.inspectorButton[type="runner"] {
+  display: inherit;
+  pointer-events: all;
+}
+
+.cm-tooltip-lint {
+  font-size: 12px;
+}
+
+.cm-tooltip-dependency {
+  background-color: #66b;
+  color: white;
+  border: none;
+  padding: 2px 7px;
+  border-radius: 4px;
+
+}
+
+.cm-tooltip-dependency {
+  transform: translate(20px, 0px)
+}
+
+.cm-tooltip-cursor-wide {
+  text-wrap: nowrap;
+}
+
+.dependency-link {
+  border: 1px solid #66b;
+}
+
+.dependency-link:hover {
+  border: 1px solid #cc7;
+  border-style: outset;
+  background-color: #88c;
+}
+`;
+
+((css, renkon) => {
+  const style = document.createElement("style");
+  style.id = "pad-css";
+  style.textContent = css;
+  renkon.querySelector("#pad-css")?.remove();
+  renkon.appendChild(style);
+})(css, renkon);
 
 return {};
 }
