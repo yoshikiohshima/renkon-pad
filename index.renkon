@@ -3136,9 +3136,38 @@ class DependencyPlugin {
   return {dom: runnerIframe};
 };
 `],
+<<<<<<< HEAD
 [`160`, `# Runner
 
 The Runner is an iframe with a message handler that receives Renkon code from the editor and runs it. Also the document window is uses this with the markdown editor code.`],
 [`161`, `# HoverPlugin
+=======
+[`88`, `const loadStart = Events.receiver();
+const loadOne = Events.receiver({queued: true});
+const loadDone = Events.receiver();
+const loadAtOnce = Events.receiver();
+
+const loadReceiver = Behaviors.select(
+  undefined, // {key:number, array}
+  loadStart, (prev, start) => {
+    return {key: start, array: []};
+  },
+  loadOne, (prev, one) => {
+    if (prev?.key !== one.at(-1).key) {
+      return undefined;
+    }
+    return {key: prev.key, array: [...prev.array, one.map(el=>{return new Uint8Array([...el.array])}).flat()]};
+  },
+  loadDone, (prev, done) => {
+    if (prev?.key !== done) {
+      return undefined;
+    }
+    return {key: prev.key, array: prev.array[0], done: true};
+  },
+  loadAtOnce, (_prev, value) => {
+    return value;
+  }
+);
+>>>>>>> 0175e7c (fix loading with loadOne event)
 
 The class in the "CodeMirror HoverPlugin" below is a custom version of CodeMirror tooltip extension. As The dependency tooltip is interactive, the user needs to get to it; but it should go away when the pointer is moved enough. In the current implementation, the tooltip dissapears when the pointer moves to a different line veritally, or large enough amount horizontally.`]]}
