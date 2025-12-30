@@ -1930,7 +1930,7 @@ const newEditor = (id, doc) => {
   const config = {
     // eslint configuration
     languageOptions: {
-      globals: mirror.globals,
+      globals: window.RenkonWeb.globals,
       parserOptions: {
         ecmaVersion: 2022,
         sourceType: "module",
@@ -2941,7 +2941,7 @@ class DependencyPlugin {
   startHover() {
     clearTimeout(this.restartTimeout);
     let {view, lastMove} = this;
-    let desc = view.docView.nearest(lastMove.target);
+    let desc = view.docView.tile.nearest(lastMove.target);
     if (!desc) return;
     let pos = view.posAtCoords(lastMove);
 
@@ -3075,10 +3075,10 @@ class DependencyPlugin {
       }
     </style>
     <script type="module">
-      import {ProgramState, CodeMirror, newInspector} from "./renkon-web.js";
+      import {ProgramState, CodeMirror, newInspector, globals} from "./renkon-web.js";
       window.thisProgramState = new ProgramState(Date.now());
       window.CodeMirror = CodeMirror;
-      window.newInspector = newInspector;
+      window.RenkonWeb = {newInspector, globals};
 
       window.onmessage = (evt) => {
         if (evt.data && Array.isArray(evt.data.code)) {

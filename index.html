@@ -15,9 +15,10 @@
 
             // it could be renkon-core.js here, though it is just handy to use a package
             // with CodeMirror bundled.
-            import {view, CodeMirror, ProgramState, loader} from "./renkon-web.js";
+            import {CodeMirror, ProgramState, globals, loader} from "./renkon-web.js";
             window.CodeMirror = CodeMirror;
             window.ProgramState = ProgramState;
+            window.RenkonWeb = {globals};
             const programState = new ProgramState(Date.now());
 
             // for debugging purpose, store the current programState to window
