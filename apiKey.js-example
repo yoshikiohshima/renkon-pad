@@ -1,0 +1,10 @@
+const apiKey = "234567_Paste_Your_Own_API_Key_Here_7654321";
+const appId = "type your own appId such as com.example.pad";
+const box = "https://localhost:8888";
+export default {appParameters: {apiKey, appId, box}};
+
+// For development on local computer and local network, copy this file as apiKey-dev.js.
+
+// For deployment to a publicly accessible server, copy this file as apiKey.js.
+
+// you may export other Croquet session parameters to override default values.
