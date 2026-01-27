@@ -1,0 +1,76 @@
+{"padTitle":"counter",
+"positions":{"map":{"__map":true,
+"values":[["0",{"height":503.0933430989583,
+"id":"0",
+"type":"resize",
+"width":610.4786105685764,
+"x":-196.17119683159723,
+"y":-57.87714301215277}],["1",{"height":453.7652418348524,
+"id":"1",
+"type":"resize",
+"width":667.9582926432291,
+"x":454.244384765625,
+"y":-57.16408962673611}]]}},
+"titles":{"map":{"__map":true,
+"values":[["0",{"id":"0",
+"state":false,
+"title":"Croquet"}],["1",{"id":"1",
+"state":false,
+"title":"counter"}]]}},
+"version":3,
+"windowEnabled":{"map":{"__map":true,
+"values":[["0",{"enabled":true,
+"id":"0"}],["1",{"enabled":true,
+"id":"1"}]]}},
+"windowTypes":{"map":{"__map":true,
+"values":[["0","code"],["1","code"]]}},
+"windows":["0","1"],
+"zIndex":{"map":{"__map":true,
+"values":[["0",100],["1",101]]}}}
+{__codeMap: true, value: [[`0`, `({
+  parameters: {  
+    "appParameters": {
+      "apiKey": "234567_Paste_Your_Own_API_Key_Here_7654321",
+      "appId": "org.tinlizzie.counter",
+      "box": "http://localhost:8888",
+      name: '2345',
+      password: '1',
+      "tps": 2
+    },
+    "realm": {"model": ["counter", "change", "timer", "thousand"]},
+    "name": "counter"
+  },
+  methods: {
+    renkonInit() {
+      this.programState.registerEvent("initialWindow", "code");
+    },
+    savePersistentData() {
+      console.log("save");
+    },
+    loadPersistentData() {
+      console.log("load");
+    }
+  }
+})`],
+[`1`, `const change = Events.or(incr, decr, thousand);
+const counter = Behaviors.collect(0, change, (prev, change) => prev + change);
+const timer = Events.timer(1000);
+const thousand = timer ? 1000 : undefined;
+
+const {html, render} = import("./preact.standalone.module.js");
+const incr = Events.listener(renkon.querySelector("#incr"), "click", (evt) => 1);
+const decr = Events.listener(renkon.querySelector("#decr"), "click", (evt) => -1);
+render(html\`<div>\${counter}</div>\`, renkon.querySelector("#count"));
+
+const renkon = (() => {
+  const div = document.createElement("div");
+  div.id = "renkon";
+  div.innerHTML = \`
+    <button id="incr">+</button>
+    <button id="decr">-</button>
+    <div id="count"></div>
+  \`.trim();
+  document.body.querySelector("#renkon")?.remove();
+  document.body.appendChild(div);
+  return div;
+})();`]]}

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+        <meta charset="utf-8">
+        <title>Counter</title>
+        <script type="module">
+            import {ProgramState, globals} from "./renkon-core.js";
+            import {loader} from "./loader.js";
+
+            const padOption = new URL(window.location).searchParams.get("pad");
+
+            window.ProgramState = ProgramState;
+            window.onload = () => {
+              loader({codemirror: false, padName: padOption}).then((obj) => {
+                const {session, CodeMirrorModel, CodeMirrorView, CodeMirror} = obj;
+                window.CodeMirror = CodeMirror;
+                window.CodeMirrorModel = CodeMirrorModel;
+                window.CodeMirrorView = CodeMirrorView;
+              });
+            };
+        </script>
+    </head>
+    <body></body>
+</html>
