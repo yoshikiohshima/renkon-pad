@@ -9454,7 +9454,7 @@ function rewriteRenkonCalls(output, body) {
     }
   });
 }
-const version$1 = "0.10.6";
+const version$1 = "0.10.7";
 const packageJson = {
   version: version$1
 };
@@ -9477,6 +9477,9 @@ const changeType = "ChangeType";
 const gatherType = "GatherType";
 const generatorNextType = "GeneratorNextType";
 const resolvePartType = "ResolvePart";
+function isThennable(obj) {
+  return typeof obj == "object" && obj !== null && obj.then && typeof obj.then === "function";
+}
 _b = typeKey, _a = isBehaviorKey;
 class Stream {
   constructor(type, isBehavior) {
@@ -9767,7 +9770,7 @@ class UserEvent extends Stream {
       newValue = state.getEventValue(state.scratch.get(node.id), state.time);
     }
     if (newValue !== void 0) {
-      if (newValue !== null && newValue.then) {
+      if (isThennable(newValue)) {
         newValue.then((value) => {
           state.setResolved(node.id, { value, time: state.time });
         });
@@ -9863,7 +9866,7 @@ class CollectStream extends Stream {
       }
     }
     const initValue = this.init();
-    if (initValue && typeof initValue === "object" && initValue.then) {
+    if (isThennable(initValue)) {
       state.scratch.set(id, { resolving: true });
       initValue.then((value) => {
         state.requestAlarm(1);
@@ -9890,7 +9893,7 @@ class CollectStream extends Stream {
     if (inputValue !== void 0 && (!lastInputArray || inputValue !== lastInputArray[inputIndex])) {
       const newValue = this.updater(scratch.current, inputValue);
       if (newValue !== void 0) {
-        if (newValue !== null && newValue.then) {
+        if (isThennable(newValue)) {
           newValue.then((value) => {
             state.requestAlarm(1);
             state.scheduleAlarm();
@@ -9925,7 +9928,7 @@ class SelectStream extends Stream {
       }
     }
     const initValue = this.init();
-    if (initValue && typeof initValue === "object" && initValue.then) {
+    if (isThennable(initValue)) {
       state.scratch.set(id, { resolving: true });
       initValue.then((value) => {
         state.requestAlarm(1);
@@ -9952,7 +9955,7 @@ class SelectStream extends Stream {
     if (orRecord !== void 0) {
       const newValue = this.updaters[orRecord.index](scratch.current, orRecord.value);
       if (newValue !== void 0) {
-        if (newValue !== null && newValue.then) {
+        if (isThennable(newValue)) {
           newValue.then((value) => {
             state.requestAlarm(1);
             state.scheduleAlarm();
@@ -9989,7 +9992,7 @@ class GatherStream extends Stream {
       if (v2 !== void 0) {
         validInputNames.push(inputs[i2]);
         validInputs.push(v2);
-        if (v2 !== null && v2.then) {
+        if (isThennable(v2)) {
           hasPromise = true;
         }
       }
@@ -10023,7 +10026,7 @@ class ResolvePart extends Stream {
       const array2 = this.object;
       const indices = [...Array(array2.length).keys()].filter((i2) => {
         const elem = this.object[i2];
-        return typeof elem === "object" && elem !== null && elem.then;
+        return isThennable(elem);
       });
       const promises = indices.map((i2) => array2[i2]);
       this.promise = Promise.all(promises);
@@ -10031,7 +10034,7 @@ class ResolvePart extends Stream {
     } else {
       const keys = Object.keys(this.object).filter((k2) => {
         const elem = this.object[k2];
-        return typeof elem === "object" && elem !== null && elem.then;
+        return isThennable(elem);
       });
       const promises = keys.map((k2) => this.object[k2]);
       this.promise = Promise.all(promises);
@@ -10896,7 +10899,7 @@ class ProgramState {
         }
         this.inputArray.set(id, inputArray);
         const maybeValue = outputs;
-        if (maybeValue !== void 0 && maybeValue !== null && (maybeValue.then || maybeValue[typeKey])) {
+        if (maybeValue !== void 0 && maybeValue !== null && (isThennable(maybeValue) || maybeValue[typeKey])) {
           const ev = maybeValue.then ? new PromiseEvent(maybeValue, this.types.get(id) === "Behavior") : maybeValue;
           const newStream = ev.created(this, id);
           this.streams.set(id, newStream);

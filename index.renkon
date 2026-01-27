@@ -1,936 +1,652 @@
-{"padTitle":"Renkon-Pad",
+{"padTitle":"Croquet-Renkon-pad",
 "positions":{"map":{"__map":true,
-"values":[["3",{"height":4868.821067203595,
-"id":"3",
+"values":[["0",{"height":5647.502442259792,
+"id":"0",
 "type":"resize",
-"width":905.884347110711,
-"x":2157.523832054651,
-"y":73.29562807750499}],["4",{"height":4871.927145013808,
+"width":870.4848433091676,
+"x":-2056.6875407359244,
+"y":152.3923214222506}],["2",{"height":1384.7453325372853,
+"id":"2",
+"type":"resize",
+"width":853.7266463585069,
+"x":-7505.722858609955,
+"y":170.10927727887955}],["4",{"height":8937.581724868889,
 "id":"4",
+"type":"move",
+"width":1633.1015245180788,
+"x":9299.859945779028,
+"y":158.48566407216316}],["8",{"height":3652.9904166809183,
+"id":"8",
 "type":"resize",
-"width":881.543689999395,
-"x":5728.075959855331,
-"y":66.9574731070507}],["5",{"height":3401.0264740146413,
-"id":"5",
+"width":752.5265951306149,
+"x":-3768.8549944407373,
+"y":162.74088184915206}],["10",{"height":578.0447706719546,
+"id":"10",
 "type":"move",
-"width":897.0160173690531,
-"x":7790.963558635349,
-"y":2692.3209297389017}],["6",{"height":8469.3567933523,
-"id":"6",
+"width":719.4258832458329,
+"x":-7495.960808580634,
+"y":-531.1669383355377}],["14",{"height":3338.603989493141,
+"id":"14",
 "type":"resize",
-"width":1141.930244701142,
-"x":11334.50043503137,
-"y":47.63987490731455}],["7",{"height":2520.1883142246284,
-"id":"7",
+"width":691.8269342414026,
+"x":-5648.874228169122,
+"y":165.2253187178549}],["16",{"height":2915.9198423892362,
+"id":"16",
 "type":"move",
-"width":817.2387935617032,
-"x":7805.4478844107125,
-"y":71.32045578688565}],["9",{"height":6555.500008527299,
-"id":"9",
+"width":763.0884327402407,
+"x":-3772.167257114569,
+"y":3908.728896121767}],["18",{"height":4371.5409627515755,
+"id":"18",
 "type":"move",
-"width":791.1381953324778,
-"x":316.4351179839059,
-"y":69.46880420677473}],["11",{"height":1105.7660756214398,
-"id":"11",
+"width":893.6731174686736,
+"x":1604.3270139606657,
+"y":4410.649137488393}],["24",{"height":2558.6994626918395,
+"id":"24",
 "type":"move",
-"width":869.2108208710029,
-"x":-3387.2364982061836,
-"y":70.15864726964261}],["15",{"height":3651.6022577381787,
-"id":"15",
+"width":739.2688656962409,
+"x":5192.0901287411625,
+"y":153.23622200307503}],["25",{"height":3167.5540276899956,
+"id":"25",
+"type":"resize",
+"width":728.9915280920748,
+"x":5186.73225701981,
+"y":2830.4931425640784}],["26",{"height":4892.327415416062,
+"id":"26",
 "type":"move",
-"width":736.8810187185526,
-"x":-1584.1003781772583,
-"y":67.84078474229996}],["40",{"height":3779.7999188808067,
-"id":"40",
+"width":851.32232821802,
+"x":3446.156384599422,
+"y":156.2909297451856}],["27",{"height":4131.124810984027,
+"id":"27",
 "type":"move",
-"width":809.0992415272672,
-"x":4029.7152436757738,
-"y":70.29057908223348}],["74",{"height":4312.248341148691,
-"id":"74",
-"type":"move",
-"width":928.6533281314535,
-"x":4023.8347274924404,
-"y":3921.6449546856998}],["82",{"height":5155.4159482716805,
-"id":"82",
-"type":"move",
-"width":829.0772656583506,
-"x":9572.569379229404,
-"y":50.144368806907835}],["83",{"height":590.6415445155225,
-"id":"83",
-"type":"move",
-"width":599.4209122784505,
-"x":-4113.399846872952,
-"y":60.74214032468536}],["84",{"height":740.0732151000523,
-"id":"84",
-"type":"move",
-"width":619.3818790373572,
-"x":-2305.0067065494477,
-"y":58.90499143476521}],["85",{"height":752.4081129685438,
-"id":"85",
-"type":"move",
-"width":649.4967680095754,
-"x":1402.9295729184694,
-"y":67.74786175389437}],["86",{"height":771.4555163106003,
-"id":"86",
-"type":"move",
-"width":614.9748931926002,
-"x":3298.0993555977784,
-"y":60.25885646207719}],["87",{"height":764.2567694987133,
-"id":"87",
-"type":"move",
-"width":598.62741563727,
-"x":-447.41273809102574,
-"y":70.20771517852907}],["88",{"height":657.2731056485146,
+"width":864.5423830491443,
+"x":1606.8801977518124,
+"y":155.3053442530741}],["28",{"height":4729.75306896208,
+"id":"28",
+"type":"resize",
+"width":702.4770201465312,
+"x":-285.2855133531855,
+"y":151.16910000208054}],["29",{"height":2153.912480907299,
+"id":"29",
+"type":"resize",
+"width":860.5724852794904,
+"x":-7511.728773633648,
+"y":1694.513774786595}],["88",{"height":1480.7946125867425,
 "id":"88",
 "type":"move",
-"width":535.2659265044863,
-"x":5109.930838375804,
-"y":63.463194708379206}],["89",{"height":531.8603215930543,
+"width":734.0176315252023,
+"x":5193.169936123532,
+"y":6107.024769750996}],["89",{"height":1475.9824959204543,
 "id":"89",
-"type":"move",
-"width":620.398425693691,
-"x":3319.8148333165154,
-"y":3915.872358813035}],["90",{"height":575.9331627545905,
+"type":"resize",
+"width":945.5396981979883,
+"x":7016.617666289972,
+"y":155.1066768003194}],["90",{"height":395.11443821079865,
 "id":"90",
 "type":"move",
-"width":588.37722767176,
-"x":7031.772423286907,
-"y":68.3525730283474}],["91",{"height":425.66117349679064,
+"width":785.0824912605583,
+"x":-8350.534856693012,
+"y":-523.4098922384826}],["91",{"height":399.78479399032983,
 "id":"91",
-"type":"move",
-"width":613.5659794246412,
-"x":7022.8766215065325,
-"y":2702.1559131660492}],["92",{"height":536.2547788320747,
+"type":"resize",
+"width":786.4592378715543,
+"x":-8343.60063445745,
+"y":170.5477662620383}],["92",{"height":400,
 "id":"92",
 "type":"move",
-"width":557.982455982854,
-"x":8900.460725461162,
-"y":49.430710788939294}],["93",{"height":544.2912120690746,
+"width":800,
+"x":-8351.15655914728,
+"y":1693.2403951488632}],["93",{"height":400,
 "id":"93",
 "type":"move",
-"width":559.7397228362672,
-"x":10622.149606379542,
-"y":46.65632429135232}],["102",{"height":2870.6226213712894,
-"id":"102",
-"type":"resize",
-"width":830.0989848267543,
-"x":-1597.3585193814326,
-"y":3905.0132249604476}],["159",{"height":1695.076873851642,
-"id":"159",
-"type":"move",
-"width":710.5835480226499,
-"x":-3393.8754826497357,
-"y":1266.1864188829784}],["160",{"height":482.98527760265216,
-"id":"160",
-"type":"resize",
-"width":680.207872863857,
-"x":-4166.529036062263,
-"y":1256.2778380413192}],["161",{"height":541.8625746828695,
-"id":"161",
-"type":"resize",
 "width":800,
-"x":-2499.521868618796,
-"y":3910.9616798805278}]]}},
+"x":-6506.08449182103,
+"y":164.91758073104134}],["94",{"height":400,
+"id":"94",
+"type":"move",
+"width":800,
+"x":-4601.874090924307,
+"y":162.00688272439712}],["95",{"height":400,
+"id":"95",
+"type":"move",
+"width":800,
+"x":-4609.557028426976,
+"y":3910.8755456865806}],["96",{"height":654.5675027366065,
+"id":"96",
+"type":"resize",
+"width":759.9280880101138,
+"x":-2874.4275106309483,
+"y":152.94656526595696}],["97",{"height":425.16384641060284,
+"id":"97",
+"type":"resize",
+"width":799.8133245815237,
+"x":-1142.622157820525,
+"y":152.79002858339436}],["98",{"height":400,
+"id":"98",
+"type":"move",
+"width":800,
+"x":735.8947260092311,
+"y":155.49785569117438}],["99",{"height":400,
+"id":"99",
+"type":"move",
+"width":800,
+"x":744.8483840607839,
+"y":4409.83231055079}],["100",{"height":400,
+"id":"100",
+"type":"move",
+"width":800,
+"x":2594.852375193863,
+"y":155.418241982143}],["101",{"height":400,
+"id":"101",
+"type":"move",
+"width":800,
+"x":4350.01526721649,
+"y":156.91844645652895}],["102",{"height":400,
+"id":"102",
+"type":"move",
+"width":800,
+"x":4364.274393601232,
+"y":2826.9091048566975}],["103",{"height":400,
+"id":"103",
+"type":"move",
+"width":800,
+"x":4366.896395773581,
+"y":6112.6621492460545}],["104",{"height":447.9135641802801,
+"id":"104",
+"type":"resize",
+"width":844.7603993464369,
+"x":6032.113342546147,
+"y":146.6445807693559}],["105",{"height":400,
+"id":"105",
+"type":"move",
+"width":800,
+"x":8284.815013324254,
+"y":163.09341064898467}]]}},
 "titles":{"map":{"__map":true,
-"values":[["3",{"id":"3",
+"values":[["0",{"id":"0",
 "state":false,
-"title":"User Interaction"}],["4",{"id":"4",
+"title":"Data Structure"}],["2",{"id":"2",
 "state":false,
-"title":"Rendering"}],["5",{"id":"5",
+"title":"Initialization"}],["4",{"id":"4",
 "state":false,
-"title":"Save and Load"}],["6",{"id":"6",
+"title":"CSS"}],["8",{"id":"8",
 "state":false,
-"title":"CSS"}],["7",{"id":"7",
+"title":"Code Mirror Editor"}],["10",{"id":"10",
 "state":false,
-"title":"Graph Visualization"}],["9",{"id":"9",
+"title":"Croquet"}],["14",{"id":"14",
 "state":false,
-"title":"Data Structure"}],["11",{"id":"11",
+"title":"View"}],["16",{"id":"16",
 "state":false,
-"title":"Initialization"}],["15",{"id":"15",
+"title":"HoverPlugin"}],["18",{"id":"18",
 "state":false,
-"title":"Code Mirror Editor"}],["40",{"id":"40",
+"title":"Search"}],["24",{"id":"24",
 "state":false,
-"title":"Pointer Handling"}],["74",{"id":"74",
+"title":"Graph Visualizer"}],["25",{"id":"25",
 "state":false,
-"title":"Search"}],["82",{"id":"82",
+"title":"Save and Load"}],["26",{"id":"26",
 "state":false,
-"title":"Doc Window"}],["83",{"id":"83",
+"title":"Rendering"}],["27",{"id":"27",
 "state":false,
-"title":"Initialization"}],["84",{"id":"84",
+"title":"Pointer Handling"}],["28",{"id":"28",
 "state":false,
-"title":"Code MIrror Editor"}],["85",{"id":"85",
+"title":"User Interaction"}],["29",{"id":"29",
 "state":false,
-"title":"User Interaction"}],["86",{"id":"86",
+"title":"Runner"}],["88",{"id":"88",
 "state":false,
-"title":"Pointer Handling"}],["87",{"id":"87",
+"title":"Load Model"}],["89",{"id":"89",
 "state":false,
-"title":"Data Structure"}],["88",{"id":"88",
+"title":"Doc Window"}],["90",{"id":"90",
 "state":false,
-"title":"Rendering"}],["89",{"id":"89",
+"title":"Croquet"}],["91",{"id":"91",
 "state":false,
-"title":"Search"}],["90",{"id":"90",
+"title":"Initialization"}],["92",{"id":"92",
 "state":false,
-"title":"Graph Visualization"}],["91",{"id":"91",
+"title":"Runner"}],["93",{"id":"93",
 "state":false,
-"title":"Save and Load"}],["92",{"id":"92",
+"title":"View"}],["94",{"id":"94",
 "state":false,
-"title":"Doc Window"}],["93",{"id":"93",
+"title":"CodeMirror Editor"}],["95",{"id":"95",
 "state":false,
-"title":"CSS"}],["102",{"id":"102",
+"title":"HoverPlugin"}],["96",{"id":"96",
 "state":false,
-"title":"CodeMirror HoverPlugin"}],["159",{"id":"159",
+"title":"Data Structure"}],["97",{"id":"97",
 "state":false,
-"title":"Runner"}],["160",{"id":"160",
+"title":"User Interaction"}],["98",{"id":"98",
 "state":false,
-"title":"Runner"}],["161",{"id":"161",
+"title":"Pointer Handling"}],["99",{"id":"99",
 "state":false,
-"title":"untitled"}]]}},
+"title":"Search"}],["100",{"id":"100",
+"state":false,
+"title":"Rendering"}],["101",{"id":"101",
+"state":false,
+"title":"Graph Visualization"}],["102",{"id":"102",
+"state":false,
+"title":"Save and Load"}],["103",{"id":"103",
+"state":false,
+"title":"Load Model"}],["104",{"id":"104",
+"state":false,
+"title":"Doc Window"}],["105",{"id":"105",
+"state":false,
+"title":"CSS"}]]}},
 "version":3,
 "windowEnabled":{"map":{"__map":true,
-"values":[["3",{"enabled":true,
-"id":"3"}],["4",{"enabled":true,
-"id":"4"}],["5",{"enabled":true,
-"id":"5"}],["6",{"enabled":true,
-"id":"6"}],["7",{"enabled":true,
-"id":"7"}],["9",{"enabled":true,
-"id":"9"}],["11",{"enabled":true,
-"id":"11"}],["15",{"enabled":true,
-"id":"15"}],["40",{"enabled":true,
-"id":"40"}],["74",{"enabled":true,
-"id":"74"}],["82",{"enabled":true,
-"id":"82"}],["83",{"enabled":true,
-"id":"83"}],["84",{"enabled":true,
-"id":"84"}],["85",{"enabled":true,
-"id":"85"}],["86",{"enabled":true,
-"id":"86"}],["87",{"enabled":true,
-"id":"87"}],["88",{"enabled":true,
+"values":[["0",{"enabled":true,
+"id":"0"}],["2",{"enabled":true,
+"id":"2"}],["4",{"enabled":true,
+"id":"4"}],["8",{"enabled":true,
+"id":"8"}],["10",{"enabled":true,
+"id":"10"}],["14",{"enabled":true,
+"id":"14"}],["16",{"enabled":true,
+"id":"16"}],["18",{"enabled":true,
+"id":"18"}],["24",{"enabled":true,
+"id":"24"}],["25",{"enabled":true,
+"id":"25"}],["26",{"enabled":true,
+"id":"26"}],["27",{"enabled":true,
+"id":"27"}],["28",{"enabled":true,
+"id":"28"}],["29",{"enabled":true,
+"id":"29"}],["88",{"enabled":true,
 "id":"88"}],["89",{"enabled":true,
 "id":"89"}],["90",{"enabled":true,
 "id":"90"}],["91",{"enabled":true,
 "id":"91"}],["92",{"enabled":true,
 "id":"92"}],["93",{"enabled":true,
-"id":"93"}],["102",{"enabled":true,
-"id":"102"}],["159",{"enabled":true,
-"id":"159"}],["160",{"enabled":true,
-"id":"160"}],["161",{"enabled":true,
-"id":"161"}]]}},
+"id":"93"}],["94",{"enabled":true,
+"id":"94"}],["95",{"enabled":true,
+"id":"95"}],["96",{"enabled":true,
+"id":"96"}],["97",{"enabled":true,
+"id":"97"}],["98",{"enabled":true,
+"id":"98"}],["99",{"enabled":true,
+"id":"99"}],["100",{"enabled":true,
+"id":"100"}],["101",{"enabled":true,
+"id":"101"}],["102",{"enabled":true,
+"id":"102"}],["103",{"enabled":true,
+"id":"103"}],["104",{"enabled":true,
+"id":"104"}],["105",{"enabled":true,
+"id":"105"}]]}},
 "windowTypes":{"map":{"__map":true,
-"values":[["3","code"],["4","code"],["5","code"],["6","code"],["7","code"],["9","code"],["11","code"],["15","code"],["40","code"],["74","code"],["82","code"],["83","doc"],["84","doc"],["85","doc"],["86","doc"],["87","doc"],["88","doc"],["89","doc"],["90","doc"],["91","doc"],["92","doc"],["93","doc"],["102","code"],["159","code"],["160","doc"],["161","doc"]]}},
-"windows":["3","4","5","6","7","9","11","15","40","74","82","83","84","85","86","87","88","89","90","91","92","93","102","159","160","161"],
+"values":[["0","code"],["2","code"],["4","code"],["8","code"],["10","code"],["14","code"],["16","code"],["18","code"],["24","code"],["25","code"],["26","code"],["27","code"],["28","code"],["29","code"],["88","code"],["89","code"],["90","doc"],["91","doc"],["92","doc"],["93","doc"],["94","doc"],["95","doc"],["96","doc"],["97","doc"],["98","doc"],["99","doc"],["100","doc"],["101","doc"],["102","doc"],["103","doc"],["104","doc"],["105","doc"]]}},
+"windows":["0","2","4","8","10","14","16","18","24","25","26","27","28","29","88","89","90","91","92","93","94","95","96","97","98","99","100","101","102","103","104","105"],
 "zIndex":{"map":{"__map":true,
-"values":[["3",122],["4",128],["5",120],["6",133],["7",103],["9",114],["11",132],["15",123],["40",129],["74",105],["82",104],["83",121],["84",110],["85",113],["86",126],["87",127],["88",100],["89",125],["90",131],["91",112],["92",130],["93",124],["102",111],["159",119],["160",134],["161",135]]}}}
-{__codeMap: true, value: [[`3`, `const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
-const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
-const addDoc = Events.listener(renkon.querySelector("#addDocButton"), "click", () => "doc");
-const save = Events.listener(renkon.querySelector("#saveButton"), "click", (evt) => evt);
-const load = Events.listener(renkon.querySelector("#loadButton"), "click", (evt) => evt);
-const search = Events.listener(renkon.querySelector("#searchButton"), "click", (evt) => evt);
+"values":[["0",114],["2",120],["4",122],["8",108],["10",137],["14",124],["16",126],["18",130],["24",105],["25",133],["26",115],["27",103],["28",113],["29",123],["88",121],["89",135],["90",134],["91",102],["92",112],["93",125],["94",118],["95",127],["96",106],["97",128],["98",129],["99",131],["100",100],["101",132],["102",109],["103",107],["104",111],["105",136]]}}}
+{__codeMap: true, value: [[`0`, `const viewExit = Events.receiver({queued: true});
+const viewJoin = Events.receiver({queued: true});
 
-const home = Events.listener(renkon.querySelector("#homeButton"), "click", () => "home");
-const zoomIn = Events.listener(renkon.querySelector("#zoomInButton"), "click", () => "zoomIn");
-const zoomOut = Events.listener(renkon.querySelector("#zoomOutButton"), "click", () => "zoomOut");
-
-const homeUponLoad = ((_positions, _loadRequest) => "home")(positions, loadRequest);
-
-const navigationAction = Events.or(home, zoomIn, zoomOut, homeUponLoad);
-
-const padViewChange = Events.receiver();
-const wheeling = Events.receiver();
-
-const queuedKeydown = Events.listener(document.body, "keydown", evt => evt, {queued: true});
-const queuedKeyup = Events.listener(document.body, "keyup", evt => evt, {queued: true});
-
-const _padViewUpdate = ((padView) => {
-  const mover = document.querySelector("#mover");
-  const pad = document.querySelector("#pad");
-  mover.style.setProperty("transform", \`scale(\${padView.scale}) translate(\${padView.x}px, \${padView.y}px)\`);
-
-  pad.style.setProperty("background-position", \`\${padView.x * padView.scale}px \${padView.y * padView.scale}px\`);
-  pad.style.setProperty("background-size", \`\${64 * padView.scale}px \${64 * padView.scale}px\`);
-})(padView);
-
-const wheel = Events.listener(renkon.querySelector("#pad"), "wheel", (evt) => {
-  let pinch;
-  if (isSafari) {
-    pinch = (Number.isInteger(evt.deltaX) && !Number.isInteger(evt.deltaY)) || evt.metaKey;
-  } else {
-    pinch = evt.ctrlKey || evt.metaKey;
+const newWindowRequest = ((newWindowRequestFromView, newId) => {
+  if (newWindowRequestFromView.type === "initial") {
+    if (newId !== 1) {return;}
+    return {...newWindowRequestFromView, id: \`\${newId}\`, type: "code"};
   }
-  const strId = evt.target.id;
-  if (pinch) {
-    evt.preventDefault();
-    if (strId === "pad") {
-      evt.stopPropagation();
-    }
-  }
-  return evt;
-});
+  return {...newWindowRequestFromView, id: \`\${newId}\`};
+})(newWindowRequestFromView, newId);
 
-const _handleWheel = ((wheel, padView, modifierState) => {
-  let pinch;
-  if (isSafari) {
-    pinch = (Number.isInteger(wheel.deltaX) && !Number.isInteger(wheel.deltaY)) || wheel.metaKey;
-  } else {
-    pinch = wheel.ctrlKey || wheel.metaKey;
-  }
+const newId = Behaviors.select(
+  0,
+  loadHandler, (_prev, data) => {
+    if (data.windows.length === 0) {return 1;}
+    const max = Math.max(...data.windows.map((w) => Number.parseInt(w)));
+    return max;
+  },
+  newWindowRequestFromView, (prev, _type) => prev + 1
+);
 
-  const shiftKey = modifierState.shiftKey;
-  const scrollDirection = modifierState.scrollDirection;
-  const strId = wheel.target.id;
+// [id:string]
+const windows = Behaviors.select(
+  [],
+  loadHandler, (_prev, data) => {
+    return data.windows;
+  },
+  newWindowRequest, (prev, spec) => [...prev, spec.id],
+  remove, (prev, removeCommand) => prev.filter((e) => e != removeCommand.id),
+);
 
-  let deltaX = wheel.deltaX;
-  let deltaY = wheel.deltaY;
-  let zoom = padView.scale;
-
-  let absDeltaY = Math.min(30, Math.abs(deltaY));
-  let diff = Math.sign(deltaY) * absDeltaY;
-
-  let desiredZoom = zoom * (1 - diff / 50);
-
-  const xInMover = (wheel.clientX / padView.scale) - padView.x;
-  const newX = wheel.clientX / desiredZoom - xInMover;
-
-  const yInMover = (wheel.clientY / padView.scale) - padView.y;
-  const newY = wheel.clientY / desiredZoom - yInMover;
-
-  if (scrollDirection === null && shiftKey) {
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      Events.send(wheeling, {scrollDirection: "horizontal"});
-      deltaY = 0;
-    } else {
-      Events.send(wheeling, {scrollDirection: "vertical"});
-      deltaX = 0;
-    }
-  } else if (scrollDirection !== null && shiftKey) {
-    if (scrollDirection === "vertical") {
-      deltaX = 0;
-    }
-    if (scrollDirection === "horizontal") {
-      deltaY = 0;
-    }
-  }
-
-  if (pinch) {
-    Events.send(padViewChange, {x: newX, y: newY, scale: desiredZoom});
-  } else {
-    if (strId === "pad") {
-      Events.send(padViewChange, {x: padView.x - deltaX / padView.scale,
-                                  y: padView.y - deltaY / padView.scale, scale: padView.scale});
-    }
-  }
-})(wheel, padView, modifierState);
-
-Events.listener(renkon.querySelector("#buttonBox"), "wheel", preventDefault);
-Events.listener(renkon.querySelector("#navigationBox"), "wheel", preventDefault);
-
-Events.listener(document.body, "gesturestart", preventDefaultSafari);
-Events.listener(document.body, "gesturechange", preventDefaultSafari);
-Events.listener(document.body, "gestureend", preventDefaultSafari);
-
-const isSafari = window.navigator.userAgent.includes("Safari") && !window.navigator.userAgent.includes("Chrome");
-const isMobile = !!("ontouchstart" in window);
-
-const pointercancel = Events.listener(renkon.querySelector("#pad"), "pointercancel", pointerLost);
-const lostpointercapture = Events.listener(renkon.querySelector("#pad"), "lostpointercapture", pointerLost);
-
-const preventDefault = (evt) => {
-  evt.preventDefault();
-  return evt;
-};
-
-const preventDefaultSafari = (evt) => {
-  if (!isSafari || isMobile) {
-    evt.preventDefault();
-  }
-  return evt;
-};
-
-const pointerLost = (evt) => {
-  evCache.clear();
-  evt.preventDefault();
-  return {type: "lost"};
-};
-
-const _handleNavigationAction = ((navigationAction, positions, padView) => {
-  if (navigationAction === "zoomIn" || navigationAction === "zoomOut") {
-    const pad = document.body.querySelector("#pad").getBoundingClientRect();
-    const newScale = padView.scale * ( navigationAction === "zoomIn" ? 1.1 : 0.9);
-    const centerX = pad.width / 2 / padView.scale - padView.x;
-    const centerY = pad.height / 2 / padView.scale - padView.y;
-    const newX = pad.width / 2 / newScale - centerX;
-    const newY = pad.height / 2 / newScale - centerY;
-    // const newX = (padView.x - (pad.width / 2)) * (newScale / padView.scale) + pad.width / 2;
-    // const newY = (padView.y - (pad.height / 2)) * (newScale / padView.scale) + pad.height / 2;
-    Events.send(padViewChange, {x: newX, y: newY, scale: newScale});
-  } else if (navigationAction === "home") {
-    let minLeft = Number.MAX_VALUE;
-    let minTop = Number.MAX_VALUE;
-    let maxRight = Number.MIN_VALUE;
-    let maxBottom = Number.MIN_VALUE;
-
-    if (positions.map.size === 0) {
-      Events.send(padViewChange, {x: 0, y: 0, scale: 1});
-      return;
-    }
-    for (let [_, position] of positions.map) {
-      minLeft = Math.min(position.x, minLeft);
-      minTop = Math.min(position.y, minTop);
-      maxRight = Math.max(position.x + position.width, maxRight);
-      maxBottom = Math.max(position.y + position.height, maxBottom);
-    }
-
-    const pad = document.body.querySelector("#pad").getBoundingClientRect();
-
-    const scaleX = pad.width / (maxRight - minLeft);
-    const scaleY = pad.height / (maxBottom - minTop);
-    const scale = Math.min(1, scaleX, scaleY) * 0.9;
-
-    const centerX = (maxRight + minLeft) / 2;
-    const centerY = (maxBottom + minTop) / 2;
-    let x = (pad.width / 2 / scale - centerX);
-    let y = (pad.height / 2 / scale - centerY);
-    Events.send(padViewChange, {x, y, scale, force: true});
-  }
-})(navigationAction, positions, padView);
-
-const showGraph = Behaviors.collect(
-  "showDeps",
-  Events.listener(renkon.querySelector("#showGraph"), "click", (evt) => evt),
-  (now, _click) => {
-    if (now === "showGraph") {return "hide";}
-    if (now === "showDeps") {return "showGraph";}
-    if (now === "hide") {return "showDeps"}
-    return now;
+// {map: Map<id, type:"code"|"runner">
+const windowTypes = Behaviors.select(
+  {map: new Map()},
+  loadHandler, (_prev, data) => {
+    return data.windowTypes;
+  },
+  newWindowRequest, (prev, spec) => {
+    prev.map.set(spec.id, spec.type);
+    return {map: prev.map};
+  },
+  remove, (prev, remove) => {
+    prev.map.delete(remove.id);
+    return {map: prev.map};
   }
 );
 
-((showGraph) => {
-  let str;
-  if (showGraph === "showGraph") {str = "show graph";}
-  if (showGraph === "showDeps") {str = "show deps";}
-  if (showGraph === "hide") {str = "hide graph"}
-  document.querySelector("#showGraph").textContent = str;
-})(showGraph);
+// [id, {id, x: number, y: number, width: number, height: number}]
+const positions = Behaviors.select(
+  {map: new Map()},
+  loadHandler, (_prev, data) => {
+    return data.positions;
+  },
+  newWindowRequest, (prev, request) => {
+    const padView = request.padView;
+    const length = prev.map.size;
+    const id = request.id;
+    const newX = (length * 5 + 40) / padView.scale - padView.x;
+    const newY = (length * 5 + 45) / padView.scale - padView.y;
 
-const _onRun = ((runRequest, windowContents, windowEnabled) => {
-  const id = runRequest.id;
-  const iframe = windowContents.map.get(id);
-  const code = [...windowContents.map]
-    .filter(([id, obj]) => obj.state && windowEnabled.map.get(id).enabled)
-    .map(([_id, editor]) => editor.state.doc.toString());
-  iframe.dom.contentWindow.postMessage({code: code, path: id});
-})(runRequest, windowContents, windowEnabled);
+    const newWindow = (id, type) => {
+      return {
+        id,
+        x: newX,
+        y: newY,
+        width: type === "code" ? 300 : 800,
+        height: type === "code" ? 200 : 400
+      }
+    };
+    prev.map.set(id, newWindow(id, request.type));
+    return {map: prev.map};
+  },
+  remove, (prev, remove) => {
+    prev.map.delete(remove.id);
+    return {map: prev.map};
+  },
+  moveOrResize, (prev, command) => {
+    const v = {...prev.map.get(command.id), ...command};
+    prev.map.set(command.id, v);
+    return {map: prev.map};
+  }
+);
 
-const resetHandler = Events.select(
-  {},
-  resetRequest, (prev, reset) => {
-    if (prev.ready) {
-      if (prev.ready.includes(reset.id)) {
-        Events.send(doReset, reset);
-        return {};
+const padViews = Behaviors.select(
+  {map: new Map()},
+  viewJoin, (prev, viewJoin) => {
+    viewJoin.forEach((view) => prev.map.set(view, {x: 0, y: 0, scale: 1}));
+    return {map: prev.map};
+  },
+  viewExit, (prev, viewExit) => {
+    viewExit.forEach((view) => prev.map.delete(view));
+    return {map: prev.map};
+  },
+  padViewChange, (prev, view) => {
+    let {x, y, scale, viewId, force} = view;
+    if (!force) {
+      if (scale < 0.05) {
+        x = prev.x;
+        y = prev.y;
+        scale = 0.05;
+      }
+      if (scale > 30) {
+        x = prev.x;
+        y = prev.y;
+        scale = 30;
       }
     }
-    return {resetRequest: reset};
+    let result = {...prev.map.get(viewId), ...{x, y, scale}};
+    prev.map.set(viewId, result);
+    return {map: prev.map};
+  }
+)
+  
+const zIndex = Behaviors.select(
+  {map: new Map()},
+  loadHandler, (_prev, data) => {
+    if (data.zIndex) return data.zIndex;
+    return {map: new Map(data.windows.map((w, i) => [w, i + 100]))};
   },
-  readyMessages, (prev, ready) => {
-    const readyIds = ready.map((r) => r.data.id);
-    if (prev.resetRequest) {
-      if (readyIds.includes(prev.resetRequest.id)) {
-        Events.send(doReset, prev.resetRequest);
+  newWindowRequest, (prev, request) => {
+    const id = request.id;
+    const findMax = (map)  => {
+      let maxId = -1;
+      let max = -1;
+      for (let [id, value] of map) {
+        if (value > max) {
+          maxId = id;
+          max = value;
+        }
       }
-    }
-    return {};
+      return {maxId, max};
+    };
+
+    const {maxId:_maxId, max} = findMax(prev.map);
+    let z = max < 0 ? 100 : max + 1;
+    prev.map.set(id, z++);
+    return {map: prev.map};
   },
-  windowContents, (_prev, _win) => ({})
+  remove, (prev, remove) => {
+    prev.map.delete(\`\${remove.id}\`);
+    return {map: prev.map};
+  },
+  moveOrResize, (prev, command) => {
+    if (command.type === "move") {
+      const z = prev.map.get(command.id);
+
+      const findMax = (map)  => {
+        let maxId = -1;
+        let max = -1;
+        for (let [id, value] of map) {
+          if (value > max) {
+            maxId = id;
+            max = value;
+          }
+        }
+        return {maxId, max};
+      };
+
+      const {maxId, max} = findMax(prev.map);
+      if (maxId !== command.id) {
+        prev.map.set(maxId, z);
+        prev.map.set(command.id, max);
+      }
+      return {map: prev.map};
+    }
+    return prev;
+  },
 );
 
-const doReset = Events.receiver();
-
-const _onReset = Events.send(runRequest, doReset);
-
-const _onInspect = ((inspectRequest) => {
-  const id = inspectRequest.id;
-  const iframe = windowContents.map.get(id);
-  iframe.dom.contentWindow.postMessage({inspector: true, path: id});
-})(inspectRequest);
-
-const remove = Events.receiver();
-const titleEditChange = Events.receiver();
-const enabledChange = Events.receiver();
-const pinRequest = Events.receiver();
-const runRequest = Events.receiver();
-const resetRequest = Events.receiver();
-const inspectRequest = Events.receiver();
-
-const _goTo = ((padView, positions, dblClick) => {
-  const strId = dblClick.target.id;
-  if (!strId.endsWith("-titleBar")) {return;}
-  const id = Number.parseInt(strId);
-  const position = positions.map.get(\`\${id}\`);
-
-  const pad = document.body.querySelector("#pad").getBoundingClientRect();
-
-  const scaleX = pad.width / position.width;
-  const scaleY = pad.height / position.height;
-  const scale = Math.min(scaleX, scaleY) * 0.95;
-
-  const centerX = position.x + position.width / 2;
-  const centerY = position.y + position.height / 2;
-
-  const x = pad.width / 2 / scale - centerX;
-  const y = pad.height / 2 / scale - centerY;
-
-  Events.send(padViewChange, {x, y, scale});
-})(padView, positions, dblClick);
-`],
-[`4`, `const inputHandler = (evt) => {
-  if (evt.key === "Enter") {
-    evt.preventDefault();
-    evt.stopPropagation();
-    Events.send(titleEditChange, {
-      id: \`\${Number.parseInt(evt.target.id)}\`,
-      title: evt.target.textContent,
-      state: false
-    });
-    evt.target.textContent = "";
-  }
-};
-
-const playDown = Events.receiver();
-const dismissDelayedButton = Events.receiver();
-const playLeave = Events.receiver();
-const playUp = Events.receiver();
-
-const playClickHandler = (evt, delayed) => {
-  if (delayed) {
-    return;
-  }
-  Events.send(runRequest, {id: \`\${Number.parseInt(evt.target.id)}\`});
-}
-
-const playDownHandler = (evt) => {
-  evt.stopPropagation();
-  if (evt.isPrimary) {
-      evt.target.setPointerCapture(evt.pointerId);
-  }
-  Events.send(playDown, evt);
-};
-
-
-const playUpHandler = (evt) => {
-  evt.target.releasePointerCapture(evt.pointerId);
-  // console.log(evt.target.id, evt.currentTarget.id)
-  Events.send(playUp, evt);
-};
-
-const playLeaveHandler = (evt) => {
-  // console.log("leave");
-  // evt.target.releasePointerCapture(evt.pointerId);
-  Events.send(playLeave, evt);
-};
-
-const resetRunnerHandler = (evt) => {
-  // console.log("reset")
-  Events.send(dismissDelayedButton, evt.target.id);
-  Events.send(resetRequest, {id: \`\${Number.parseInt(evt.target.id)}\`});
-}
-
-const delayedPlayDown = Events.delay(playDown, 500);
-
-const delayedButtonJudge = Events.select(
-  {result: null, queue: []},
-  playDown, (_prev, down) => ({result: null, queue: [down]}),
-  playUp, (prev, up) => ({result: prev.result, queue: [up]}),
-  playLeave, (prev, leave) => ({result: prev.result, queue: [...prev.queue, leave]}),
-  delayedPlayDown, (prev, down) => {
-    if (prev.queue.length === 0) return [];
-    if (prev.queue.length === 1) {
-      if (prev.queue[0] === down) {return {result: down, queue: [down]};}
-      return {result: null, queue: []}
-    }
-    if ([prev.length - 1].type === "pointerup") {return {result: null, queue: []};}
-    if ([prev.length - 1].type === "pointerleave") {return prev;}
+const titles = Behaviors.select(
+  {map: new Map()},
+  loadHandler, (_prev, data) => {
+    return data.titles || {map: new Map()};
   },
-  dismissDelayedButton, (_prev, _dismiss) => ({result: null, queue: []})
+  newWindowRequest, (prev, request) => {
+    const id = request.id;
+    prev.map.set(id, {id, state: false, title: "untitled"});
+    return {map: prev.map};
+  },
+  remove, (prev, remove) => {
+    prev.map.delete(remove.id);
+    return {map: prev.map};
+  },
+  titleEditChange, (prev, change) => {
+    const id = change.id;
+    const v = {...prev.map.get(id), ...change};
+    prev.map.set(id, v);
+    return {map: prev.map};
+  }
 );
 
-const delayed = Behaviors.select(
-  null,
-  Events.or(delayedButtonJudge), (_prev, judge) => {
-    const evt = judge.result;
-    if (evt && evt.type === "pointerdown") {
-      evt.target.releasePointerCapture(evt.pointerId);
-      return \`\${Number.parseInt(evt.target.id)}\`;
-    }
-    return null;
+const windowEnabled = Behaviors.select(
+  {map: new Map()},
+  loadHandler, (_prev, loaded) => {
+    return loaded.windowEnabled || {map: new Map()};
   },
-  playUp, (prev, _evt) => {return prev},
-  playLeave, (prev, _evt) => {return prev}
+  newWindowRequest, (prev, request) => {
+    const id = request.id;
+    prev.map.set(id, {id, enabled: true});
+    return {map: prev.map};
+  },
+  remove, (prev, remove) => {
+    prev.map.delete(remove.id);
+    return {map: prev.map};
+  },
+  enabledChange, (prev, change) => {
+    const id = change.id;
+    const v = {...prev.map.get(id), ...change};
+    prev.map.set(id, v);
+    return {map: prev.map};
+  }
+);
+
+// Map<id:string, {type: string, doc?: string}>
+const windowContentsModel = Behaviors.select(
+  {map: new Map()},
+  loadHandler, (prev, loaded) => {
+    prev.map.clear();
+
+    for (let [id, type] of loaded.windowTypes.map) {
+      let elem;
+      if (type === "runner") {
+        elem = {type};
+      } else if (type === "doc") {
+        elem = {type, doc: window.CodeMirrorModel.create({doc: loaded.code.get(id), creator: "newDocPane", id})};
+      } else if (type === "code") {
+        elem = {type, doc: window.CodeMirrorModel.create({doc: loaded.code.get(id), creator: "newEditor", id})};
+      } else {
+        elem = {type, doc: loaded.code.get(id)};
+      }
+      prev.map.set(id, elem);
+    }
+    return {map: prev.map, loaded: true};
+  },
+  newWindowRequest, (prev, request) => {
+    const id = request.id;
+    const type = request.type;
+    let elem;
+    if (type === "runner") {
+      elem = {type};
+    } else if (type === "doc") {  
+      elem = {type, doc: window.CodeMirrorModel.create({id, creator: "newDocPane", doc: \`# Hello\`})};
+    } else if (type === "code") {
+      elem = {type, doc: window.CodeMirrorModel.create({id, creator: "newEditor", doc: \`console.log("hello")\`})}
+    }
+    prev.map.set(id, elem);
+    return {map: prev.map};
+  },
+  remove, (prev, remove) => {
+    prev.map.delete(remove.id);
+    return {map: prev.map};
+  },
+  resetRequest, (prev, resetRequest) => {
+    const id = resetRequest.id;
+    if (prev.map.get(id)?.type !== "runner") {console.log("inconsistent"); return prev;}
+    return {map: prev.map};
+  }
+);
+
+const padTitle = Behaviors.select(
+  "untitled",
+  loadHandler, (_prev, data) => {
+    return data.padTitle || "untitled"
+  },
+  titleChange, (_prev, request) => request
+);
+
+const docSeparators = Behaviors.select(
+  {map: new Map()},
+  separatorMove, (prev, separatorMove) => {
+    const id = separatorMove.id;
+    const containerPosition = positions.map.get(id);
+    const containerWidth = containerPosition.width;
+    const newX = separatorMove.x;
+    const docWidth = Math.min(containerWidth - 8, Math.max(newX - 8, 0));
+    const editorWidth = Math.max(containerWidth - 22 - docWidth, 60);
+    const editorRight = editorWidth === 60 ? -60 - 16 + (containerWidth - newX) : 0;
+    prev.map.set(id, {docWidth, editorWidth, editorRight});
+    return {map: prev.map};   
+  },
+  remove, (prev, remove) => {
+    prev.map.delete(remove.id);
+    return {map: prev.map};
+  },
+  moveOrResize, (prev, command) => {
+    if (command.type !== "resize") {return prev;}
+    const id = command.id;
+    const winType = windowTypes.map.get(id);
+    if (winType !== "doc") {return prev;}
+    const containerPosition = positions.map.get(id);
+    const containerWidth = containerPosition.width;
+    const newX = containerWidth - 22;
+    const docWidth = containerWidth - 8;
+    const editorWidth = 60;
+    const editorRight = -60;
+    prev.map.set(id, {docWidth, editorWidth, editorRight});
+    return {map: prev.map};
+  }
 )
 
-const _positionsCss = ((positions, zIndex, pinnedPositions, padView) => {
-  let style = document.body.querySelector("#positions-css");
-  if (!style) {
-    style = document.createElement("style");
-    style.id = "positions-css";
-    document.body.appendChild(style);
-  }
-
-  const css = [...positions.map].map(([id, rect]) => {
-    let x;
-    let y;
-    let scale;
-    const pinned = pinnedPositions.map.get(id);
-    if (!pinned) {
-      x = rect.x;
-      y = rect.y;
-      scale = 1;
-    } else {
-      // t(x) = pinned.x
-      // t(a) = a * padView.scale + padView.x;
-      // x * padView.scale + padView.x = pinned.x;
-      // x = pinned.x / padView.scale - padView.x;
-      scale = pinned.scale / padView.scale;
-      x = pinned.x / padView.scale - padView.x;
-      y = pinned.y / padView.scale - padView.y;
-      // console.log(pinned.x, scale, x, padView.x);
-    }
-    return \`
-[id="\${id}-win"] {
-    transform: translate(\${x}px, \${y}px) scale(\${scale});
-    width: \${rect.width}px;
-    height: \${rect.height}px;
-    z-index: \${zIndex.map.get(id)};
-}\`.trim();
-  }).join("\\n");
-  style.textContent = css;
-})(positions, zIndex, pinnedPositions, padView);
-
-const windowDOM = (id, title, windowContent, type, windowEnabled, pinnedPosition, delayed) => {
-  return h("div", {
-    key: \`\${id}\`,
-    id: \`\${id}-win\`,
-    "class": "window",
-    pinned: !!pinnedPosition,
-    ref: (ref) => {
-      if (ref) {
-        const holder = ref.querySelector(".windowHolder");
-        if (holder.firstChild && holder.firstChild !== windowContent.dom) {
-          holder.firstChild.remove();
-        }
-        if (holder !== windowContent.dom.parentNode) {
-          holder.appendChild(windowContent.dom);
-        }
-      }
-    },
-    onPointerEnter: (evt) => Events.send(hovered, \`\${Number.parseInt(evt.target.id)}\`),
-    onPointerLeave: (_evt) => Events.send(hovered, null)
-  }, [
-    h("div", {
-      id: \`\${id}-titleBar\`,
-      "class": "titleBar",
-    }, [
-      h("div", {
-        id: \`\${id}-enabledButton\`,
-        disabled: !!(windowEnabled && !windowEnabled.enabled),
-        style: {
-          display: \`\${type !== "code" ? "none" : "inheirt"}\`
-        },
-        "class": "titlebarButton enabledButton",
-        onClick: (evt) => {
-          Events.send(enabledChange, {
-            id: \`\${Number.parseInt(evt.target.id)}\`,
-            enabled: !windowEnabled || !windowEnabled.enabled});
-        },
-      }),
-      h("div", {
-        id: \`\${id}-runButtonContainer\`,
-        "class": "runButtonContainer",
-      }, [
-        h("div", {
-          id: \`\${id}-runButton\`,
-          "class": "titlebarButton runButtonBackground runButton",
-          type,
-          onClick: (evt) => playClickHandler(evt, delayed),
-          onPointerDown: playDownHandler,
-          onPointerUp: playUpHandler,
-          onPointerLeave: playLeaveHandler,
-        }),
-        h("div", {
-          id: \`\${id}-runButton2\`,
-          "class": "titlebarButton resetButton runButton2",
-          type,
-          delayed: delayed === id,
-          onPoionterUp: resetRunnerHandler,
-          onClick: resetRunnerHandler,
-        })
-      ]),
-      h("div", {
-        id: \`\${id}-inspectorButton\`,
-        "class": "titlebarButton inspectorButton",
-        type,
-        onClick: (evt) => {
-          Events.send(inspectRequest, {id: \`\${Number.parseInt(evt.target.id)}\`});
-        },
-      }),
-      h("div", {
-        id: \`\${id}-title\`,
-        "class": "title",
-        contentEditable: \`\${title.state}\`,
-        onKeydown: inputHandler,
-      }, title.title),
-      h("div", {
-        id: \`\${id}-titleSpacer\`,
-        "class": "titleSpacer",
-      }),
-      h("div", {
-        id: \`\${id}-edit\`,
-        "class": \`titlebarButton editButton\`,
-        onClick: (evt) => {
-          // console.log(evt);
-          Events.send(titleEditChange, {id: \`\${Number.parseInt(evt.target.id)}\`, state: !title.state});
-        },
-      }, []),
-      h("div", {
-        id: \`\${id}-pin\`,
-        "class": "titlebarButton pinButton",
-        state: pinnedPosition ? "off" : "on",
-        onClick: (evt) => {
-          Events.send(pinRequest, {id: \`\${Number.parseInt(evt.target.id)}\`})
-        }
-      }),
-      h("div", {
-        id: \`\${id}-close\`,
-        "class": "titlebarButton closeButton",
-        onClick: (evt) => {
-          Events.send(remove, {id: \`\${Number.parseInt(evt.target.id)}\`, type: "remove"})
-        }
-      }),
-    ]),
-    h("div", {
-      id: \`\${id}-bottomRight-resize\`,
-      corner: "bottomRight",
-      "class": "resizeHandler",
-    }, []),
-    h("div", {
-      id: \`\${id}-topLeft-resize\`,
-      corner: "topLeft",
-      "class": "resizeHandler",
-    }, []),
-    h("div", {
-      id: \`\${id}-bottomLeft-resize\`,
-      corner: "bottomLeft",
-      "class": "resizeHandler",
-    }, []),
-    h("div", {
-      id: \`\${id}-topRight-resize\`,
-      corner: "topRight",
-      "class": "resizeHandler",
-    }, []),
-    h("div", {
-      id: \`\${id}-windowHolder\`,
-      blurred: \`\${type !== "code" ? false : (windowEnabled ? !windowEnabled.enabled : false)}\`,
-      "class": "windowHolder",
-    }, [])
-  ])
-};
-
-const windowElements = ((windows, titles, windowContents, windowTypes, windowEnabled, pinnedPositions, delayed) => {
-  return h("div", {id: "owner", "class": "owner"}, windows.map((id) => {
-    return windowDOM(
-      id,
-      titles.map.get(id), windowContents.map.get(id),
-      windowTypes.map.get(id), windowEnabled.map.get(id),
-      pinnedPositions.map.get(id), delayed)
-  }));
-})(windows, titles, windowContents, windowTypes, windowEnabled, pinnedPositions, delayed);
-
-const _windowRender = render(windowElements, document.querySelector("#mover"));
-
+const runRequest = Behaviors.keep(runRequestFromView);
+// this is a workaround to make the view to see the value
+const resetRequest = Behaviors.receiver();
+// const xxx = console.log("runRequest", runRequest);
 `],
-[`5`, `const loadRequest = Events.receiver();
+[`2`, `const {h, html, render} = import("./preact.standalone.module.js");
 
-const saveData = (windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
-  const code = new Map(
-    [...windowContents.map].map(([id, content]) => {
-      if (content.state) {
-        return [id, content.state.doc.toString()];
-      } else if (content.doc) {
-        return [id, content.doc];
-      } else {
-        return null;
-      }
-    }).filter(item => item !== null));
-  const myTitles = new Map([...titles.map].map(([id, obj]) => ([id, {...obj, state: false}])));
-  const data1 = stringify({
-    version: 3,
-    windows,
-    positions,
-    zIndex,
-    titles: {map: myTitles},
-    windowTypes,
-    padTitle,
-    windowEnabled
-  });
+const renkon = (() => {
+  const renkon = document.createElement("div");
+  renkon.id = "renkon";
+  renkon.innerHTML = \`
+<div id="buttonBox">
+  <input class="menuButton" id="padTitle"></input>
+  <button class="menuButton" id="addCodeButton">code</button>
+  <button class="menuButton" id="addDocButton">doc</button>
+  <button class="menuButton" id="addRunnerButton">runner</button>
+  <div class="spacer"></div>
+  <button class="menuButton" id="searchButton">search</button>
+  <button class="menuButton" id="showGraph">show graph</button>
+  <button class="menuButton" id="saveButton">save</button>
+  <button class="menuButton" id="loadButton">load</button>
+</div>
+<div id="pad"><div id="mover"></div></div>
+<div id="overlay"></div>
+<div id="navigationBox">
+  <div class="navigationButton"><div id="homeButton" class="navigationButtonImage"></div></div>
+  <div class="navigationButton with-border"><div id="zoomInButton" class="navigationButtonImage"></div></div>
+  <div class="navigationButton with-border"><div id="zoomOutButton" class="navigationButtonImage"></div></div>
+</div>
 
-  const data2 = stringifyCodeMap(code);
+\`.trim();
 
-  return encodeURIComponent(data1) + encodeURIComponent(data2);
-};
-
-const _saver2 = ((windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
-  const data = saveData(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled);
-
-  const dataStr = "data:text/plain;charset=utf-8," + data;
-  const div = document.createElement("a");
-  div.setAttribute("href", dataStr);
-  div.setAttribute("download", \`\${padTitle}.renkon\`);
-  div.click();
-})(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled, save);
-
-const _loader = (() => {
-  const input = document.createElement("div");
-  input.innerHTML = \`<input id="imageinput" type="file" accept=".json,.renkon">\`;
-  const imageInput = input.firstChild;
-
-  imageInput.onchange = () => {
-    const file = imageInput.files[0];
-    if (!file) {imageInput.remove(); return;}
-    new Promise(resolve => {
-      let reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.readAsArrayBuffer(file);
-    }).then((data) => {
-      const result = new TextDecoder("utf-8").decode(data);
-      loadData(result, imageInput);
-    });
-    imageInput.value = "";
-  };
-  imageInput.oncancel = () => imageInput.remove();
-  document.body.appendChild(imageInput);
-  imageInput.click();
-})(load);
-
-const nameFromUrl = (() => {
-  const maybeUrl = new URL(window.location).searchParams.get("file");
-  if (maybeUrl) {
-    return maybeUrl;
-  }
-  return undefined;
+  document.body.querySelector("#renkon")?.remove();
+  document.body.appendChild(renkon);
+  return renkon;
 })();
 
-const loadData = (result, maybeImageInput) => {
-  const index = result.indexOf("{__codeMap: true, value:");
-  if (index < 0) {
-    const loaded = parse(result);
-    if (loaded.version === 1) {
-      Events.send(loadRequest, loaded);
-      maybeImageInput?.remove();
-      return;
-    }
-    console.log("unknown type of data");
-    maybeImageInput?.remove();
-    return;
-  }
+const searchPanel = ((renkon) => {
+  let search = renkon.querySelector("#search");
+  search?.remove();
+  const div = document.createElement("div");
+  div.innerHTML = \`
+<div class="search-panels search-panels-bottom" style="bottom: 0px;">
+  <div class="search-search search-panel">
+    <input value="" placeholder="Find" aria-label="Find" class="search-textfield" name="search" form="" main-field="true">
+    <button class="search-button" name="next" type="button">next</button>
+    <!-- <button class="search-button" name="prev" type="button">previous</button>
+    <button class="search-button" name="select" type="button">all</button> -->
+    <label><input type="checkbox" name="case" form="">match case</label>
+    <label><input type="checkbox" name="re" form="">regexp</label>
+    <label><input type="checkbox" name="word" form="">by word</label>
+    <!-- <input value="" placeholder="Replace" aria-label="Replace" class="search-textfield" name="replace" form="">
+    <button class="search-button" name="replace" type="button">replace</button>
+    <button class="search-button" name="replaceAll" type="button">replace all</button> -->
+    <button name="close" aria-label="close" type="button">×</button>
+  </div>
+</div>
+\`.trim();
+  search = div.childNodes[0];
+  search.id = "search";
+  renkon.appendChild(search);
+  return search;
+})(renkon);
 
-  const data1 = result.slice(0, index);
-  const data2 = result.slice(index);
-
-  const loaded = parse(data1);
-
-  if (loaded.version === 2 || loaded.version === 3) {
-    const code = parseCodeMap(data2);
-    loaded.code = code;
-    Events.send(loadRequest, loaded);
-    maybeImageInput?.remove();
-    return;
-  }
-  console.log("unknown type of data");
-  maybeImageInput.remove();
-}
-
-const _loadFromUrl = fetch(nameFromUrl).then((resp) => resp.text()).then((result) => {
-  loadData(result, null);
-});
-
-const stringifyInner = (node, seen) => {
-  if (node === undefined) return undefined;
-  if (typeof node === 'number') return Number.isFinite(node) ? \`\${node}\` : 'null';
-  if (typeof node !== 'object') return JSON.stringify(node, null, 4);
-
-  let out;
-  if (Array.isArray(node)) {
-    out = '[';
-    for (let i = 0; i < node.length; i++) {
-      if (i > 0) out += ',';
-      out += stringifyInner(node[i], seen) || 'null';
-    }
-    return out + ']';
-  }
-
-  if (node === null) return 'null';
-
-  if (seen.has(node)) {
-    throw new TypeError('Converting circular structure to JSON');
-  }
-
-  seen.add(node);
-
-  if (node.constructor === window.Map) {
-    let replacement = {__map: true, values: [...node]};
-    return stringifyInner(replacement, seen);
-  }
-
-  if (node.constructor === window.Set) {
-    let replacement = {__set: true, values: [...node]};
-    return stringifyInner(replacement, seen);
-  }
-
-  let keys = Object.keys(node).sort();
-  out = '';
-  for (let i = 0; i < keys.length; i++) {
-    let key = keys[i];
-    let value = stringifyInner(node[key], seen, out);
-    if (!value) continue;
-    if (out !== '') out += ',\\n';
-    out += JSON.stringify(key) + ':' + value;
-  }
-  seen.delete(node);
-  return '{' + out + '}';
-}
-
-const stringify = (obj) => {
-  let seen = new Set();
-  return stringifyInner(obj, seen);
-}
-
-const parse = (string) => {
-  return JSON.parse(string, (_key, value) => {
-    if (typeof value === "object" && value !== null && value.__map) {
-      return new Map(value.values);
-    } else if (typeof value === "object" && value !== null && value.__set) {
-      return new Set(value.values);
-    }
-    return value;
+const md = (() => {
+  const script = document.createElement("script");
+  script.id = "markdownit";
+  script.src = "./markdown-it.min.js";
+  const promise = new Promise((resolve) => {
+    script.onload = () => {
+       resolve(window.markdownit);
+    };
   });
-}
 
-const stringifyCodeMap = (map) => {
-  const replace = (str) => {
-    return str.replaceAll("\\\\", "\\\\\\\\").replaceAll("\`", "\\\\\`").replaceAll("\$", "\\\\\$");
-  }
-
-  return "\\n{__codeMap: true, value: " + "[" +
-    [...map].map(([key, value]) => ("[" + "\`" + replace(key) + "\`" + ", " + "\`" +
-                                    replace(value) + "\`" + "]")).join(",\\n") + "]" + "}"
-}
-
-const parseCodeMap = (string) => {
-  const array = eval("(" + string + ")");
-  return new Map(array.value);
-}
+  document.head.querySelector("#markdownit")?.remove();
+  document.head.appendChild(script);
+  return promise.then((markdownit) => markdownit({html: true}));
+})();
 `],
-[`6`, `const css = \`
+[`4`, `const css = \`
 @font-face {
   font-family: "OpenSans-Regular";
   src: url("./assets/fonts/open-sans-v17-latin-ext_latin-regular.woff2") format("woff2");
@@ -1191,8 +907,7 @@ html, body {
 }
 
 .windowHolder {
-  height: calc(100% - 24px);
-  box-sizing: border
+  height: calc(100% - 23px);
 }
 
 .windowHolder[blurred="true"] {
@@ -1309,6 +1024,55 @@ html, body {
   border-style: outset;
   background-color: #88c;
 }
+
+.doc-container {
+  display: flex;
+  height: 100%;
+}
+
+.doc-result {
+  height: 100%;
+  width: calc(100% - 220px);
+  overflow: scroll;
+  scroll-behavior: smooth;
+  font-size: 13px;
+  border: 1px solid black;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+
+.markdown {
+  height: 100%;
+}
+
+.doc-separator {
+  width: 8px;
+  min-width: 8px;
+  height: 100%;
+  background-color: #f8f8f8;
+}
+
+.doc-separator:hover {
+  background-color: #e8e8e8;
+  cursor: ew-resize;
+}
+
+.doc-editor {
+  width: 100%;
+}
+
+.doc-editor-container {
+  position: fixed;
+  right: 0px;
+  height: calc(100% - 36px);
+  width: 200px;
+  border: 1px solid black;
+  padding: 6px;
+  min-width: 0px;
+  background-color: white;
+  white-space: pre-wrap;
+  overflow: scroll;
+}
 \`;
 
 ((css, renkon) => {
@@ -1319,557 +1083,7 @@ html, body {
   renkon.appendChild(style);
 })(css, renkon);
 `],
-[`7`, `const analyzed = ((windowContents, windowEnabled, trigger, showGraph) => {
-  if (!showGraph) {return new Map()}
-  if (trigger === null) {return new Map()}
-  if (typeof trigger === "object" && trigger.id) {return new Map();}
-  const programState = new Renkon.constructor(0);
-  programState.setLog(() => {});
-
-  const blockMap = new Map() // name -> blockId
-  const nodes = new Map(); // blockId -> {exports:Set, imports: Set}
-  const edges = new Map(); // blockId -> {edgesOut: [{id, dest}], edgesIn: [{id, origin}], exports: [id]}
-
-  const code = [...windowContents.map].filter(
-    ([id, editor]) => editor.state && windowEnabled.map.get(id)?.enabled)
-    .map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
-  try {
-    code.forEach(info => {
-      const blockId = info.blockId;
-      programState.setupProgram([info.code]);
-      nodes.set(blockId, {exports: new Set(), imports: new Set()});
-      edges.set(blockId, {edgesOut: [], edgesIn: [], exports: []});
-      const obj = nodes.get(blockId);
-      for (const jsNode of programState.nodes.values()) {
-        for (const input of jsNode.inputs) {
-          if (/^_[0-9]/.test(input)) {continue;}
-          obj.imports.add(input)
-        }
-        if (jsNode.outputs === "") {continue;}
-        if (/^_[0-9]/.test(jsNode.outputs)) {continue;}
-        blockMap.set(jsNode.outputs, blockId)
-        obj.exports.add(jsNode.outputs);
-      }
-    });
-  } catch(e) {
-    console.log("Graph analyzer encountered an error in source code:");
-    return new Map();
-  }
-
-  for (let [id, obj] of nodes) {
-    for (const exported of obj.exports) {//exported:string
-      const edgesOut = edges.get(id).edgesOut;
-      const exports = edges.get(id).exports;
-      for (let [importId, importObj] of nodes) {
-        if (importId === id) {continue;}
-        const edgesIn = edges.get(importId).edgesIn;
-        if (importObj.imports.has(exported)) {
-          if (edgesOut.findIndex((already) => already.id === exported && already.dest === importId) < 0) {
-            edgesOut.push({id: exported, dest: importId});
-            if (exports.indexOf(exported) < 0) {
-              exports.push(exported);
-            }
-          }
-          if (edgesIn.findIndex((already) => already.id === exported && already.origin === id) < 0) {
-            edgesIn.push({id: exported, origin: id});
-          }
-        }
-      }
-    }
-  }
-  return edges;
-})(windowContents, windowEnabled, Events.or(remove, hovered), showGraph === "showGraph");
-
-const line = (p1, p2, color, label) => {
-  let pl;
-  let pr;
-  if (p1.x < p2.x) {
-    pl = p1;
-    pr = p2;
-  } else {
-    pl = p2;
-    pr = p1;
-  }
-  const c0 = \`\${pl.x} \${pl.y}\`;
-  const c1 = \`\${pl.x + (pr.x - pl.x) * 0.5} \${pl.y + (pr.y - pl.y) * 0.2}\`;
-  const c2 = \`\${pr.x - (pr.x - pl.x) * 0.2} \${pl.y + (pr.y - pl.y) * 0.6}\`;
-  const c3 = \`\${pr.x} \${pr.y}\`;
-  return html\`<path d="M \${c0} C \${c1} \${c2} \${c3}" stroke="\${color}"
-    fill="transparent" stroke-width="2" stroke-linecap="round"></path><text
-    x="\${p1.x + 5}" y="\${p1.y}">\${label}</text>\`;
-};
-
-const hovered = Events.receiver();
-const hoveredB = Behaviors.keep(hovered);
-
-const graph = ((positions, padView, analyzed, hoveredB, showGraph) => {
-  if (hoveredB === null) {return [];}
-  if (!showGraph) {return [];}
-
-  const edges = analyzed.get(hoveredB);
-
-  if (!edges) {return [];} // runner does not have edges
-
-  const exportEdges = new Set();
-  const importEdges = new Set();
-
-  const outEdges = edges.edgesOut.map((edge) => {
-    const ind = edges.exports.indexOf(edge.id);
-    let p1 = positions.map.get(hoveredB);
-    p1 = {x: p1.x + p1.width, y: p1.y};
-    // p1 = {x: p1.x * padView.scale + padView.x, y: p1.y * padView.scale + padView.y};
-    p1 = {x: (p1.x + padView.x) * padView.scale, y: (p1.y + padView.y) * padView.scale};
-    p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
-    let p2 = positions.map.get(edge.dest);
-    p2 = {x: (p2.x + padView.x) * padView.scale, y: (p2.y + padView.y) * padView.scale};
-    p2 = {x: p2.x, y: p2.y + 10};
-    let e = "";
-    if (!exportEdges.has(edge.id)) {
-      exportEdges.add(edge.id);
-      e = edge.id;
-    }
-    return line(p1, p2, "#d88", e);
-  });
-
-  const inEdges = edges.edgesIn.map((edge) => {
-    const exporter = analyzed.get(edge.origin);
-    const ind = exporter.exports.indexOf(edge.id);
-    let p1 = positions.map.get(edge.origin);
-    p1 = {x: p1.x + p1.width, y: p1.y};
-    p1 = {x: (p1.x + padView.x) * padView.scale , y: (p1.y + padView.y) * padView.scale};
-    p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
-    let p2 = positions.map.get(hoveredB);
-    p2 = {x: (p2.x + padView.x) * padView.scale, y: (p2.y + padView.y) * padView.scale};
-    p2 = {x: p2.x, y: p2.y + 10};
-    let e = "";
-    if (!importEdges.has(edge.id)) {
-      importEdges.add(edge.id);
-      e = edge.id;
-    }
-    return line(p1, p2, "#88d", e);
-  });
-
-  return html\`<svg viewBox="0 0 \${window.innerWidth} \${window.innerHeight}"
-                     xmlns="http://www.w3.org/2000/svg">\${outEdges}\${inEdges}</svg>\`;
-})(positions, padView, Behaviors.keep(analyzed), hoveredB, showGraph === "showGraph");
-
-const _graphRender = render(graph, document.querySelector("#overlay"));
-`],
-[`9`, `// [id:string]
-const windows = Behaviors.select(
-  [\`\${initialData.id}\`],
-  loadRequest, (_prev, data) => {
-    return data.windows
-  },
-  newWindowRequest, (prev, spec) => [...prev, \`\${spec.id}\`],
-  remove, (prev, removeCommand) => prev.filter((e) => e != removeCommand.id),
-);
-
-// {map: Map<id, type:"code"|"doc"|"runner">
-const windowTypes = Behaviors.select(
-  {map: new Map()},
-  loadRequest, (_prev, data) => {
-    return data.windowTypes;
-  },
-  newWindowRequest, (prev, spec) => {
-    prev.map.set(\`\${spec.id}\`, spec.type);
-    return {map: prev.map};
-  },
-  windows, (prev, windows) => {
-    const keys = [...prev.map.keys()];
-    const news = windows.filter((e) => !keys.includes(e));
-    const olds = keys.filter((e) => !windows.includes(e));
-
-    olds.forEach((id) => prev.map.delete(\`\${id}\`));
-    news.forEach((id) => prev.map.set(\`\${id}\`, "code"));
-    return {map: prev.map};
-  }
-);
-
-// [id, {id, x: number, y: number, width: number, height: number}]
-const positions = Behaviors.select(
-  {map: new Map()},
-  loadRequest, (_prev, data) => {
-    return data.positions;
-  },
-  windowTypes, (prev, types) => {
-    const keys = [...prev.map.keys()];
-    const typeKeys = [...types.map.keys()];
-    const news = typeKeys.filter((e) => !keys.includes(e));
-    const olds = keys.filter((e) => !typeKeys.includes(e));
-
-    const newX = (typeKeys.length * 5 + 40) / padView.scale - padView.x;
-    const newY = (typeKeys.length * 5 + 45) / padView.scale - padView.y;
-
-    const newWindow = (id, type) => {
-      return {
-        id,
-        x: newX,
-        y: newY,
-        width: type === "code" ? 300 : 800,
-        height: type === "code" ? 200 : 400
-      }
-    };
-    olds.forEach((id) => prev.map.delete(\`\${id}\`));
-    news.forEach((id) => prev.map.set(\`\${id}\`, newWindow(id, types.map.get(id))));
-    return {map: prev.map};
-  },
-  moveOrResize, (prev, command) => {
-    const v = {...prev.map.get(command.id), ...command};
-    prev.map.set(command.id, v);
-    return {map: prev.map};
-  }
-);
-
-const pinnedPositions = Behaviors.select(
-  {map: new Map()},
-  loadRequest, (_prev, _data) => {
-    return {map: new Map()}
-  },
-  pinRequest, (prev, pinRequest) => {
-    const {id} = pinRequest;
-    if (prev.map.get(id)) {
-      prev.map.delete(id);
-      return {map: prev.map};
-    }
-
-    const position = positions.map.get(id);
-    const screenRect = {
-      height: position.height * padView.scale,
-      width: position.width * padView.scale,
-      x: (position.x + padView.x) * padView.scale,
-      y: (position.y + padView.y) * padView.scale,
-      scale: padView.scale
-    };
-    prev.map.set(id, screenRect);
-    return {map: prev.map};
-  },
-  windowTypes, (prev, types) => {
-    const keys = [...prev.map.keys()];
-    const typeKeys = [...types.map.keys()];
-    const olds = keys.filter((e) => !typeKeys.includes(e));
-    olds.forEach((id) => prev.map.delete(\`\${id}\`));
-    return {map: prev.map};
-  },
-  home, (_prev, _home) => {
-    return {map: new Map()}
-  }
-)
-
-const findMax = (map)  => {
-  let maxId = -1;
-  let max = -1;
-  for (let [id, value] of map) {
-    if (value > max) {
-      maxId = id;
-      max = value;
-    }
-  }
-  return {maxId, max};
-};
-
-const zIndex = Behaviors.select(
-  {map: new Map()},
-  loadRequest, (_prev, data) => {
-    if (data.zIndex) return data.zIndex;
-    return {map: new Map(data.windows.map((w, i) => [w, i + 100]))};
-  },
-  windows, (prev, command) => {
-    const keys = [...prev.map.keys()];
-    const news = command.filter((e) => !keys.includes(e));
-    const olds = keys.filter((e) => !command.includes(e));
-
-    const {maxId:_maxId, max} = findMax(prev.map);
-    let z = max < 0 ? 100 : max + 1;
-    olds.forEach((id) => prev.map.delete(id));
-    news.forEach((id) => prev.map.set(id, z++));
-    return {map: prev.map};
-  },
-  moveOrResize, (prev, command) => {
-    if (command.type === "move") {
-      const z = prev.map.get(command.id);
-
-      const {maxId, max} = findMax(prev.map);
-      if (maxId !== command.id) {
-        prev.map.set(maxId, z);
-        prev.map.set(command.id, max);
-      }
-      return {map: prev.map};
-    }
-    return prev;
-  },
-);
-
-const titles = Behaviors.select(
-  {map: new Map()},
-  loadRequest, (_prev, loaded) => {
-    return loaded.titles || {map: new Map()};
-  },
-  windows, (prev, command) => {
-    const keys = [...prev.map.keys()];
-    const news = command.filter((e) => !keys.includes(e));
-    const olds = keys.filter((e) => !command.includes(e));
-
-    olds.forEach((id) => prev.map.delete(id));
-    news.forEach((id) => prev.map.set(id, {id, state: false, title: "untitled"}));
-    return {map: prev.map};
-  },
-  titleEditChange, (prev, change) => {
-    const id = change.id;
-    const v = {...prev.map.get(id), ...change};
-    prev.map.set(id, v);
-    return {map: prev.map};
-  }
-);
-
-const windowEnabled = Behaviors.select(
-  {map: new Map()},
-  loadRequest, (_prev, loaded) => {
-    return loaded.windowEnabled || {map: new Map()};
-  },
-  windows, (prev, command) => {
-    const keys = [...prev.map.keys()];
-    const news = command.filter((e) => !keys.includes(e));
-    const olds = keys.filter((e) => !command.includes(e));
-
-    olds.forEach((id) => prev.map.delete(id));
-    news.forEach((id) => prev.map.set(id, {id, enabled: true}));
-    return {map: prev.map};
-  },
-  enabledChange, (prev, change) => {
-    const id = change.id;
-    const v = {...prev.map.get(id), ...change};
-    prev.map.set(id, v);
-    return {map: prev.map};
-  }
-);
-
-const windowContents = Behaviors.select(
-  {map: new Map()},
-  loadRequest, (prev, loaded) => {
-    for (let editor of prev.map.values()) {
-      editor.dom.remove();
-    }
-    prev.map.clear();
-
-    for (let [id, type] of loaded.windowTypes.map) {
-      let elem;
-      if (type === "runner") {
-        elem = newRunner(id)
-      } else if (type === "doc") {
-        elem = newDocPane(id, loaded.code.get(id));
-      } else {
-        elem = newEditor(id, loaded.code.get(id));
-      }
-      prev.map.set(id, elem);
-    }
-    return {map: prev.map};
-  },
-  windowTypes, (prev, types) => {
-    const keys = [...prev.map.keys()];
-    const typeKeys = [...types.map.keys()];
-    const news = typeKeys.filter((e) => !keys.includes(e));
-    const olds = keys.filter((e) => !typeKeys.includes(e));
-    olds.forEach((id) => {
-      const editor = prev.map.get(id);
-      editor.dom.remove();
-      prev.map.delete(id)
-    });
-    news.forEach((id) => {
-      const type = types.map.get(id);
-      let elem;
-      if (type === "runner") {
-        elem = newRunner(id);
-      } else if (type === "doc") {
-        elem = newDocPane(id ,"");
-      } else {
-        elem = newEditor(id);
-      }
-      prev.map.set(id, elem);
-    });
-    return {map: prev.map};
-  },
-  docUpdate, (prev, docUpdate) => {
-    const {id, code} = docUpdate;
-    let elem = prev.map.get(id);
-    if (!elem) {return prev;}
-    elem.doc = code;
-    return {map: prev.map};
-  },
-  resetRequest, (prev, resetRequest) => {
-    const id = resetRequest.id;
-    prev.map.set(id, newRunner(id));
-    return {map: prev.map};
-  }
-);
-
-const initialData = {id: 0, type: "code"};
-
-const newId = Behaviors.select(
-  0,
-  loadRequest, (_prev, request) => {
-    if (request.windows.length === 0) {return 1;}
-    const max = Math.max(...request.windows.map((w) => Number.parseInt(w)));
-    return max;
-  },
-  Events.or(addCode, addRunner, addDoc), (prev, _type) => prev + 1
-);
-
-const newWindowRequest = {id: newId, type: Events.or(addCode, addRunner, addDoc)};
-
-const modifierState = Behaviors.select(
-  {shiftKey: false, ctrlKey: false, metaKey: false, scrollDirection: null},
-  // scrollDirection: null|"vertical"|"horizontal"
-  queuedKeydown, (prev, keydown) => {
-    const ret = {...prev};
-    keydown.forEach((key) => {
-      ret.shiftKey = ret.shiftKey || key.key === "Shift";
-      ret.ctrlKey = ret.ctrlKey || key.key === "Control";
-      ret.metaKey = ret.metaKey || key.key === "Meta";
-    });
-    return ret;
-  },
-  queuedKeyup, (prev, keyup) => {
-    const ret = {...prev};
-    let reset = false;
-    keyup.forEach((key) => {
-      reset = reset || ["Shift", "Control", "Meta"].includes(key.key);
-      if (key.key === "Shift") {ret.shiftKey = false;}
-      if (key.key === "Control") {ret.ctrlKey = false;}
-      if (key.key === "Meta") {ret.metaKey = false;}
-    });
-    if (reset) {ret.scrollDirection = null;}
-    return ret;
-  },
-  wheeling, (prev, wheeling) => {
-    if (prev.scrollDirection === null && wheeling.scrollDirection) {
-      const ret = {...prev};
-      ret.scrollDirection = wheeling.scrollDirection;
-      return ret;
-    }
-    return prev;
-  }
-);
-
-const padView = Behaviors.select(
-  {x: 0, y: 0, scale: 1},
-  padViewChange, (prev, view) => {
-    let {x, y, scale, force} = view;
-    if (!force) {
-      if (scale < 0.1) {
-        x = prev.x;
-        y = prev.y;
-        scale = 0.1;
-      }
-      if (scale > 20) {
-        x = prev.x;
-        y = prev.y;
-        scale = 20;
-      }
-    }
-    return {...prev, ...{x, y, scale}};
-  }
-);
-
-const padTitle = Behaviors.select(
-  "untitled",
-  loadRequest, (_prev, data) => {
-    return data.padTitle || "untitled"
-  },
-  titleChange, (_prev, request) => request
-);
-
-const titleChange = Events.observe((notify) => {
-  const change = (evt) => {
-    notify(evt.target.value);
-  };
-
-  renkon.querySelector("#padTitle").addEventListener("input", change);
-  return () => {renkon.querySelector("#padTitle").removeEventListener("change", change);}
-});
-
-const _padTitleUpdater = ((padTitle) => {
-  if (renkon.querySelector("#padTitle").value !== padTitle) {
-    renkon.querySelector("#padTitle").value = padTitle;
-    document.title = "Pad: " + padTitle;
-  }
-})(padTitle);
-
-const _focus = ((renkon) => {
-  renkon.querySelector("#padTitle").focus();
-  renkon.querySelector("#padTitle").blur();
-})(renkon);
-
-const readyMessages = Events.listener(
-  window,
-  "message",
-  evt => {
-    if (typeof evt.data.ready === "string" && evt.data.ready.startsWith("renkon-ready")) {
-      return evt;
-    }
-  }, {queued: true});
-
-`],
-[`11`, `const {h, html, render} = import("./preact.standalone.module.js");
-
-const renkon = (() => {
-  const renkon = document.createElement("div");
-  renkon.id = "renkon";
-  renkon.innerHTML = \`
-<div id="buttonBox">
-  <input class="menuButton" id="padTitle"></input>
-  <button class="menuButton" id="addCodeButton">code</button>
-  <button class="menuButton" id="addDocButton">doc</button>
-  <button class="menuButton" id="addRunnerButton">runner</button>
-  <div class="spacer"></div>
-  <button class="menuButton" id="searchButton">search</button>
-  <button class="menuButton" id="showGraph">show graph</button>
-  <button class="menuButton" id="saveButton">save</button>
-  <button class="menuButton" id="loadButton">load</button>
-</div>
-<div id="pad"><div id="mover"></div></div>
-<div id="overlay"></div>
-<div id="navigationBox">
-  <div class="navigationButton"><div id="homeButton" class="navigationButtonImage"></div></div>
-  <div class="navigationButton with-border"><div id="zoomInButton" class="navigationButtonImage"></div></div>
-  <div class="navigationButton with-border"><div id="zoomOutButton" class="navigationButtonImage"></div></div>
-</div>
-
-\`.trim();
-
-  document.body.querySelector("#renkon")?.remove();
-  document.body.appendChild(renkon);
-  return renkon;
-})();
-
-const searchPanel = ((renkon) => {
-  let search = renkon.querySelector("#search");
-  search?.remove();
-  const div = document.createElement("div");
-  div.innerHTML = \`
-<div class="search-panels search-panels-bottom" style="bottom: 0px;">
-  <div class="search-search search-panel">
-    <input value="" placeholder="Find" aria-label="Find" class="search-textfield" name="search" form="" main-field="true">
-    <button class="search-button" name="next" type="button">next</button>
-    <!-- <button class="search-button" name="prev" type="button">previous</button>
-    <button class="search-button" name="select" type="button">all</button> -->
-    <label><input type="checkbox" name="case" form="">match case</label>
-    <label><input type="checkbox" name="re" form="">regexp</label>
-    <label><input type="checkbox" name="word" form="">by word</label>
-    <!-- <input value="" placeholder="Replace" aria-label="Replace" class="search-textfield" name="replace" form="">
-    <button class="search-button" name="replace" type="button">replace</button>
-    <button class="search-button" name="replaceAll" type="button">replace all</button> -->
-    <button name="close" aria-label="close" type="button">×</button>
-  </div>
-</div>
-\`.trim();
-  search = div.childNodes[0];
-  search.id = "search";
-  renkon.appendChild(search);
-  return search;
-})(renkon);
-`],
-[`15`, `const goToVarName = Events.receiver();
+[`8`, `const goToVarName = Events.receiver();
 
 const gotoDef = ((varName, windowContents) => {
   const editorsPair = [...windowContents.map].filter(([_id, content]) => content.state);
@@ -1924,7 +1138,7 @@ const allUseOf = (varName) => {
   return uses;
 };
 
-const newEditor = (id, doc) => {
+const newEditor = (id, docModel) => {
   const mirror = window.CodeMirror;
 
   const config = {
@@ -2047,849 +1261,236 @@ const newEditor = (id, doc) => {
     }
   });
 
-  const editor = new mirror.EditorView({
-    doc: doc || \`console.log("hello")\`,
-    extensions: [
-      mirror.view.keymap.of([search]),
-      mirror.basicSetup,
-      mirror["lang-javascript"].javascript({typescript: true}),
-      mirror.EditorView.lineWrapping,
-      mirror.EditorView.editorAttributes.of({"class": "editor"}),
-      mirror.view.keymap.of([mirror.commands.indentWithTab]),
-      mirror.lint.linter(
-        mirror["lang-javascript"]
-          .esLint(new mirror["eslint-linter-browserify"].Linter(), config)),
-      wordHover,
-      cursorChange,
-    ],
-  });
+  const extensions = [
+    mirror.view.keymap.of([search]),
+    mirror.basicSetup,
+    mirror["lang-javascript"].javascript({typescript: true}),
+    mirror.EditorView.lineWrapping,
+    mirror.EditorView.editorAttributes.of({"class": "editor"}),
+    mirror.view.keymap.of([mirror.commands.indentWithTab]),
+    mirror.lint.linter(
+      mirror["lang-javascript"]
+        .esLint(new mirror["eslint-linter-browserify"].Linter(), config)),
+    wordHover,
+    cursorChange,
+  ];
+
+  const editorView = window.CodeMirrorView.create(Renkon, docModel, extensions);
+  const editor = editorView.editor;
   editor.dom.id = \`\${id}-editor\`;
   return editor;
 };
 `],
-[`40`, `const dblClick = Events.listener(renkon.querySelector("#pad"), "dblclick", (evt) => evt);
-
-const rawPadDown = Events.listener(renkon.querySelector("#pad"), "pointerdown", (evt) => {
-  const strId = evt.target.id;
-  if (strId.endsWith("-title") && (evt.target.getAttribute("contenteditable") === "true")) {
-    return evt;
-  }
-  if (strId) {
-    evt.preventDefault();
-    evt.stopPropagation();
-  }
-  return evt;
-}, {queued: true});
-
-// this is an odd ball that gets mutated by padDownState and padUp
-const evCache = new Map();
-
-const padDown = Events.collect(undefined, rawPadDown, (old, evts) => {
-  let type;
-  let id;
-  let corner;
-  if (evts.length <= 2 && evts[0].isPrimary) {
-    let primary = evts[0];
-    const strId = primary.target.id;
-    if (!strId) {return {...old, type: ""};}
-    let x = primary.clientX;
-    let y = primary.clientY;
-    if (strId === "pad") {
-      type = "padDragDown";
-      id = strId;
-    } else {
-      id = \`\${Number.parseInt(strId)}\`;
-      if (strId.endsWith("-titleBar")) {
-        type = "moveDown";
-      } else if (strId.endsWith("-resize")) {
-        corner = (/[0-9]+-(.*)-resize/.exec(strId))[1];
-        type = "windowResizeDown";
-      }
-    }
-    if (type) {
-      primary.target.setPointerCapture(primary.pointerId);
-      if (strId === "pad") {
-        evCache.set("primary", {x, y});
-      }
-      if (evts.length === 1) {
-        return {
-          id, target: primary.target, type, x: primary.clientX, y: primary.clientY, corner
-        };
-      }
-    } else {
-      return {...old, type: ""};
-    }
-  }
-
-  let secondary;
-  if (evCache.get("primary")) {
-    if (evts.length === 1 && evCache.size === 1 && !evts[0].isPrimary) {
-      secondary = evts[0];
-    }
-    if (evts.length === 2 && evCache.size === 1 && !evts[1].isPrimary) {
-      secondary = evts[1];
-    }
-  }
-  if (!secondary) {return old;}
-
-  const strId = secondary.target.id;
-  if (strId !== "pad") {return {type: "stuck", secondary: secondary.pointerId};}
-  let primary =  evCache.get("primary");
-  let x = secondary.clientX;
-  let y = secondary.clientY;
-  let dx = primary.x - secondary.clientX;
-  let dy = primary.y - secondary.clientY;
-  let origDiff = Math.sqrt(dx * dx + dy * dy);
-  evCache.set(secondary.pointerId, {origDiff, origScale: padView.scale, x, y});
-  return {type: "pinch", secondary: secondary.pointerId};
-});
-
-const padUp = Events.listener(renkon.querySelector("#pad"), "pointerup", (evt) => {
-  // console.log("ev1", evCache);
-  evt.target.releasePointerCapture(evt.pointerId);
-  evCache.clear();
-  // console.log("ev2", evCache);
-  return {type: "pointerup", x: evt.clientX, y: evt.clientY};
-});
-
-const downOrUpOrResize = Events.or(padDown, padUp, pointercancel, lostpointercapture, windowResize);
-
-const _padMove = Events.listener("#pad", "pointermove", moveCompute);
-
-const windowResize = Events.receiver();
-const moveOrResize = Events.receiver();
-
-const moveCompute = ((downOrUpOrResize, positions, padView) => {
-  if (downOrUpOrResize.type === "moveDown" || downOrUpOrResize.type === "windowResizeDown") {
-    const start = positions.map.get(downOrUpOrResize.id);
-    const scale = padView.scale;
-    const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
-    const type = downOrUpOrResize.type === "moveDown" ? "move" : "resize";
-    return (move) => {
-      const diffX = (move.clientX - downPoint.x) / scale;
-      const diffY = (move.clientY - downPoint.y) / scale;
-      const result = {id: downOrUpOrResize.id, type};
-      // const position = positions.map.get(downOrUpOrResize.id);
-      if (type === "move") {
-        if (pinnedPositions.map.get(downOrUpOrResize.id)) {return move;}
-        result.x = start.x + diffX;
-        result.y = start.y + diffY;
-      } else {
-        if (downOrUpOrResize.corner === "bottomRight") {
-          const realDiffX = start.width + diffX < 120 ? 120 - start.width : diffX;
-          const realDiffY = start.height + diffY < 70 ? 70 - start.height : diffY;
-          result.width = start.width + realDiffX;
-          result.height = start.height + realDiffY;
-        } else if (downOrUpOrResize.corner === "topLeft") {
-          const realDiffX = start.width - diffX < 120 ? start.width - 120 : diffX;
-          const realDiffY = start.height - diffY < 70 ? start.height - 70 : diffY;
-          result.width = start.width - realDiffX;
-          result.height = start.height - realDiffY;
-          result.x = start.x + realDiffX;
-          result.y = start.y + realDiffY;
-        } else if (downOrUpOrResize.corner === "topRight") {
-          const realDiffX = start.width + diffX < 120 ? 120 - start.width : diffX;
-          const realDiffY = start.height - diffY < 70 ? start.height - 70 : diffY;
-          result.width = start.width + realDiffX;
-          result.height = start.height - realDiffY;
-          result.y = start.y + realDiffY;
-        } else if (downOrUpOrResize.corner === "bottomLeft") {
-          const realDiffX = start.width - diffX < 120 ? start.width - 120 : diffX;
-          const realDiffY = start.height + diffY < 70 ? 70 - start.height : diffY;
-          result.width = start.width - realDiffX;
-          result.height = start.height + realDiffY;
-          result.x = start.x + realDiffX;
-        }
-      }
-      Events.send(moveOrResize, result);
-      return move;
-    }
-  } else if (downOrUpOrResize.type === "padDragDown") {
-    const start = padView;
-    const scale = start.scale;
-    const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
-    const type = "padDrag";
-    return (move) => {
-      const diffX = move.clientX - downPoint.x;
-      const diffY = move.clientY - downPoint.y;
-      const result = {id: downOrUpOrResize.id, type, scale};
-      result.x = start.x + (diffX / scale);
-      result.y = start.y + (diffY / scale);
-      Events.send(padViewChange, result);
-      return move;
-    };
-  } else if (downOrUpOrResize.type === "pinch") {
-    return (move) => {
-      const keys = [...evCache.keys()];
-      const primary = evCache.get("primary");
-      if (!primary) {
-        // the first finger has been lifted
-        return move;
-      }
-      const otherKey = keys.find((k) => k !== "primary");
-      const secondary = evCache.get(otherKey);
-      const isPrimary = move.isPrimary;
-
-      if (isPrimary) {
-        const newRecord = {...primary};
-        newRecord.x = move.clientX;
-        newRecord.y = move.clientY;
-        evCache.set("primary", newRecord);
-      } else {
-        const newRecord = {...secondary};
-        newRecord.x = move.clientX;
-        newRecord.y = move.clientY;
-        evCache.set(otherKey, newRecord);
-      }
-
-      const origDiff = secondary.origDiff;
-      const origScale = secondary.origScale;
-
-      const pX = isPrimary ? move.clientX : primary.x;
-      const pY = isPrimary ? move.clientY : primary.y;
-
-      const sX = isPrimary ? secondary.x : move.clientX;
-      const sY = isPrimary ? secondary.y : move.clientY;
-
-      const newDiff = Math.sqrt((pX - sX) ** 2 + (pY - sY) ** 2);
-
-      const newScale = (newDiff / origDiff) * origScale;
-
-      const newCenterX = (pX - sX) / 2 + sX;
-      const newCenterY = (pY - sY) / 2 + sY;
-
-      const xInMover = (newCenterX / padView.scale) - padView.x;
-      const newX = newCenterX / newScale - xInMover;
-
-      const yInMover = (newCenterY / padView.scale) - padView.y;
-      const newY = newCenterY / newScale - yInMover;
-
-      Events.send(padViewChange, {x: newX, y: newY, scale: newScale});
-      return move;
-    }
-  } else if (["pointerup", "lost", "stuck"].includes(downOrUpOrResize.type)) {
-    return (move) => move;
-  }
-})(downOrUpOrResize, positions, padView);
-`],
-[`74`, `const searchRequest = Events.receiver();
-const searchUpdate = Events.receiver();
-const toggleSearchPanel = Events.receiver();
-const cursorChanged = Events.receiver();
-
-const cursorState = Behaviors.select(
-  {map: new Map()},
-  cursorChanged, (prev, cursorChanged) => {
-    const id = cursorChanged.id;
-    const entry = prev.map.get(id);
-    if (!entry || entry.position !== cursorChanged.position) {
-      prev.map.set(id, cursorChanged);
-      return {map: prev.map, change: id};
-    }
-    return prev;
-  }
-);
-
-const searchState = Behaviors.select(
-  {id: null, range: null, shown: false}, // id: string, editor: EditorView, range: {from: number, to: number}
-  search, (prev, _search) => ({id: prev.id, editor: prev.editor, range: prev.range, shown: !prev.shown}),
-  toggleSearchPanel, (prev, panelState) => ({id: prev.id, editor: prev.editor, range: prev.range, shown: panelState}),
-  searchUpdate, (prev, searchUpdate) => searchUpdate,
-  cursorState, (prev, cursorState) => {
-    if (cursorState.change) {
-      const cursor = cursorState.map.get(cursorState.change);
-      return {
-        id: cursorState.change,
-        range: {from: cursor.position, to: cursor.position},
-        shown: prev.shown}
-    }
-    return prev;
-  }
-);
-
-const _searchHandler = Events.listener(searchPanel.querySelector(\`input[name="search"]\`), "keydown", searchInputHandler);
-const _searchNext = Events.listener(searchPanel.querySelector(\`button[name="next"]\`), "click", searchNextHandler);
-const _searchClose = Events.listener(searchPanel.querySelector(\`button[name="close"]\`), "click", searchCloseHandler);
-
-const searchInputHandler = (evt) => {
-  if (evt.key === "Enter") {
-    evt.preventDefault();
-    evt.stopPropagation();
-    const searchRequest = getSearchRequest(evt.target.parentNode);
-    if (searchRequest) {
-      Events.send(searchRequest, searchRequest);
-    }
-  }
-};
-
-const searchNextHandler = (evt) => {
-  const searchRequest = getSearchRequest(evt.target.parentNode);
-  if (searchRequest) {
-    Events.send(searchRequest, searchRequest);
-  }
-};
-
-const searchCloseHandler = (_evt) => {
-  Events.send(toggleSearchPanel, false);
-};
-
-const getSearchRequest = (searchPanel) => {
-  const field = searchPanel.querySelector(\`input[name="search"]\`);
-  const search = field?.value;
-  const caseSensitive = searchPanel.querySelector(\`input[name="case"]\`)?.checked;
-  const regexp = searchPanel.querySelector(\`input[name="re"]\`)?.checked;
-  const wholeWord = searchPanel.querySelector(\`input[name="word"]\`)?.checked;
-  if (search) {
-    return {search, caseSensitive, regexp, wholeWord};
-  }
-  return null;
-}
-
-const _searchFieldUpdate = ((searchState) => {
-  const searchField = renkon.querySelector("#search");
-  if (!searchField) {return;}
-  const oldStyle = searchField.style.display;
-  const newStyle = searchState.shown ? "inherit" : "none";
-  searchField.style.display = newStyle;
-  if (newStyle !== oldStyle && newStyle === "inherit") {
-    searchField.querySelector(\`input[name="search"]\`).focus();
-  }
-})(searchState);
-
-renkon.querySelector("#search") && (renkon.querySelector("#search").style.display = searchState.shown ? "inherit" : "none");
-
-((searchRequest, windowContents, searchState) => {
-  const mirror = window.CodeMirror;
-  const editorsPair = [...windowContents.map].filter(([_id, content]) => content.state)
-  const query = new mirror.search.SearchQuery(searchRequest);
-  const startEditorIndex = editorsPair.findIndex((e) => e[0] === searchState.id);
-  let found = null;
-
-  for (let i = startEditorIndex <= 0 ? 0 : startEditorIndex; i < editorsPair.length; i++) {
-    const myRangeStart = startEditorIndex >= 0 && i === startEditorIndex ? searchState.range.to : 0;
-    const targetPair = editorsPair[i];
-    const cursor = query.getCursor(targetPair[1].state, myRangeStart);
-    cursor.next();
-    if (!cursor.done) {
-      found = {id: targetPair[0], range: {from: cursor.value.from, to: cursor.value.to}, shown: true};
-      break;
-    }
-  }
-  if (found) {
-    Events.send(searchUpdate, found);
-  } else {
-    Events.send(searchUpdate, {id: null, range: null, shown: true});
-  }
-})(searchRequest, windowContents, searchState)
-
-const updateEditorSelection = ((searchUpdate, windowContents) => {
-  if (!searchUpdate.id || !searchUpdate.range) {return;}
-  const editor = windowContents.map.get(searchUpdate.id);
-  const scrollIntoView = editor.scrollDOM.scrollHeight > editor.scrollDOM.clientHeight;
-  editor.dispatch({
-    changes: [], // no text change
-    selection: {anchor: searchUpdate.range.from, head: searchUpdate.range.to},
-    scrollIntoView: scrollIntoView,
-  });
-  editor.focus();
-  return searchUpdate;
-})(searchUpdate, windowContents);
-
-const _scrollToEditorPosition = ((padView, positions, gotoTarget, windowContents) => {
-  const pad = document.body.querySelector("#pad").getBoundingClientRect();
-
-  const visiblePad = {
-    x: -padView.x,
-    y: -padView.y,
-    width: pad.width / padView.scale,
-    height: pad.height / padView.scale
-  };
-  const position = positions.map.get(\`\${gotoTarget.id}\`);
-
-  const allVisible = position.x >= visiblePad.x && position.y >= visiblePad.y &&
-        position.width + position.x <= visiblePad.x + visiblePad.width &&
-        position.height + position.y <= visiblePad.y + visiblePad.height;
-
-  if (allVisible) {return;}
-  const editor = windowContents.map.get(gotoTarget.id);
-
-  const textPos = editor.coordsAtPos(gotoTarget.range.from);
-  if (!textPos) {return;}
-  const scrollRect = editor.scrollDOM.getBoundingClientRect();
-  const top = textPos.top - scrollRect.top + editor.scrollDOM.scrollTop;
-  const targetY = position.y + top / padView.scale;
-  let x = -position.x + 30;
-  let y = padView.y;
-  if (targetY < visiblePad.y) {
-    y = -targetY + 50 / padView.scale;
-  } else if (targetY - 50 > visiblePad.y + visiblePad.height) {
-    y = -targetY + visiblePad.height / 2 / padView.scale;
-  }
-
-  Events.send(padViewChange, {x: x, y: y, scale: padView.scale})
-})(padView, positions, gotoTarget, windowContents);
-
-const searchCSS = \`
-.search-panels {
-  position: absolute;
-  top: 40px;
-  right: 10px;
-  background-color: #f5f5f5;
-  color: black;
-  display: none;
-  max-height: 30px;
-}
-    
-.search-panels[open="true"] {
-  display: inherit;
-}
-    
-.search-panels-bottom {
-  border-top: 1px solid #ddd;
-}
-    
-.search-search {
-  padding: 2px 6px 4px;
-}
-    
-.search-search input, .search-search button, .search-search label {
-  margin: .2em .6em .2em 0;
-}
-
-.search-textfield {
-  background-color: white;
-}
-
-.search-textfield {
-  vertical-align: middle;
-  color: inherit;
-  font-size: 70%;
-  border: 1px solid silver;
-  padding: .2em .5em;
-}
-    
-.search-button {
-  background-image: linear-gradient(#eff1f5, #d9d9df);
-  border: 1px solid #888;
-}
-
-.search-button {
-  vertical-align: middle;
-  color: inherit;
-  font-size: 70%;
-  padding: .2em 1em;
-  border-radius: 1px;
-}
-    
-.search-search label {
-  font-size: 80%;
-  white-space: pre;
-}
-    
-.search-search button[name="close"] {
-  background-color: inherit;
-  border: none;
-  font: inherit;
-  padding: 0;
-  margin: 0;
-}
-    
-.search-search button[name="close"]:hover {
-  background-color: #eee;
-}
-\`.trim();
-
-((css, renkon) => {
-  const style = document.createElement("style");
-  style.id = "search-css";
-  style.textContent = css;
-  renkon.querySelector("#search-css")?.remove();
-  renkon.appendChild(style);
-})(searchCSS, renkon);
-`],
-[`82`, `function doc(id) {
-  const init = (() => {
-    const script = document.createElement("script");
-    script.id = "markdownit";
-    script.src = "./markdown-it.min.js";
-    const promise = new Promise((resolve) => {
-      script.onload = () => {
-         resolve(window.markdownit);
-      };
-    });
-
-    document.head.querySelector("#markdownit")?.remove();
-    document.head.appendChild(script);
-
-    const container = document.createElement("div");
-    container.id = "container";
-    document.body.querySelector("#container")?.remove();
-    document.body.appendChild(container);
-    container.innerHTML = \`
-   <div id="result"></div>
-   <div id="separator"></div>
-   <div id="editorContainer"></div>
-\`.trim();
-    return {markdownit: promise, container};
-  })();
-
-  const resolved = Behaviors.resolvePart(init);
-  const md = resolved.markdownit({html: true});
-  const container = resolved.container;
-  const separator = container.querySelector("#separator");
-
-  const docString = Events.receiver();
-
-  const _update = ((docString, container) => {
-    const result = md.render(docString);
-    const div = document.createElement("div");
-    div.id = "renkon";
-    container.querySelector("#renkon")?.remove();
-    container.querySelector("#result").appendChild(div);
-    div.innerHTML = result;
-    return div;
-  })(docString, container);
-
-  const docEditor = ((id, doc) => {
-    const mirror = window.CodeMirror;
-    const callback = (id, viewUpdate) => {
-      if (viewUpdate.docChanged) {
-        const  str = viewUpdate.state.doc.toString();
-        Events.send(docString, str);
-        window.parent.postMessage({type: "renkon-doc-updated", id, code: str});
-      }
-    };
-    const editor = new mirror.EditorView({
-        doc: doc || "",
-        extensions: [
-            mirror.basicSetup,
-            mirror.EditorView.lineWrapping,
-            mirror.EditorView.updateListener.of((viewUpdate) => callback(id, viewUpdate)),
-            mirror.EditorView.editorAttributes.of({"class": "editor"}),
-            mirror.view.keymap.of([mirror.commands.indentWithTab])
-        ],
-    });
-    editor.dom.id = \`\${id}-docEditor\`;
-    return editor;
-  })(id);
-
-  const contentsEvent = Events.listener(window, "message", evt => {
-    if (evt.data.type === "renkon-doc" && typeof evt.data.doc === "string") {
-      const isEmpty = evt.data.doc === "";
-      const doc = isEmpty ? "# Hello, Renkon-pad" : evt.data.doc;
-      docEditor.dispatch({
-        changes: {
-          from: 0,
-          to: docEditor.state.doc.length,
-          insert: doc
-        }
-      });
-      if (!isEmpty) {
-        return {type: "resize"};
-      }
-    }
-  });
-
-  const _init = ((container, docEditor) => {
-    container.querySelector("#editorContainer").appendChild(docEditor.dom);
-    window.parent.postMessage({ready: "renkon-ready", type: "doc", id});
-  })(container, docEditor);
-
-  const sepDown = Events.listener(
-     separator,
-     "pointerdown",
-     evt => evt);
-
-  const down = Events.collect(undefined, sepDown, (old, evt) => {
-    if (evt.isPrimary) {
-      evt.target.setPointerCapture(evt.pointerId);
-    }
-    return {type: "sepDown", x: evt.clientX};
-  });
-
-  const up = Events.listener(
-    separator,
-    "pointerup",
-    (evt) => {
-      if (evt.isPrimary) {
-        evt.target.releasePointerCapture(evt.pointerId);
-      }
-      return {type: "sepUp"}
-    }
-  );
-
-  const _sepMove = Events.listener(separator, "pointermove", moveCompute);
-
-  const moveCompute = Behaviors.select(
-    evt => evt,
-    down, (_old, down) => {
-      return (move) => {
-        const newX = move.clientX;
-        const newRenkonWidth = Math.min(window.innerWidth - 8, Math.max(newX - 8, 0));
-        const newEditorWidth = Math.max(window.innerWidth - 22 - newRenkonWidth, 60);
-        const right = newEditorWidth === 60 ? -60 - 16 + (window.innerWidth - newX) : 0;
-
-        document.head.querySelector("#separator-style").textContent = \`
-  #result {
-    width: \${newRenkonWidth}px;
-  }
-  #editorContainer {
-    width: \${newEditorWidth}px;
-    right: \${right}px;
-  }
-  \`.trim();
-        return move;
-      }
+[`10`, `({
+  parameters: {
+    appParameters: {
+      /*
+      name: '12346ac',
+      password: '1',
+      apiKey: "234567_Paste_Your_Own_API_Key_Here_7654321",
+      box: "http://localhost:8888",
+      eventRateLimit: 60,
+      */
     },
-    up, (_old, _up) => (move) => move,
-    Events.or(resize, contentsEvent), (old, resize) => {
-      const newX = window.innerWidth - 22;
-      const newEditorWidth = 60;
-      const right = -60;
-        document.head.querySelector("#separator-style").textContent = \`
-  #result {
-    width: \${newX}px;
+    "realm": {"model": [
+      "windows", "windowTypes", "positions", "titles", "windowEnabled",
+      "zIndex", "windowContentsModel", "padTitle", "docSeparators", "initialData",
+      "newId", "padViews", "newWindowRequest", "padTitle", "viewJoin",
+      "viewExit", "xxx", "loadReceiver", "loadHandler", "runRequest", "resetRequest"]},
+    "name": "pad"
+  },
+  methods: {
+    renkonInit() {
+      // this.programState.registerEvent("initialWindow", "code");
+    },
+    savePersistentData() {
+      console.log("save");
+    },
+    loadPersistentData() {
+      console.log("load");
+    }
   }
-  #editorContainer {
-    width: \${newEditorWidth}px;
-    right: \${right}px;
-  }
-  \`.trim();
-      return old;
-    }
-  );
+})`],
+[`14`, `// {type: "code"|"doc"|"runner"}
+const newWindowRequestFromView = ((viewId, type, padViews) => {
+  return {viewId, type, padView: padViews.map.get(viewId) || padView};
+})(viewId, Events.or(addCode, addRunner, addDoc, initialWindowFromView), padViews, padView);
 
-  const resize = Events.listener(window, "resize", (evt) => ({type: "resize"}));
+const viewId = Renkon.app?.viewId || "local";
+const isLocal = viewId === "local";
 
-  Events.listener(document.body, "gesturestart", preventDefaultSafari);
-  Events.listener(document.body, "gesturechange", preventDefaultSafari);
-  Events.listener(document.body, "gestureend", preventDefaultSafari);
+const initialWindowFromView = isLocal ? "initial" : undefined;
 
-  const isSafari = window.navigator.userAgent.includes("Safari") && !window.navigator.userAgent.includes("Chrome");
-  const isMobile = !!("ontouchstart" in window);
-
-  const preventDefault = (evt) => {
-    evt.preventDefault();
-    return evt;
-  };
-
-  const preventDefaultSafari = (evt) => {
-    if (!isSafari || isMobile) {
-      evt.preventDefault();
-    }
-    return evt;
-  };
-
-  const wheel = Events.listener(container, "wheel", (evt) => {
-    let pinch;
-    if (isSafari) {
-      pinch = (Number.isInteger(evt.deltaX) && !Number.isInteger(evt.deltaY)) || evt.metaKey;
-    } else {
-      pinch = evt.ctrlKey || evt.metaKey;
-    }
-    if (pinch) {
-      evt.preventDefault();
-      evt.stopPropagation();
-    }
-    return evt;
-  });
-
-  const css = \`
-#container, html, body {
-  width: 100%;
-  height: 100%;
-  margin: 0px;
-}
-
-#container {
-  display: flex;
-}
-
-#result {
-  height: 100%;
-  width: calc(100% - 220px);
-  overflow: scroll;
-  scroll-behavior: smooth;
-  font-size: 13px;
-}
-
-#renkon {
-  height: 100%;
-}
-
-#separator {
-   width: 8px;
-   min-width: 8px;
-   height: 100%;
-   background-color: #f8f8f8;
-}
-
-#separator:hover {
-   background-color: #e8e8e8;
-   cursor: ew-resize;
-}
-
-#editorContainer {
-  position: fixed;
-  right: 0px;
-  min-height: 100%;
-  height: 100%;
-  width: 200px;
-  border: 1px solid black;
-  padding: 6px;
-  min-width: 0px;
-  background-color: white;
-  white-space: pre-wrap;
-  overflow: scroll;
-}
-
-\`;
-
-  ((css) => {
-    document.head.querySelector("#presenter-style")?.remove();
-    const style = document.createElement("style");
-    style.id = "presenter-style";
-    style.textContent = css;
-    document.head.appendChild(style);
-
-    document.head.querySelector("#separator-style")?.remove();
-    const sepStyle = document.createElement("style");
-    sepStyle.id = "separator-style";
-    document.head.appendChild(sepStyle);
-  })(css, container);
-
-  return {};
-}
-
-const newDocPane = (id, doc) => {
-  const runner = newRunner(id);
-  return {dom: runner.dom, doc: doc};
-}
-
-const _handleDocReady = ((readyMessages, windowContents, windowTypes) => {
-  for (const ready of readyMessages) {
-    const id = ready.data.id;
-    const type = windowTypes.map.get(id);
-    const content = windowContents.map.get(id);
-    if (ready.data.type === "runner" && type === "doc") {
-      if (content) {
-        if (type) {
-          const {output:code} = Renkon.getFunctionBody(Renkon.findDecl(type));
-          content.dom.contentWindow.postMessage({code: [code, \`const id = "\${id}"\`]});
-        }
+const padView = Behaviors.select(
+  {x: 0, y: 0, scale: 1},
+  padViewChange, (prev, view) => {
+    let {x, y, scale, force} = view;
+    if (!force) {
+      if (scale < 0.05) {
+        x = prev.x;
+        y = prev.y;
+        scale = 0.05;
       }
-    } else if (ready.data.type === "doc") {
-      content.dom.contentWindow.postMessage({type: "renkon-doc", doc: content.doc});
+      if (scale > 30) {
+        x = prev.x;
+        y = prev.y;
+        scale = 30;
+      }
     }
+    return {...prev, ...{x, y, scale}};
   }
-})(readyMessages, windowContents, windowTypes);
+);
 
-const docUpdate = Events.listener(window, "message", evt => {
-  if (evt.data.type === "renkon-doc-updated") {return evt.data;}
+const modifierState = Behaviors.select(
+  {shiftKey: false, ctrlKey: false, metaKey: false, scrollDirection: null},
+  // scrollDirection: null|"vertical"|"horizontal"
+  queuedKeydown, (prev, keydown) => {
+    const ret = {...prev};
+    keydown.forEach((key) => {
+      ret.shiftKey = ret.shiftKey || key.key === "Shift";
+      ret.ctrlKey = ret.ctrlKey || key.key === "Control";
+      ret.metaKey = ret.metaKey || key.key === "Meta";
+    });
+    return ret;
+  },
+  queuedKeyup, (prev, keyup) => {
+    const ret = {...prev};
+    let reset = false;
+    keyup.forEach((key) => {
+      reset = reset || ["Shift", "Control", "Meta"].includes(key.key);
+      if (key.key === "Shift") {ret.shiftKey = false;}
+      if (key.key === "Control") {ret.ctrlKey = false;}
+      if (key.key === "Meta") {ret.metaKey = false;}
+    });
+    if (reset) {ret.scrollDirection = null;}
+    return ret;
+  },
+  wheeling, (prev, wheeling) => {
+    if (prev.scrollDirection === null && wheeling.scrollDirection) {
+      const ret = {...prev};
+      ret.scrollDirection = wheeling.scrollDirection;
+      return ret;
+    }
+    return prev;
+  }
+);
+
+const titleChange = Events.observe((notify) => {
+  const change = (evt) => {
+    notify(evt.target.value);
+  };
+
+  renkon.querySelector("#padTitle").addEventListener("input", change);
+  return () => {renkon.querySelector("#padTitle").removeEventListener("change", change);}
 });
+
+const _padTitleUpdater = ((padTitle) => {
+  if (renkon.querySelector("#padTitle").value !== padTitle) {
+    renkon.querySelector("#padTitle").value = padTitle;
+  }
+})(padTitle);
+
+const _focus = ((renkon) => {
+  renkon.querySelector("#padTitle").focus();
+  renkon.querySelector("#padTitle").blur();
+})(renkon);
+
+const readyMessages = Events.listener(
+  window,
+  "message",
+  evt => {
+    if (typeof evt.data.ready === "string" && evt.data.ready.startsWith("renkon-ready")) {
+      return evt;
+    }
+  }, {queued: true});
+
+const pinnedPositions = Behaviors.select(
+  {map: new Map()},
+  loadHandler, (_prev, _data) => {
+    return {map: new Map()}
+  },
+  pinRequest, (prev, pinRequest) => {
+    const {id} = pinRequest;
+    if (prev.map.get(id)) {
+      prev.map.delete(id);
+      return {map: prev.map};
+    }
+
+    const position = positions.map.get(id);
+    const screenRect = {
+      height: position.height * padView.scale,
+      width: position.width * padView.scale,
+      x: (position.x + padView.x) * padView.scale,
+      y: (position.y + padView.y) * padView.scale,
+      scale: padView.scale
+    };
+    prev.map.set(id, screenRect);
+    return {map: prev.map};
+  },
+  remove, (prev, request) => {
+    prev.map.delete(request.id);
+    return {map: prev.map};
+  },
+  home, (_prev, _home) => {
+    return {map: new Map()}
+  }
+)
+
+const windowContents = Behaviors.select(
+  {map: new Map()},
+  resetRequest, (prev, reset) => {
+    prev.map.set(reset.id, newRunner(reset.id));
+  },
+  windowContentsModel, (prev, windowContentsModel) => {
+    if (windowContentsModel.loaded) {
+      prev.map.clear();
+    }
+
+    const prevKeys = [...prev.map.keys()];
+    const newKeys = [...windowContentsModel.map.keys()];
+    const olds = prevKeys.filter((e) => !newKeys.includes(e));
+    const news = newKeys.filter((e) => !prevKeys.includes(e));
+    olds.forEach((id) => prev.map.delete(\`\${id}\`));
+    news.forEach((id) => {
+      const {type, doc} = windowContentsModel.map.get(id);
+      let elem;
+      if (type === "runner") {
+        elem = newRunner(id);
+      } else if (type === "doc") {
+        if (isLocal) {
+          elem = doc;
+        } else {
+          elem = newDocPane(id, doc);
+        }
+      } else {
+        elem = newEditor(id, doc);
+      }
+      prev.map.set(id, elem);
+    });
+    return {map: prev.map};
+  }
+);
+
+const initialHome = (() => Events.send(homeUponLoad, "home"))(windowContents, loadHandler);
+ 
+const runHandler = ((runRequest, windowContents, windowEnabled, titles) => {
+  const id = runRequest.id;
+  const iframe = windowContents.map.get(id);
+  const enabled = [...windowContents.map]
+    .filter(([id, obj]) => obj.state && windowEnabled.map.get(id).enabled);
+  const code = enabled
+    .filter(([id, obj]) => titles.map.get(id).title !== "Croquet")
+    .map(([_id, editor]) => editor.state.doc.toString());
+  const croquet = enabled.find(([id, obj]) => {
+    return titles.map.get(id).title === "Croquet"})?.[1].state.doc.toString();
+  if (!croquet && !isLocal) {
+    console.log("No Croquet spec found");
+  }
+  if (!iframe?.dom?.contentWindow) {/* console.log("iframe is not there yet"); */ return}
+  iframe.dom.contentWindow.postMessage({code: code, croquet, path: id});
+})(Events.or(runRequest, doReset), windowContents, windowEnabled, titles);
 `],
-[`83`, `# Initialization
-
-A common pattern of setting up an application is to create a number of actual DOM elements and add them to document.body. Later on the \`render\` function of Preact, imported here, will use those elements as roots of the virtual DOM elements.
-
-Like any other nodes, the immediately invoked function for the \`renkon\` node may be evaluated multiple times during the life cycle of an application. So, the lines:
-\`\`\`
-document.body.querySelector("#renkon")?.remove();
-document.body.appendChild(renkon);
-  \`\`\`
-
-mean that the previous element is first removed if exists, and then the new one, potentially has different contents, is added.
-
-The \`pad\` element is a width=100% height=100% that holds the \`mover\` element. The mover element is 0x0, and the parent of all window elements. Its location is transformed when the canvas is panned and zoomed. \`overlay\` is to show the graph lines in front of those windows.
-
-(Oh, BTW, "renkon" was originally a pun but you can also think that it is a kind of "root"; so some applications tend to have "renkon" as some sort of "root nodes.") 
-
-The \`searchPanel\` is a node that holds an actual DOM element. Notice that creation of searchPanel depends on the \`renkon\` node.`],
-[`84`, `# Code Mirror Editor
-
-The \`newEditor\` node and \`newRunner\` are constants and whose values are functions to create a new object for \`windowContent\`.
-
-We use CodeMirror for text editing in windows. renkon-web.js exports the CodeMirror object that has a number of common extensions. They are exported from renkon-web in <a href="https://github.com/yoshikiohshima/renkon-web/blob/main/src/main.js">this way</a>. An instance of of EditorView for code editing invokes global search so that a custom \`search\` plugin is added before \`basicSetup\`. It also has lint rules for JavaScript. The Renkon language allows node definitions in TypeScript syntax, though the editor's lint rule does not support it yet.
-`],
-[`85`, `# User Interaction
-
-This text box and "Pointer Handling" have most of the handling for user events. 
-
-\`Events.listener\` adds an event listener to a concrete DOM element. The value returned from the callback becomes the value of the event. Most of those have \`evt => evt\` as callback and the event itself becomes the value. However for certain cases, such as wheel and similar ones call \`preventDefault()\` and \`stopPropagation()\` etc. to invoke those in the listener. For \`evt => evt\` case, the "real thing" happens on the event that stored in the internal data structure and later processed by other functions, but \`preventDefault\` cannot work in that way.
-
-The values for the "pan and zoom" feature of the 2D canvas is stored in padView, and the canvas' transform is directly updated in the \`style\` of "#mover" element. We don't want to generate the tree of virtual DOM.
-
-Handling \`wheel\` event is complcated as there are quite a few cases to handle.`],
-[`86`, `# Pointer Handling
-
-An interesting idea about event handling in Renkon-pad is that most basic events such as pointerdown, pointermove and pointerup are handled at the "pad" level, and not individual window. Let us take \`pointermove\` as an example. \`pointermove\` can be used to resize the window by dragging one of the corners, or to move the window by dragging the title bar, or to pan the background by dragging the "pad". One might consider adding a pointermove event handler to each of those small elements such as a resizer or titlebar. But there are two reasons it is cumbersome. One reason is general to any UI; because we support multi-touch, we need to handle cases where the secondary \`pointerdown\` or \`pointermove\` needs a "global" view of where the primary \`pointerdown\` was. The second reason is that the FRP favors known set of event sources so that the "wired" dependency graph does not change all the time.
-
-The \`moveCompute\` node is used by the \`_padMove\` Events.listener node. \`moveCompute\` itself is reactive and becomes different function based on where the last \`pointerdown\` was, for example. Whenever \`moveCompute\` gets a new value, the \`_padMove\` node is updated, which means that the old listener is automatically removed and the new function is added as the listener. That way, there is only one pointer move handler for things on the pad, but its actual behavior changes based on the circumstances.
-
-`],
-[`87`, `# Data Structure
-
-The Data Structure text box contains the definitions of the "fundamental" data of the application. You can think that the values in those nodes are to be saved into the file, and they are enough to reconstruct the application state from them.
-
-Renkon-pad effectively is a list of windows. Each window has position, title, windowType, etc. FRP favors that each property is stored in a separate data structure. Namely if you have two windows with ID = "1" and ID = "2", then those data structures look like:
-
-<code>
-  <pre>
-windows: [“1”, “2”]
-positions: Map(
-	“1” → {x: 100, y: 243, w: 325, h: 96},
-	“2” → {x: 530, y: 330, w: 582, h: 320})
-titles: Map(
-	“1” → “test”,
-	“2” → “my runner”)
-windowTypes: Map(
-	“1”→ “code”,
-	“2” → “runner”)
-windowContents: Map(
-       “1” → EditorView,
-       “2” → iframe)
-</pre>
-</code>
-
-meaning that the "windows" stores only the IDs, and \`positions\`, \`titles\`, etc. are a Map keyed by that ID and have values for that ID. It is like each property is a column in a spread sheet.
-`],
-[`88`, `# Rendering
-
-The rendering involves Preact virtual DOM, but the virtual DOM structure in effect does not change when you just move or resize a window, or pan or zoom the pad. Movement is done by generating a separate CSS in the \`_positionsCss\` node and update the \`style\` node. In this way we bypass the regeneration of the entire virtual DOM tree and diffing when you are just moving a window.
-
-\`_positionCss\` handles the case when a window is "pinned", to keep the window's position and scale in the screen coordinate even when you pan and zoom the background. There are only a handful lines that are crucial to implement this, but they have to be exactly right.`],
-[`89`, `# Search
-
-There is a global search panel that works across multiple text boees. When you look for the next match, the scale of the pad is kept the same but the search logic pans the pad to put the match in the view.
-
-The \`searchState\` node keeps track of where is the starting point when looking for the "next" match. It means that if the user moves the cursor in any of text box, the previous state needs to be cleared and the changed cursor position becomes the next search start position.
-`],
-[`90`, `# Graph Visualization
-
-Dependency graph visualization first analyzes the dependency relationship. We do this by creating a new \`ProgramState\` instance, feed the content of text boxes to it, and figures out what node names are imported and exported by the text box. (yes, we do this at every pointerEnter and pointerLeave on any text boxes.)
-
-The \`analyzed\` result is then fed to the \`graph\` node, which creates a list of SVG elements. Then the \`_graphRender\` renders the SVG elements to the \`overlay\` element, which is carefully located at the same position ad the \`pad\`.`],
-[`91`, `# Save and Load
-
-The file format has two parts. The first part is a JSON string that stores windows, positions, zIndex, titles, windowTypes, padTitle and windowEnabled. The second part is still JSON like, but the contents of text boxes and docs are stored with line breaks kept so that line oriented diff works better.`],
-[`92`, `# Doc Window
-
-A Doc window is almost like a runner but when it is created, the content of the \`doc\` function is taken as a set of node definitions and sent to the runner.
-
-The parent (Renkon-pad) and the iframe communicate over the window message. when the iframe is loaded it sends a ready message. In response to it, the parent uses \`getFunctionBody\` to extract the node definitions from the \`doc' function and send it to the iframe. When the ProgramState of the iframe evaluates them, the next kind of ready message is sent to the parent from the iframe, and the contents of the doc is then sent.
-
-
-`],
-[`93`, `# CSS
-
-There is no magic here... Except any advanced feature appears to be a magic in CSS.
-
-\`transform-origin: 0px 0x\` is important for any element that is transformed. 
-
-\`mover\` is an actual element created in \`renkon\`. \`owner\` is a virtual DOM appended to \`mover\` and it is also zero-sized.
-
-SVG icons are created in 24x24 viewport, and converted to the data string.`],
-[`102`, `function hoverTooltip(source, options = {}) {
+[`16`, `function hoverTooltip(source, options = {}) {
   let setHover = window.CodeMirror.state.StateEffect.define();
   let hoverState = window.CodeMirror.state.StateField.define({
     create() {
@@ -3045,7 +1646,1286 @@ class DependencyPlugin {
   }
 }
 `],
-[`159`, `const newRunner = (id) => {
+[`18`, `const searchRequest = Events.receiver();
+const searchUpdate = Events.receiver();
+const toggleSearchPanel = Events.receiver();
+const cursorChanged = Events.receiver();
+
+const cursorState = Behaviors.select(
+  {map: new Map()},
+  cursorChanged, (prev, cursorChanged) => {
+    const id = cursorChanged.id;
+    const entry = prev.map.get(id);
+    if (!entry || entry.position !== cursorChanged.position) {
+      prev.map.set(id, cursorChanged);
+      return {map: prev.map, change: id};
+    }
+    return prev;
+  }
+);
+
+const searchState = Behaviors.select(
+  {id: null, range: null, shown: false}, // id: string, editor: EditorView, range: {from: number, to: number}
+  search, (prev, _search) => ({id: prev.id, editor: prev.editor, range: prev.range, shown: !prev.shown}),
+  toggleSearchPanel, (prev, panelState) => ({id: prev.id, editor: prev.editor, range: prev.range, shown: panelState}),
+  searchUpdate, (prev, searchUpdate) => searchUpdate,
+  cursorState, (prev, cursorState) => {
+    if (cursorState.change) {
+      const cursor = cursorState.map.get(cursorState.change);
+      return {
+        id: cursorState.change,
+        range: {from: cursor.position, to: cursor.position},
+        shown: prev.shown}
+    }
+    return prev;
+  }
+);
+
+const _searchHandler = Events.listener(searchPanel.querySelector(\`input[name="search"]\`), "keydown", searchInputHandler);
+const _searchNext = Events.listener(searchPanel.querySelector(\`button[name="next"]\`), "click", searchNextHandler);
+const _searchClose = Events.listener(searchPanel.querySelector(\`button[name="close"]\`), "click", searchCloseHandler);
+
+const searchInputHandler = (evt) => {
+  if (evt.key === "Enter") {
+    evt.preventDefault();
+    evt.stopPropagation();
+    const searchRequest = getSearchRequest(evt.target.parentNode);
+    if (searchRequest) {
+      Events.send(searchRequest, searchRequest);
+    }
+  }
+};
+
+const searchNextHandler = (evt) => {
+  const searchRequest = getSearchRequest(evt.target.parentNode);
+  if (searchRequest) {
+    Events.send(searchRequest, searchRequest);
+  }
+};
+
+const searchCloseHandler = (_evt) => {
+  Events.send(toggleSearchPanel, false);
+};
+
+const getSearchRequest = (searchPanel) => {
+  const field = searchPanel.querySelector(\`input[name="search"]\`);
+  const search = field?.value;
+  const caseSensitive = searchPanel.querySelector(\`input[name="case"]\`)?.checked;
+  const regexp = searchPanel.querySelector(\`input[name="re"]\`)?.checked;
+  const wholeWord = searchPanel.querySelector(\`input[name="word"]\`)?.checked;
+  if (search) {
+    return {search, caseSensitive, regexp, wholeWord};
+  }
+  return null;
+}
+
+const _searchFieldUpdate = ((searchState) => {
+  const searchField = renkon.querySelector("#search");
+  if (!searchField) {return;}
+  const oldStyle = searchField.style.display;
+  const newStyle = searchState.shown ? "inherit" : "none";
+  searchField.style.display = newStyle;
+  if (newStyle !== oldStyle && newStyle === "inherit") {
+    searchField.querySelector(\`input[name="search"]\`).focus();
+  }
+})(searchState);
+
+renkon.querySelector("#search") && (renkon.querySelector("#search").style.display = searchState.shown ? "inherit" : "none");
+
+((searchRequest, windowContents, searchState) => {
+  const mirror = window.CodeMirror;
+  const editorsPair = [...windowContents.map].filter(([_id, content]) => content.state)
+  const query = new mirror.search.SearchQuery(searchRequest);
+  const startEditorIndex = editorsPair.findIndex((e) => e[0] === searchState.id);
+  let found = null;
+
+  for (let i = startEditorIndex <= 0 ? 0 : startEditorIndex; i < editorsPair.length; i++) {
+    const myRangeStart = startEditorIndex >= 0 && i === startEditorIndex ? searchState.range.to : 0;
+    const targetPair = editorsPair[i];
+    const cursor = query.getCursor(targetPair[1].state, myRangeStart);
+    cursor.next();
+    if (!cursor.done) {
+      found = {id: targetPair[0], range: {from: cursor.value.from, to: cursor.value.to}, shown: true};
+      break;
+    }
+  }
+  if (found) {
+    Events.send(searchUpdate, found);
+  } else {
+    Events.send(searchUpdate, {id: null, range: null, shown: true});
+  }
+})(searchRequest, windowContents, searchState)
+
+const updateEditorSelection = ((searchUpdate, windowContents) => {
+  if (!searchUpdate.id || !searchUpdate.range) {return;}
+  const editor = windowContents.map.get(searchUpdate.id);
+  const scrollIntoView = editor.scrollDOM.scrollHeight > editor.scrollDOM.clientHeight;
+  editor.dispatch({
+    changes: [], // no text change
+    selection: {anchor: searchUpdate.range.from, head: searchUpdate.range.to},
+    scrollIntoView: scrollIntoView,
+  });
+  editor.focus();
+  return searchUpdate;
+})(searchUpdate, windowContents);
+
+const _scrollToEditorPosition = ((padView, positions, gotoTarget, windowContents, viewId) => {
+  const pad = document.body.querySelector("#pad").getBoundingClientRect();
+
+  const visiblePad = {
+    x: -padView.x,
+    y: -padView.y,
+    width: pad.width / padView.scale,
+    height: pad.height / padView.scale
+  };
+  const position = positions.map.get(\`\${gotoTarget.id}\`);
+
+  const allVisible = position.x >= visiblePad.x && position.y >= visiblePad.y &&
+        position.width + position.x <= visiblePad.x + visiblePad.width &&
+        position.height + position.y <= visiblePad.y + visiblePad.height;
+
+  if (allVisible) {return;}
+  const editor = windowContents.map.get(gotoTarget.id);
+
+  const textPos = editor.coordsAtPos(gotoTarget.range.from);
+  if (!textPos) {return;}
+  const scrollRect = editor.scrollDOM.getBoundingClientRect();
+  const top = textPos.top - scrollRect.top + editor.scrollDOM.scrollTop;
+  const targetY = position.y + top / padView.scale;
+  let x = -position.x + 30;
+  let y = padView.y;
+  if (targetY < visiblePad.y) {
+    y = -targetY + 50 / padView.scale;
+  } else if (targetY - 50 > visiblePad.y + visiblePad.height) {
+    y = -targetY + visiblePad.height / 2 / padView.scale;
+  }
+
+  Events.send(padViewChange, {x: x, y: y, scale: padView.scale, viewId})
+})(padView, positions, gotoTarget, windowContents, viewId);
+
+const searchCSS = \`
+.search-panels {
+  position: absolute;
+  top: 40px;
+  right: 10px;
+  background-color: #f5f5f5;
+  color: black;
+  display: none;
+  max-height: 30px;
+}
+    
+.search-panels[open="true"] {
+  display: inherit;
+}
+    
+.search-panels-bottom {
+  border-top: 1px solid #ddd;
+}
+    
+.search-search {
+  padding: 2px 6px 4px;
+}
+    
+.search-search input, .search-search button, .search-search label {
+  margin: .2em .6em .2em 0;
+}
+
+.search-textfield {
+  background-color: white;
+}
+
+.search-textfield {
+  vertical-align: middle;
+  color: inherit;
+  font-size: 70%;
+  border: 1px solid silver;
+  padding: .2em .5em;
+}
+    
+.search-button {
+  background-image: linear-gradient(#eff1f5, #d9d9df);
+  border: 1px solid #888;
+}
+
+.search-button {
+  vertical-align: middle;
+  color: inherit;
+  font-size: 70%;
+  padding: .2em 1em;
+  border-radius: 1px;
+}
+    
+.search-search label {
+  font-size: 80%;
+  white-space: pre;
+}
+    
+.search-search button[name="close"] {
+  background-color: inherit;
+  border: none;
+  font: inherit;
+  padding: 0;
+  margin: 0;
+}
+    
+.search-search button[name="close"]:hover {
+  background-color: #eee;
+}
+\`.trim();
+
+((css, renkon) => {
+  const style = document.createElement("style");
+  style.id = "search-css";
+  style.textContent = css;
+  renkon.querySelector("#search-css")?.remove();
+  renkon.appendChild(style);
+})(searchCSS, renkon);
+`],
+[`24`, `const analyzed = ((windowContents, windowEnabled, trigger, showGraph) => {
+  if (!showGraph) {return new Map()}
+  if (trigger === null) {return new Map()}
+  if (typeof trigger === "object" && trigger.id) {return new Map();}
+  const programState = new Renkon.constructor(0);
+  programState.setLog(() => {});
+
+  const blockMap = new Map() // name -> blockId
+  const nodes = new Map(); // blockId -> {exports:Set, imports: Set}
+  const edges = new Map(); // blockId -> {edgesOut: [{id, dest}], edgesIn: [{id, origin}], exports: [id]}
+
+  const code = [...windowContents.map].filter(
+    ([id, editor]) => editor.state && windowEnabled.map.get(id)?.enabled)
+    .map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
+  try {
+    code.forEach(info => {
+      const blockId = info.blockId;
+      programState.setupProgram([info.code]);
+      nodes.set(blockId, {exports: new Set(), imports: new Set()});
+      edges.set(blockId, {edgesOut: [], edgesIn: [], exports: []});
+      const obj = nodes.get(blockId);
+      for (const jsNode of programState.nodes.values()) {
+        for (const input of jsNode.inputs) {
+          if (/^_[0-9]/.test(input)) {continue;}
+          obj.imports.add(input)
+        }
+        if (jsNode.outputs === "") {continue;}
+        if (/^_[0-9]/.test(jsNode.outputs)) {continue;}
+        blockMap.set(jsNode.outputs, blockId)
+        obj.exports.add(jsNode.outputs);
+      }
+    });
+  } catch(e) {
+    console.log("Graph analyzer encountered an error in source code:");
+    return new Map();
+  }
+
+  for (let [id, obj] of nodes) {
+    for (const exported of obj.exports) {//exported:string
+      const edgesOut = edges.get(id).edgesOut;
+      const exports = edges.get(id).exports;
+      for (let [importId, importObj] of nodes) {
+        if (importId === id) {continue;}
+        const edgesIn = edges.get(importId).edgesIn;
+        if (importObj.imports.has(exported)) {
+          if (edgesOut.findIndex((already) => already.id === exported && already.dest === importId) < 0) {
+            edgesOut.push({id: exported, dest: importId});
+            if (exports.indexOf(exported) < 0) {
+              exports.push(exported);
+            }
+          }
+          if (edgesIn.findIndex((already) => already.id === exported && already.origin === id) < 0) {
+            edgesIn.push({id: exported, origin: id});
+          }
+        }
+      }
+    }
+  }
+  return edges;
+})(windowContents, windowEnabled, Events.or(remove, hovered), showGraph === "showGraph");
+
+const line = (p1, p2, color, label) => {
+  let pl;
+  let pr;
+  if (p1.x < p2.x) {
+    pl = p1;
+    pr = p2;
+  } else {
+    pl = p2;
+    pr = p1;
+  }
+  const c0 = \`\${pl.x} \${pl.y}\`;
+  const c1 = \`\${pl.x + (pr.x - pl.x) * 0.5} \${pl.y + (pr.y - pl.y) * 0.2}\`;
+  const c2 = \`\${pr.x - (pr.x - pl.x) * 0.2} \${pl.y + (pr.y - pl.y) * 0.6}\`;
+  const c3 = \`\${pr.x} \${pr.y}\`;
+  return html\`<path d="M \${c0} C \${c1} \${c2} \${c3}" stroke="\${color}"
+    fill="transparent" stroke-width="2" stroke-linecap="round"></path><text
+    x="\${p1.x + 5}" y="\${p1.y}">\${label}</text>\`;
+};
+
+const hovered = Events.receiver();
+const hoveredB = Behaviors.keep(hovered);
+
+const graph = ((positions, padView, analyzed, hoveredB, showGraph) => {
+  if (hoveredB === null) {return [];}
+  if (!showGraph) {return [];}
+
+  const edges = analyzed.get(hoveredB);
+
+  if (!edges) {return [];} // runner does not have edges
+
+  const exportEdges = new Set();
+  const importEdges = new Set();
+
+  const outEdges = edges.edgesOut.map((edge) => {
+    const ind = edges.exports.indexOf(edge.id);
+    let p1 = positions.map.get(hoveredB);
+    p1 = {x: p1.x + p1.width, y: p1.y};
+    // p1 = {x: p1.x * padView.scale + padView.x, y: p1.y * padView.scale + padView.y};
+    p1 = {x: (p1.x + padView.x) * padView.scale, y: (p1.y + padView.y) * padView.scale};
+    p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
+    let p2 = positions.map.get(edge.dest);
+    p2 = {x: (p2.x + padView.x) * padView.scale, y: (p2.y + padView.y) * padView.scale};
+    p2 = {x: p2.x, y: p2.y + 10};
+    let e = "";
+    if (!exportEdges.has(edge.id)) {
+      exportEdges.add(edge.id);
+      e = edge.id;
+    }
+    return line(p1, p2, "#d88", e);
+  });
+
+  const inEdges = edges.edgesIn.map((edge) => {
+    const exporter = analyzed.get(edge.origin);
+    const ind = exporter.exports.indexOf(edge.id);
+    let p1 = positions.map.get(edge.origin);
+    p1 = {x: p1.x + p1.width, y: p1.y};
+    p1 = {x: (p1.x + padView.x) * padView.scale , y: (p1.y + padView.y) * padView.scale};
+    p1 = {x: p1.x, y: p1.y + ind * 20 + 10};
+    let p2 = positions.map.get(hoveredB);
+    p2 = {x: (p2.x + padView.x) * padView.scale, y: (p2.y + padView.y) * padView.scale};
+    p2 = {x: p2.x, y: p2.y + 10};
+    let e = "";
+    if (!importEdges.has(edge.id)) {
+      importEdges.add(edge.id);
+      e = edge.id;
+    }
+    return line(p1, p2, "#88d", e);
+  });
+
+  return html\`<svg viewBox="0 0 \${window.innerWidth} \${window.innerHeight}"
+                     xmlns="http://www.w3.org/2000/svg">\${outEdges}\${inEdges}</svg>\`;
+})(positions, padView, Behaviors.keep(analyzed), hoveredB, showGraph === "showGraph");
+
+const _graphRender = render(graph, document.querySelector("#overlay"));
+`],
+[`25`, `const saveData = (windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
+  const code = new Map(
+    [...windowContents.map].map(([id, content]) => {
+      if (content.state) {
+        return [id, content.state.doc.toString()];
+      } else if (content.editor) {
+        let state = content.editor.editor?.state;
+        if (!state) {
+          state = content.editor.state;
+        }
+        return [id, state.doc.toString()];
+      } else if (content.doc) {
+        return [id, content.doc];
+      } else {
+        return null;
+      }
+    }).filter(item => item !== null));
+  const myTitles = new Map([...titles.map].map(([id, obj]) => ([id, {...obj, state: false}])));
+  const data1 = stringify({
+    version: 3,
+    windows,
+    positions,
+    zIndex,
+    titles: {map: myTitles},
+    windowTypes,
+    padTitle,
+    windowEnabled
+  });
+
+  const data2 = stringifyCodeMap(code);
+
+  return encodeURIComponent(data1) + encodeURIComponent(data2);
+};
+
+const _saver2 = ((windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
+  const data = saveData(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled);
+
+  const dataStr = "data:text/plain;charset=utf-8," + data;
+  const div = document.createElement("a");
+  div.setAttribute("href", dataStr);
+  div.setAttribute("download", \`\${padTitle}.renkon\`);
+  div.click();
+})(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled, save);
+
+const loader = (() => {
+  const input = document.createElement("div");
+  input.innerHTML = \`<input id="imageinput" type="file" accept=".json,.renkon">\`;
+  const imageInput = input.firstChild;
+
+  imageInput.onchange = () => {
+    const file = imageInput.files[0];
+    if (!file) {imageInput.remove(); return;}
+    new Promise(resolve => {
+      let reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.readAsArrayBuffer(file);
+    }).then(async (data) => {
+      const result = new TextDecoder("utf-8").decode(data);
+    loadData(result, imageInput);
+    });
+    imageInput.value = "";
+  };
+  imageInput.oncancel = () => imageInput.remove();
+  document.body.appendChild(imageInput);
+  imageInput.click();
+})(load);
+
+const loadData = async (data, maybeImageInput) => {
+  const array = new TextEncoder().encode(data);
+  if (isLocal) {
+    Events.send(loadAtOnce, {key: 1, array: [array], done: true});
+    return;
+  }
+      
+  let ind = 0;
+  const key = Math.random();
+
+  Events.send(loadEvent, {key, type: "loadStart"});
+  const throttle = array.length > 80000;
+
+  while (ind < array.length) {
+    let buf = array.slice(ind, ind + 2880);
+    Events.send(loadEvent, {key, type: "loadOne", array: buf});
+    ind += 2880;
+    if (throttle) {
+      await new Promise((resolve) => {
+        setTimeout(resolve, 16);
+      });
+    }
+  }
+  if (maybeImageInput) maybeImageInput.remove();
+  Events.send(loadEvent, {key, type: "loadDone"});
+}
+
+const nameFromUrl = (() => {
+  const maybeUrl = new URL(window.location).searchParams.get("file");
+  if (maybeUrl) {
+    return maybeUrl;
+  }
+  return undefined;
+})();
+
+const _loadFromUrl = fetch(nameFromUrl).then((resp) => resp.text()).then((result) => {
+  loadData(result, null);
+});
+
+const stringifyInner = (node, seen) => {
+  if (node === undefined) return undefined;
+  if (typeof node === 'number') return Number.isFinite(node) ? \`\${node}\` : 'null';
+  if (typeof node !== 'object') return JSON.stringify(node, null, 4);
+
+  let out;
+  if (Array.isArray(node)) {
+    out = '[';
+    for (let i = 0; i < node.length; i++) {
+      if (i > 0) out += ',';
+      out += stringifyInner(node[i], seen) || 'null';
+    }
+    return out + ']';
+  }
+
+  if (node === null) return 'null';
+
+  if (seen.has(node)) {
+    throw new TypeError('Converting circular structure to JSON');
+  }
+
+  seen.add(node);
+
+  if (node.constructor === window.Map) {
+    let replacement = {__map: true, values: [...node]};
+    return stringifyInner(replacement, seen);
+  }
+
+  if (node.constructor === window.Set) {
+    let replacement = {__set: true, values: [...node]};
+    return stringifyInner(replacement, seen);
+  }
+
+  let keys = Object.keys(node).sort();
+  out = '';
+  for (let i = 0; i < keys.length; i++) {
+    let key = keys[i];
+    let value = stringifyInner(node[key], seen, out);
+    if (!value) continue;
+    if (out !== '') out += ',\\n';
+    out += JSON.stringify(key) + ':' + value;
+  }
+  seen.delete(node);
+  return '{' + out + '}';
+}
+
+const stringify = (obj) => {
+  let seen = new Set();
+  return stringifyInner(obj, seen);
+}
+
+
+const stringifyCodeMap = (map) => {
+  const replace = (str) => {
+    return str.replaceAll("\\\\", "\\\\\\\\").replaceAll("\`", "\\\\\`").replaceAll("\$", "\\\\\$");
+  }
+
+  return "\\n{__codeMap: true, value: " + "[" +
+    [...map].map(([key, value]) => ("[" + "\`" + replace(key) + "\`" + ", " + "\`" +
+                                    replace(value) + "\`" + "]")).join(",\\n") + "]" + "}"
+}
+`],
+[`26`, `const inputHandler = (evt) => {
+  if (evt.key === "Enter") {
+    evt.preventDefault();
+    evt.stopPropagation();
+    Events.send(titleEditChange, {
+      id: \`\${Number.parseInt(evt.target.id)}\`,
+      title: evt.target.textContent,
+      state: false
+    });
+    evt.target.textContent = "";
+  }
+};
+
+const playDown = Events.receiver();
+const dismissDelayedButton = Events.receiver();
+const playLeave = Events.receiver();
+const playUp = Events.receiver();
+
+const runRequestFromView = Events.receiver();
+
+const playClickHandler = (evt, delayed) => {
+  if (delayed) {
+    return;
+  }
+  Events.send(runRequestFromView, {id: \`\${Number.parseInt(evt.target.id)}\`});
+}
+
+const playDownHandler = (evt) => {
+  evt.stopPropagation();
+  if (evt.isPrimary) {
+      evt.target.setPointerCapture(evt.pointerId);
+  }
+  Events.send(playDown, evt);
+};
+
+const playUpHandler = (evt) => {
+  evt.target.releasePointerCapture(evt.pointerId);
+  // console.log(evt.target.id, evt.currentTarget.id)
+  Events.send(playUp, evt);
+};
+
+const playLeaveHandler = (evt) => {
+  // console.log("leave");
+  // evt.target.releasePointerCapture(evt.pointerId);
+  Events.send(playLeave, evt);
+};
+
+const resetRunnerHandler = (evt) => {
+  // console.log("reset")
+  Events.send(dismissDelayedButton, evt.target.id);
+  Events.send(resetRequest, {id: \`\${Number.parseInt(evt.target.id)}\`});
+}
+
+const delayedPlayDown = Events.delay(playDown, 500);
+
+const delayedButtonJudge = Events.select(
+  {result: null, queue: []},
+  playDown, (_prev, down) => ({result: null, queue: [down]}),
+  playUp, (prev, up) => ({result: prev.result, queue: [up]}),
+  playLeave, (prev, leave) => ({result: prev.result, queue: [...prev.queue, leave]}),
+  delayedPlayDown, (prev, down) => {
+    if (prev.queue.length === 0) return [];
+    if (prev.queue.length === 1) {
+      if (prev.queue[0] === down) {return {result: down, queue: [down]};}
+      return {result: null, queue: []}
+    }
+    if ([prev.length - 1].type === "pointerup") {return {result: null, queue: []};}
+    if ([prev.length - 1].type === "pointerleave") {return prev;}
+  },
+  dismissDelayedButton, (_prev, _dismiss) => ({result: null, queue: []})
+);
+
+const delayed = Behaviors.select(
+  null,
+  Events.or(delayedButtonJudge), (_prev, judge) => {
+    const evt = judge.result;
+    if (evt && evt.type === "pointerdown") {
+      evt.target.releasePointerCapture(evt.pointerId);
+      return \`\${Number.parseInt(evt.target.id)}\`;
+    }
+    return null;
+  },
+  playUp, (prev, _evt) => {return prev},
+  playLeave, (prev, _evt) => {return prev}
+)
+
+const _positionsCss = ((positions, zIndex, pinnedPositions, padView) => {
+  let style = document.body.querySelector("#positions-css");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "positions-css";
+    document.body.appendChild(style);
+  }
+
+  const css = [...positions.map].map(([id, rect]) => {
+    let x;
+    let y;
+    let scale;
+    const pinned = pinnedPositions.map.get(id);
+    if (!pinned) {
+      x = rect.x;
+      y = rect.y;
+      scale = 1;
+    } else {
+      // t(x) = pinned.x
+      // t(a) = a * padView.scale + padView.x;
+      // x * padView.scale + padView.x = pinned.x;
+      // x = pinned.x / padView.scale - padView.x;
+      scale = pinned.scale / padView.scale;
+      x = pinned.x / padView.scale - padView.x;
+      y = pinned.y / padView.scale - padView.y;
+      // console.log(pinned.x, scale, x, padView.x);
+    }
+    return \`
+[id="\${id}-win"] {
+    transform: translate(\${x}px, \${y}px) scale(\${scale});
+    width: \${rect.width}px;
+    height: \${rect.height}px;
+    z-index: \${zIndex.map.get(id)};
+}\`.trim();
+  }).join("\\n");
+  style.textContent = css;
+})(positions, zIndex, pinnedPositions, padView);
+
+const windowDOM = (id, title, windowContent, type, windowEnabled, pinnedPosition, delayed) => {
+  return h("div", {
+    key: \`\${id}\`,
+    id: \`\${id}-win\`,
+    "class": "window",
+    pinned: !!pinnedPosition,
+    ref: (ref) => {
+      if (ref) {
+        const holder = ref.querySelector(".windowHolder");
+        if (holder.firstChild && holder.firstChild !== windowContent.dom) {
+          holder.firstChild.remove();
+        }
+        if (holder !== windowContent.dom.parentNode) {
+          holder.appendChild(windowContent.dom);
+        }
+      }
+    },
+    onPointerEnter: (evt) => Events.send(hovered, \`\${Number.parseInt(evt.target.id)}\`),
+    onPointerLeave: (_evt) => Events.send(hovered, null)
+  }, [
+    h("div", {
+      id: \`\${id}-titleBar\`,
+      "class": "titleBar",
+    }, [
+      h("div", {
+        id: \`\${id}-enabledButton\`,
+        disabled: !!(windowEnabled && !windowEnabled.enabled),
+        style: {
+          display: \`\${type !== "code" ? "none" : "inheirt"}\`
+        },
+        "class": "titlebarButton enabledButton",
+        onClick: (evt) => {
+          Events.send(enabledChange, {
+            id: \`\${Number.parseInt(evt.target.id)}\`,
+            enabled: !windowEnabled || !windowEnabled.enabled});
+        },
+      }),
+      h("div", {
+        id: \`\${id}-runButtonContainer\`,
+        "class": "runButtonContainer",
+      }, [
+        h("div", {
+          id: \`\${id}-runButton\`,
+          "class": "titlebarButton runButtonBackground runButton",
+          type,
+          onClick: (evt) => playClickHandler(evt, delayed),
+          onPointerDown: playDownHandler,
+          onPointerUp: playUpHandler,
+          onPointerLeave: playLeaveHandler,
+        }),
+        h("div", {
+          id: \`\${id}-runButton2\`,
+          "class": "titlebarButton resetButton runButton2",
+          type,
+          delayed: delayed === id,
+          onPoionterUp: resetRunnerHandler,
+          onClick: resetRunnerHandler,
+        })
+      ]),
+      h("div", {
+        id: \`\${id}-inspectorButton\`,
+        "class": "titlebarButton inspectorButton",
+        type,
+        onClick: (evt) => {
+          Events.send(inspectRequest, {id: \`\${Number.parseInt(evt.target.id)}\`});
+        },
+      }),
+      h("div", {
+        id: \`\${id}-title\`,
+        "class": "title",
+        contentEditable: \`\${title.state}\`,
+        onKeydown: inputHandler,
+      }, title.title),
+      h("div", {
+        id: \`\${id}-titleSpacer\`,
+        "class": "titleSpacer",
+      }),
+      h("div", {
+        id: \`\${id}-edit\`,
+        "class": \`titlebarButton editButton\`,
+        onClick: (evt) => {
+          // console.log(evt);
+          Events.send(titleEditChange, {id: \`\${Number.parseInt(evt.target.id)}\`, state: !title.state});
+        },
+      }, []),
+      h("div", {
+        id: \`\${id}-pin\`,
+        "class": "titlebarButton pinButton",
+        state: pinnedPosition ? "off" : "on",
+        onClick: (evt) => {
+          Events.send(pinRequest, {id: \`\${Number.parseInt(evt.target.id)}\`})
+        }
+      }),
+      h("div", {
+        id: \`\${id}-close\`,
+        "class": "titlebarButton closeButton",
+        onClick: (evt) => {
+          Events.send(remove, {id: \`\${Number.parseInt(evt.target.id)}\`, type: "remove"})
+        }
+      }),
+    ]),
+    h("div", {
+      id: \`\${id}-bottomRight-resize\`,
+      corner: "bottomRight",
+      "class": "resizeHandler",
+    }, []),
+    h("div", {
+      id: \`\${id}-topLeft-resize\`,
+      corner: "topLeft",
+      "class": "resizeHandler",
+    }, []),
+    h("div", {
+      id: \`\${id}-bottomLeft-resize\`,
+      corner: "bottomLeft",
+      "class": "resizeHandler",
+    }, []),
+    h("div", {
+      id: \`\${id}-topRight-resize\`,
+      corner: "topRight",
+      "class": "resizeHandler",
+    }, []),
+    h("div", {
+      id: \`\${id}-windowHolder\`,
+      blurred: \`\${type !== "code" ? false : (windowEnabled ? !windowEnabled.enabled : false)}\`,
+      "class": "windowHolder",
+    }, [])
+  ])
+};
+
+const windowElements = ((windows, titles, windowContents, windowTypes, windowEnabled, pinnedPositions, delayed) => {
+  return h("div", {id: "owner", "class": "owner"}, windows.map((id) => {
+    return windowDOM(
+      id,
+      titles.map.get(id), windowContents.map.get(id),
+      windowTypes.map.get(id), windowEnabled.map.get(id),
+      pinnedPositions.map.get(id), delayed)
+  }));
+})(windows, titles, windowContents, windowTypes, windowEnabled, pinnedPositions, delayed);
+
+const _windowRender = render(windowElements, document.querySelector("#mover"));
+
+`],
+[`27`, `const dblClick = Events.listener(renkon.querySelector("#pad"), "dblclick", (evt) => evt);
+
+const rawPadDown = Events.listener(renkon.querySelector("#pad"), "pointerdown", (evt) => {
+  const strId = evt.target.id;
+  if (strId.endsWith("-title") && (evt.target.getAttribute("contenteditable") === "true")) {
+    return evt;
+  }
+  if (strId) {
+    evt.preventDefault();
+    evt.stopPropagation();
+  }
+  return evt;
+}, {queued: true});
+
+// this is an odd ball that gets mutated by padDownState and padUp
+const evCache = new Map();
+
+const padDown = Events.collect(undefined, rawPadDown, (old, evts) => {
+  let type;
+  let id;
+  let corner;
+  if (evts.length <= 2 && evts[0].isPrimary) {
+    let primary = evts[0];
+    const strId = primary.target.id;
+    if (!strId) {return {...old, type: ""};}
+    let x = primary.clientX;
+    let y = primary.clientY;
+    if (strId === "pad") {
+      type = "padDragDown";
+      id = strId;
+    } else {
+      id = \`\${Number.parseInt(strId)}\`;
+      if (strId.endsWith("-titleBar")) {
+        type = "moveDown";
+      } else if (strId.endsWith("-resize")) {
+        corner = (/[0-9]+-(.*)-resize/.exec(strId))[1];
+        type = "windowResizeDown";
+      } else if (strId.endsWith("-doc-separator")) {
+        type = "docSeparator";
+      }
+    }
+    if (type) {
+      primary.target.setPointerCapture(primary.pointerId);
+      if (strId === "pad") {
+        evCache.set("primary", {x, y});
+      }
+      if (evts.length === 1) {
+        return {
+          id, target: primary.target, type, x: primary.clientX, y: primary.clientY, corner
+        };
+      }
+    } else {
+      return {...old, type: ""};
+    }
+  }
+
+  let secondary;
+  if (evCache.get("primary")) {
+    if (evts.length === 1 && evCache.size === 1 && !evts[0].isPrimary) {
+      secondary = evts[0];
+    }
+    if (evts.length === 2 && evCache.size === 1 && !evts[1].isPrimary) {
+      secondary = evts[1];
+    }
+  }
+  if (!secondary) {return old;}
+
+  const strId = secondary.target.id;
+  if (strId !== "pad") {return {type: "stuck", secondary: secondary.pointerId};}
+  let primary =  evCache.get("primary");
+  let x = secondary.clientX;
+  let y = secondary.clientY;
+  let dx = primary.x - secondary.clientX;
+  let dy = primary.y - secondary.clientY;
+  let origDiff = Math.sqrt(dx * dx + dy * dy);
+  evCache.set(secondary.pointerId, {origDiff, origScale: padView.scale, x, y});
+  return {type: "pinch", secondary: secondary.pointerId};
+});
+
+const padUp = Events.listener(renkon.querySelector("#pad"), "pointerup", (evt) => {
+  // console.log("ev1", evCache);
+  evt.target.releasePointerCapture(evt.pointerId);
+  evCache.clear();
+  // console.log("ev2", evCache);
+  return {type: "pointerup", x: evt.clientX, y: evt.clientY};
+});
+
+const downOrUpOrResize = Events.or(padDown, padUp, pointercancel, lostpointercapture, windowResize);
+
+const _padMove = Events.listener("#pad", "pointermove", moveCompute);
+
+const windowResize = Events.receiver();
+const moveOrResize = Events.receiver();
+
+const moveCompute = ((downOrUpOrResize, positions, padView, viewId) => {
+  if (downOrUpOrResize.type === "moveDown" || downOrUpOrResize.type === "windowResizeDown") {
+    const start = positions.map.get(downOrUpOrResize.id);
+    const scale = padView.scale;
+    const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
+    const type = downOrUpOrResize.type === "moveDown" ? "move" : "resize";
+    return (move) => {
+      const diffX = (move.clientX - downPoint.x) / scale;
+      const diffY = (move.clientY - downPoint.y) / scale;
+      const result = {id: downOrUpOrResize.id, type};
+      // const position = positions.map.get(downOrUpOrResize.id);
+      if (type === "move") {
+        if (pinnedPositions.map.get(downOrUpOrResize.id)) {return move;}
+        result.x = start.x + diffX;
+        result.y = start.y + diffY;
+      } else {
+        if (downOrUpOrResize.corner === "bottomRight") {
+          const realDiffX = start.width + diffX < 120 ? 120 - start.width : diffX;
+          const realDiffY = start.height + diffY < 70 ? 70 - start.height : diffY;
+          result.width = start.width + realDiffX;
+          result.height = start.height + realDiffY;
+        } else if (downOrUpOrResize.corner === "topLeft") {
+          const realDiffX = start.width - diffX < 120 ? start.width - 120 : diffX;
+          const realDiffY = start.height - diffY < 70 ? start.height - 70 : diffY;
+          result.width = start.width - realDiffX;
+          result.height = start.height - realDiffY;
+          result.x = start.x + realDiffX;
+          result.y = start.y + realDiffY;
+        } else if (downOrUpOrResize.corner === "topRight") {
+          const realDiffX = start.width + diffX < 120 ? 120 - start.width : diffX;
+          const realDiffY = start.height - diffY < 70 ? start.height - 70 : diffY;
+          result.width = start.width + realDiffX;
+          result.height = start.height - realDiffY;
+          result.y = start.y + realDiffY;
+        } else if (downOrUpOrResize.corner === "bottomLeft") {
+          const realDiffX = start.width - diffX < 120 ? start.width - 120 : diffX;
+          const realDiffY = start.height + diffY < 70 ? 70 - start.height : diffY;
+          result.width = start.width - realDiffX;
+          result.height = start.height + realDiffY;
+          result.x = start.x + realDiffX;
+        }
+      }
+      Events.send(moveOrResize, result);
+      return move;
+    }
+  } else if (downOrUpOrResize.type === "padDragDown") {
+    const start = padView;
+    const scale = start.scale;
+    const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
+    const type = "padDrag";
+    return (move) => {
+      const diffX = move.clientX - downPoint.x;
+      const diffY = move.clientY - downPoint.y;
+      const result = {id: downOrUpOrResize.id, type, scale, viewId};
+      result.x = start.x + (diffX / scale);
+      result.y = start.y + (diffY / scale);
+      Events.send(padViewChange, result);
+      return move;
+    };
+  } else if (downOrUpOrResize.type === "docSeparator") {
+    const start = positions.map.get(downOrUpOrResize.id);
+    const scale = padView.scale;
+    const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
+    const scaledDownX =  downOrUpOrResize.x / scale - padView.x - start.x;
+    const type = downOrUpOrResize.type;
+    return (move) => {
+      const winX = move.clientX / scale - padView.x - start.x;
+      const result = {id: downOrUpOrResize.id, type};
+      if (pinnedPositions.map.get(downOrUpOrResize.id)) {return move;}
+      result.x = winX;
+      result.startX = scaledDownX;
+      Events.send(separatorMove, result);
+      return move;
+    }
+  } else if (downOrUpOrResize.type === "pinch") {
+    return (move) => {
+      const keys = [...evCache.keys()];
+      const primary = evCache.get("primary");
+      if (!primary) {
+        // the first finger has been lifted
+        return move;
+      }
+      const otherKey = keys.find((k) => k !== "primary");
+      const secondary = evCache.get(otherKey);
+      const isPrimary = move.isPrimary;
+
+      if (isPrimary) {
+        const newRecord = {...primary};
+        newRecord.x = move.clientX;
+        newRecord.y = move.clientY;
+        evCache.set("primary", newRecord);
+      } else {
+        const newRecord = {...secondary};
+        newRecord.x = move.clientX;
+        newRecord.y = move.clientY;
+        evCache.set(otherKey, newRecord);
+      }
+
+      const origDiff = secondary.origDiff;
+      const origScale = secondary.origScale;
+
+      const pX = isPrimary ? move.clientX : primary.x;
+      const pY = isPrimary ? move.clientY : primary.y;
+
+      const sX = isPrimary ? secondary.x : move.clientX;
+      const sY = isPrimary ? secondary.y : move.clientY;
+
+      const newDiff = Math.sqrt((pX - sX) ** 2 + (pY - sY) ** 2);
+
+      const newScale = (newDiff / origDiff) * origScale;
+
+      const newCenterX = (pX - sX) / 2 + sX;
+      const newCenterY = (pY - sY) / 2 + sY;
+
+      const xInMover = (newCenterX / padView.scale) - padView.x;
+      const newX = newCenterX / newScale - xInMover;
+
+      const yInMover = (newCenterY / padView.scale) - padView.y;
+      const newY = newCenterY / newScale - yInMover;
+
+      Events.send(padViewChange, {x: newX, y: newY, scale: newScale, viewId});
+      return move;
+    }
+  } else if (["pointerup", "lost", "stuck"].includes(downOrUpOrResize.type)) {
+    return (move) => move;
+  }
+})(downOrUpOrResize, positions, padView, viewId);
+`],
+[`28`, `const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
+const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
+const addDoc = Events.listener(renkon.querySelector("#addDocButton"), "click", () => "doc");
+const save = Events.listener(renkon.querySelector("#saveButton"), "click", (evt) => evt);
+const load = Events.listener(renkon.querySelector("#loadButton"), "click", (evt) => evt);
+const search = Events.listener(renkon.querySelector("#searchButton"), "click", (evt) => evt);
+
+const home = Events.listener(renkon.querySelector("#homeButton"), "click", () => "home");
+const zoomIn = Events.listener(renkon.querySelector("#zoomInButton"), "click", () => "zoomIn");
+const zoomOut = Events.listener(renkon.querySelector("#zoomOutButton"), "click", () => "zoomOut");
+
+const homeUponLoad = Events.receiver();
+
+const navigationAction = Events.or(home, zoomIn, zoomOut, homeUponLoad);
+
+const padViewChange = Events.receiver();
+const wheeling = Events.receiver();
+
+const queuedKeydown = Events.listener(document.body, "keydown", evt => evt, {queued: true});
+const queuedKeyup = Events.listener(document.body, "keyup", evt => evt, {queued: true});
+
+const _padViewUpdate = ((padView) => {
+  const mover = document.querySelector("#mover");
+  const pad = document.querySelector("#pad");
+  mover.style.setProperty("transform", \`scale(\${padView.scale}) translate(\${padView.x}px, \${padView.y}px)\`);
+
+  pad.style.setProperty("background-position", \`\${padView.x * padView.scale}px \${padView.y * padView.scale}px\`);
+  pad.style.setProperty("background-size", \`\${64 * padView.scale}px \${64 * padView.scale}px\`);
+})(padView);
+
+const wheel = Events.listener(renkon.querySelector("#pad"), "wheel", (evt) => {
+  let pinch;
+  if (isSafari) {
+    pinch = (Number.isInteger(evt.deltaX) && !Number.isInteger(evt.deltaY)) || evt.metaKey;
+  } else {
+    pinch = evt.ctrlKey || evt.metaKey;
+  }
+  const strId = evt.target.id;
+  if (pinch) {
+    evt.preventDefault();
+    if (strId === "pad") {
+      evt.stopPropagation();
+    }
+  }
+  return evt;
+});
+
+const _handleWheel = ((wheel, padView, modifierState, viewId) => {
+  let pinch;
+  if (isSafari) {
+    pinch = (Number.isInteger(wheel.deltaX) && !Number.isInteger(wheel.deltaY)) || wheel.metaKey;
+  } else {
+    pinch = wheel.ctrlKey || wheel.metaKey;
+  }
+
+  const shiftKey = modifierState.shiftKey;
+  const scrollDirection = modifierState.scrollDirection;
+  const strId = wheel.target.id;
+
+  let deltaX = wheel.deltaX;
+  let deltaY = wheel.deltaY;
+  let zoom = padView.scale;
+
+  let absDeltaY = Math.min(30, Math.abs(deltaY));
+  let diff = Math.sign(deltaY) * absDeltaY;
+
+  let desiredZoom = zoom * (1 - diff / 50);
+
+  const xInMover = (wheel.clientX / padView.scale) - padView.x;
+  const newX = wheel.clientX / desiredZoom - xInMover;
+
+  const yInMover = (wheel.clientY / padView.scale) - padView.y;
+  const newY = wheel.clientY / desiredZoom - yInMover;
+
+  if (scrollDirection === null && shiftKey) {
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      Events.send(wheeling, {scrollDirection: "horizontal"});
+      deltaY = 0;
+    } else {
+      Events.send(wheeling, {scrollDirection: "vertical"});
+      deltaX = 0;
+    }
+  } else if (scrollDirection !== null && shiftKey) {
+    if (scrollDirection === "vertical") {
+      deltaX = 0;
+    }
+    if (scrollDirection === "horizontal") {
+      deltaY = 0;
+    }
+  }
+
+  if (pinch) {
+    Events.send(padViewChange, {x: newX, y: newY, scale: desiredZoom, viewId});
+  } else {
+    if (strId === "pad") {
+      Events.send(padViewChange, {x: padView.x - deltaX / padView.scale,
+                                  y: padView.y - deltaY / padView.scale, scale: padView.scale, viewId});
+    }
+  }
+})(wheel, padView, modifierState, viewId);
+
+Events.listener(renkon.querySelector("#buttonBox"), "wheel", preventDefault);
+Events.listener(renkon.querySelector("#navigationBox"), "wheel", preventDefault);
+
+Events.listener(document.body, "gesturestart", preventDefaultSafari);
+Events.listener(document.body, "gesturechange", preventDefaultSafari);
+Events.listener(document.body, "gestureend", preventDefaultSafari);
+
+const isSafari = window.navigator.userAgent.includes("Safari") && !window.navigator.userAgent.includes("Chrome");
+const isMobile = !!("ontouchstart" in window);
+
+const pointercancel = Events.listener(renkon.querySelector("#pad"), "pointercancel", pointerLost);
+const lostpointercapture = Events.listener(renkon.querySelector("#pad"), "lostpointercapture", pointerLost);
+
+const preventDefault = (evt) => {
+  evt.preventDefault();
+  return evt;
+};
+
+const preventDefaultSafari = (evt) => {
+  if (!isSafari || isMobile) {
+    evt.preventDefault();
+  }
+  return evt;
+};
+
+const pointerLost = (evt) => {
+  evCache.clear();
+  evt.preventDefault();
+  return {type: "lost"};
+};
+
+const _handleNavigationAction = ((navigationAction, positions, padView, viewId) => {
+  if (navigationAction === "zoomIn" || navigationAction === "zoomOut") {
+    const pad = document.body.querySelector("#pad").getBoundingClientRect();
+    const newScale = padView.scale * ( navigationAction === "zoomIn" ? 1.1 : 0.9);
+    const centerX = pad.width / 2 / padView.scale - padView.x;
+    const centerY = pad.height / 2 / padView.scale - padView.y;
+    const newX = pad.width / 2 / newScale - centerX;
+    const newY = pad.height / 2 / newScale - centerY;
+    // const newX = (padView.x - (pad.width / 2)) * (newScale / padView.scale) + pad.width / 2;
+    // const newY = (padView.y - (pad.height / 2)) * (newScale / padView.scale) + pad.height / 2;
+    Events.send(padViewChange, {x: newX, y: newY, scale: newScale});
+  } else if (navigationAction === "home") {
+    let minLeft = Number.MAX_VALUE;
+    let minTop = Number.MAX_VALUE;
+    let maxRight = Number.MIN_VALUE;
+    let maxBottom = Number.MIN_VALUE;
+
+    if (positions.map.size === 0) {
+      Events.send(padViewChange, {x: 0, y: 0, scale: 1, viewId});
+      return;
+    }
+    for (let [_, position] of positions.map) {
+      minLeft = Math.min(position.x, minLeft);
+      minTop = Math.min(position.y, minTop);
+      maxRight = Math.max(position.x + position.width, maxRight);
+      maxBottom = Math.max(position.y + position.height, maxBottom);
+    }
+
+    const pad = document.body.querySelector("#pad").getBoundingClientRect();
+
+    const scaleX = pad.width / (maxRight - minLeft);
+    const scaleY = pad.height / (maxBottom - minTop);
+    const scale = Math.min(1, scaleX, scaleY) * 0.9;
+
+    const centerX = (maxRight + minLeft) / 2;
+    const centerY = (maxBottom + minTop) / 2;
+    let x = (pad.width / 2 / scale - centerX);
+    let y = (pad.height / 2 / scale - centerY);
+    Events.send(padViewChange, {x, y, scale, force: true, viewId});
+  }
+})(navigationAction, positions, padView, viewId);
+
+const showGraph = Behaviors.collect(
+  "showDeps",
+  Events.listener(renkon.querySelector("#showGraph"), "click", (evt) => evt),
+  (now, _click) => {
+    if (now === "showGraph") {return "hide";}
+    if (now === "showDeps") {return "showGraph";}
+    if (now === "hide") {return "showDeps"}
+    return now;
+  }
+);
+
+((showGraph) => {
+  let str;
+  if (showGraph === "showGraph") {str = "show graph";}
+  if (showGraph === "showDeps") {str = "show deps";}
+  if (showGraph === "hide") {str = "hide graph"}
+  document.querySelector("#showGraph").textContent = str;
+})(showGraph);
+
+const resetHandler = Events.select(
+  {},
+  resetRequest, (prev, reset) => {
+    if (prev.ready) {
+      if (prev.ready.includes(reset.id)) {
+        Events.send(doReset, reset);
+        return {};
+      }
+    }
+    return {resetRequest: reset};
+  },
+  readyMessages, (prev, ready) => {
+    const readyIds = ready.map((r) => r.data.id);
+    if (prev.resetRequest) {
+      if (readyIds.includes(prev.resetRequest.id)) {
+        Events.send(doReset, prev.resetRequest);
+      }
+    }
+    return {};
+  },
+  windowContents, (_prev, _win) => ({})
+);
+
+const doReset = Events.receiver();
+
+const _onInspect = ((inspectRequest) => {
+  const id = inspectRequest.id;
+  const iframe = windowContents.map.get(id);
+  iframe.dom.contentWindow.postMessage({inspector: true, path: id});
+})(inspectRequest);
+
+const remove = Events.receiver();
+const titleEditChange = Events.receiver();
+const enabledChange = Events.receiver();
+const pinRequest = Events.receiver();
+
+const inspectRequest = Events.receiver();
+
+const _goTo = ((padView, positions, dblClick, viewId) => {
+  const strId = dblClick.target.id;
+  if (!strId.endsWith("-titleBar")) {return;}
+  const id = Number.parseInt(strId);
+  const position = positions.map.get(\`\${id}\`);
+
+  const pad = document.body.querySelector("#pad").getBoundingClientRect();
+
+  const scaleX = pad.width / position.width;
+  const scaleY = pad.height / position.height;
+  const scale = Math.min(scaleX, scaleY) * 0.95;
+
+  const centerX = position.x + position.width / 2;
+  const centerY = position.y + position.height / 2;
+
+  const x = pad.width / 2 / scale - centerX;
+  const y = pad.height / 2 / scale - centerY;
+
+  Events.send(padViewChange, {x, y, scale, viewId});
+})(padView, positions, dblClick, viewId);
+`],
+[`29`, `const newRunner = (id) => {
   const runnerIframe = document.createElement("iframe");
   runnerIframe.srcdoc = \`
 <!DOCTYPE html>
@@ -3075,17 +2955,42 @@ class DependencyPlugin {
       }
     </style>
     <script type="module">
-      import {ProgramState, CodeMirror, newInspector, globals} from "./renkon-web.js";
-      window.thisProgramState = new ProgramState(Date.now());
-      window.CodeMirror = CodeMirror;
-      window.RenkonWeb = {newInspector, globals};
+      import {ProgramState, globals} from "./renkon-core.js";
+      import {newInspector} from "./renkon-inspector.js";
+      import {startWithCodeMirrorWithCroquet, startWithCodeMirrorNoCroquet,
+              parse, splitStrs, toFunction, parseCroquet} from "./loader.js";
+      window.RenkonWeb = {globals};
+      let prevSession;
+      let prevView;
 
-      window.onmessage = (evt) => {
-        if (evt.data && Array.isArray(evt.data.code)) {
-          window.thisProgramState.updateProgram(evt.data.code, evt.data.path);
+      window.onmessage = async (evt) => {
+        let promise;
+        let croquet;
+        if (evt.data.croquet) {
+          croquet = parseCroquet(evt.data.croquet);
         }
+        if (evt.data && Array.isArray(evt.data.code)) {
+          if (!croquet?.parameters?.appParameters?.name) {
+              startWithCodeMirrorNoCroquet({code: evt.data.code.map((c, i) => ([(i).toString(), c])), ProgramState});
+          } else {
+            if (!prevView) {
+              const obj = await startWithCodeMirrorWithCroquet({
+                code: evt.data.code.map((c, i) => ([(i).toString(), c])), ProgramState, croquet, options: {}});
+              const {CodeMirror, CodeMirrorModel, CodeMirrorView, session} = obj;
+              prevSession = session;
+              prevView = session.view;
+            } else {
+              const func = toFunction(evt.data.code, prevSession.name);
+              const strs = splitStrs(func, new Map(croquet.realm.model.map((key) => [key, "Model"])));
+              const {viewNodeStr, modelEventsStr} = strs;
+              prevView.programState.updateProgram([viewNodeStr, modelEventsStr]);            
+            }
+          }
+        }
+
         if (evt.data && typeof evt.data.inspector === "boolean") {
-          if (window.thisProgramState) {
+          const ps = prevSession?.view?.programState || window.programState;
+          if (ps) {
             if (document.body.querySelector(".dock")) {
               document.body.querySelector(".dock").remove();
               return;
@@ -3097,9 +3002,9 @@ class DependencyPlugin {
 
             dock.appendChild(dom);
             document.body.appendChild(dock);
-            const result = thisProgramState.order.map((id) => [
-                id + " (" + thisProgramState.types.get(id) + ")",
-                thisProgramState.resolved.get(id)]);
+            const result = ps.order.map((id) => [
+                id + " (" + ps.types.get(id) + ")",
+                ps.resolved.get(id)]);
             dom.addEventListener('contextmenu', event => {
               event.preventDefault(); event.stopPropagation();}, {capture: true});
             dom.addEventListener('pointerup', event => {
@@ -3115,10 +3020,9 @@ class DependencyPlugin {
                 const key = fieldElem.querySelector(".observablehq--key");
                 if (!key) {return;}
                 const text = key.textContent;
-                const match = /(.*)\\\\W(Behavior|Event)\\\\W/.exec(text);
+                const match = /(.*)\\\\\\\\W(Behavior|Event)\\\\\\\\W/.exec(text);
                 if (!match) {return;}
                 const keyName = match[1].trim();
-                console.log(window.thisProgramState.resolved.get(keyName)?.value);
               }
             });
             newInspector(Object.fromEntries(result), dom);
@@ -3136,38 +3040,266 @@ class DependencyPlugin {
   return {dom: runnerIframe};
 };
 `],
-<<<<<<< HEAD
-[`160`, `# Runner
-
-The Runner is an iframe with a message handler that receives Renkon code from the editor and runs it. Also the document window is uses this with the markdown editor code.`],
-[`161`, `# HoverPlugin
-=======
-[`88`, `const loadStart = Events.receiver();
-const loadOne = Events.receiver({queued: true});
-const loadDone = Events.receiver();
-const loadAtOnce = Events.receiver();
+[`88`, `const loadAtOnce = Events.receiver();
+const loadEvent = Events.receiver({queued: true});
 
 const loadReceiver = Behaviors.select(
   undefined, // {key:number, array}
-  loadStart, (prev, start) => {
-    return {key: start, array: []};
-  },
-  loadOne, (prev, one) => {
-    if (prev?.key !== one.at(-1).key) {
-      return undefined;
+  loadEvent, (prev, events) => {
+    let result = prev;
+    for (const event of events) {
+      if (event.type === "loadStart") {
+        result = {key: event.key, array: []};
+      } else if (event.type === "loadOne") {
+        if (result?.key !== event.key) {
+          result = undefined;
+          break;
+        }
+        result = {key: result.key, array: [...result.array, event.array]}
+      } else if (event.type === "loadDone") {
+        if (result?.key !== event.key ) {
+          result = undefined;
+          break;
+        }
+        result = {key: result.key, array: result.array, done: true}
+      }
     }
-    return {key: prev.key, array: [...prev.array, one.map(el=>{return new Uint8Array([...el.array])}).flat()]};
-  },
-  loadDone, (prev, done) => {
-    if (prev?.key !== done) {
-      return undefined;
-    }
-    return {key: prev.key, array: prev.array[0], done: true};
+    return result;
   },
   loadAtOnce, (_prev, value) => {
     return value;
   }
 );
->>>>>>> 0175e7c (fix loading with loadOne event)
 
-The class in the "CodeMirror HoverPlugin" below is a custom version of CodeMirror tooltip extension. As The dependency tooltip is interactive, the user needs to get to it; but it should go away when the pointer is moved enough. In the current implementation, the tooltip dissapears when the pointer moves to a different line veritally, or large enough amount horizontally.`]]}
+const loadHandler = ((loadReceiver) => {
+  if (!loadReceiver?.done) {return;}
+
+  const array = loadReceiver.array;
+  let len = array.reduce((acc, cur) => acc + cur.length, 0);
+  let all = new Uint8Array(len);
+  let ind = 0;
+  for (let i = 0; i < array.length; i++) {
+    all.set(array[i], ind);
+    ind += array[i].length;
+  }
+
+  const parse = (string) => {
+    return JSON.parse(string, (_key, value) => {
+      if (typeof value === "object" && value !== null && value.__map) {
+        return new Map(value.values);
+      } else if (typeof value === "object" && value !== null && value.__set) {
+        return new Set(value.values);
+      }
+      return value;
+    });
+  }
+
+  const parseCodeMap = (string) => {
+    const array = eval("(" + string + ")");
+    return new Map(array.value);
+  }
+
+  let result = new TextDecoder("utf-8").decode(all);
+
+  const index = result.indexOf("{__codeMap: true, value:");
+
+  const data1 = result.slice(0, index);
+  const data2 = result.slice(index);
+
+  const loaded = parse(data1);
+
+  if (loaded.version === 2 || loaded.version === 3) {
+    const code = parseCodeMap(data2);
+    loaded.code = code;
+    return loaded;
+  }
+  console.log("unknown type of data");
+  return;
+})(Events.change(loadReceiver));`],
+[`89`, `const newDocPane = (id, docModel) => {
+  const mirror = window.CodeMirror;
+  const container = document.createElement("div");
+  container.id = \`\${id}-doc-container\`;
+  container.classList.add("doc-container");
+  container.innerHTML = \`
+   <div id="\${id}-doc-result" class="doc-result"></div>
+   <div id="\${id}-doc-separator" class="doc-separator"></div>
+   <div id="\${id}-editor-container" class="doc-editor-container"></div>
+\`.trim();
+
+  const callback = (id, viewUpdate) => {
+    if (viewUpdate.docChanged) {
+      const str = viewUpdate.state.doc.toString();
+      Events.send(docUpdate, {id, doc: str});
+    }
+  };
+  const extensions = [
+    mirror.basicSetup,
+    mirror.EditorView.lineWrapping,
+    mirror.EditorView.updateListener.of((viewUpdate) => callback(id, viewUpdate)),
+    mirror.EditorView.editorAttributes.of({"class": "doc-editor"}),
+    mirror.view.keymap.of([mirror.commands.indentWithTab])
+  ];
+  const editorView = window.CodeMirrorView.create(Renkon, docModel, extensions);
+  const editor = editorView.editor;
+  editor.dom.id = \`\${id}-doc-editor\`;
+  container.querySelector(".doc-editor-container").appendChild(editor.dom);
+  return {dom: container, editor: editor, viewState: true};
+}
+
+const separatorMove = Events.receiver();
+const docUpdate = Events.receiver();
+
+const updateMarkdownDom = (container, id, doc, md) => {
+  if (container.lastDoc === doc) {return;}
+  const result = md.render(doc);
+  const div = document.createElement("div");
+  div.id = \`\${id}-markdown\`;
+  div.classList.add("markdown");
+  container.dom.querySelector(".markdown")?.remove();
+  container.dom.querySelector(".doc-result").appendChild(div);
+  div.innerHTML = result;
+  container.lastDoc = doc;
+  return div;  
+}
+
+const markdownUpdate = ((docUpdate) => {
+  const {id, doc} = docUpdate;
+  const container = windowContents.map.get(id);
+  if (!container) {return;}
+  updateMarkdownDom(container, id, doc, md);
+})(docUpdate);
+
+const initialDoc = ((md) => {
+  for (const [id, contents] of windowContents.map) {
+    if (!contents.editor) {continue;}
+    let editor = contents.editor;
+    if (editor.editor) {
+      editor = editor.editor;
+    }
+    const doc = editor.state.doc.toString();
+    const container = contents;
+    updateMarkdownDom(container, id, doc, md);
+  }
+})(md);
+
+const moveSeparator = ((docSeparators) => {
+  // console.log(docSeparators);
+  for (const [id, docSeparator] of docSeparators.map) {
+    const container = windowContents.map.get(id);
+    container.dom.querySelector(".doc-result").style.width = \`\${docSeparator.docWidth}px\`;
+    container.dom.querySelector(".doc-editor-container").style.width = \`\${docSeparator.editorWidth}px\`;
+    container.dom.querySelector(".doc-editor-container").style.right = \`\${docSeparator.editorRight}px\`;
+    container.dom.querySelector(".doc-editor-container").style.display = docSeparator.editorWidth <= 60 ? "none" : "inherit";
+  }
+})(docSeparators);
+`],
+[`90`, `# Croquet
+
+This JSON string specifies what nodes are used in the program state of Croquet model side. Typically, the logical application data, as well as the event receviers for user events that triggers changes in the model are specified.
+
+The window title of the code pane is significant for now. That is the window called "Croquet" is treated differently.
+
+Other Croquet parameters are supplied via an external file apiKey.js or apiKey-dev.js, and URL parameters.`],
+[`91`, `# Initialization
+
+The libraries (Preact and Markdown-it) are loaded. Also the DOM elements that are static, or don't change over the lifetime of the app, are created.`],
+[`92`, `# Runner
+
+The \`newRunner\` node specifies the srcdoc for the runner. The runner receives DOM a message from the parent Renkon-pad to run it. It also has the inspector on/off.
+
+The code is received for the first time, two ProgramStates (for the Croquet model and the Croquet view) are created. When a new set of code is received, the receiving iframe keeps them, but update code in the Croquet view.`],
+[`93`, `# View
+
+This text box contains the nodes that might be in th needed to support multiplayer.
+
+\`padView\` is "multiplexed" in the model side as \`padViews\`. \`padView\` contains the values for this peer.
+
+\`windowContentsModel\` in the model side contains CodeMirror editor objects. There is a bit of trickerly involved to support both single user and multi user cases. In the multiuser case, \`windowContents\` has another instance of CodeMirror editor that is to be synchronized with \`@codemirror/collab\` (not implemented yet). In the single user case, the \`create\` static method simply returns the argument passed in to use the same instance of CodeMirror editor for both "model", and "view."`],
+[`94`, `# CodeMirror Editor
+
+The \`newEditor\` function creates a CodeMirror Editor instance with custom extensions.`],
+[`95`, `# HoverPlugin
+
+HoverPlugin is a CodeMirror extension that shows the dependency and dependents of the node.`],
+[`96`, `# Data Structure
+
+This text box contains node definitions for the logical data of the application.
+
+You can think that the values in those nodes are to be saved into the file, and they are enough to reconstruct the application state from them.
+
+Renkon-pad effectively is a list of windows. Each window has position, title, windowType, etc. FRP favors that each property is stored in a separate data structure. Namely if you have two windows with ID = "1" and ID = "2", then those data structures look like:
+
+<code>
+  <pre>
+windows: [“1”, “2”]
+positions: Map(
+	“1” → {x: 100, y: 243, w: 325, h: 96},
+	“2” → {x: 530, y: 330, w: 582, h: 320})
+titles: Map(
+	“1” → “test”,
+	“2” → “my runner”)
+windowTypes: Map(
+	“1”→ “code”,
+	“2” → “runner”)
+windowContents: Map(
+       “1” → EditorView,
+       “2” → iframe)
+</pre>
+</code>
+
+meaning that the "windows" stores only the IDs, and \`positions\`, \`titles\`, etc. are a Map keyed by that ID and have values for that ID. It is like each property is a column in a spread sheet.
+
+\`padViews\` contains all view cconfigurations of peers. This is needed when we add a way to follow another user.`],
+[`97`, `# User Interaction
+
+This text box, along with "Pointer Handling" have most of the handling for user events. 
+
+\`Events.listener\` adds an event listener to a concrete DOM element. The value returned from the callback becomes the value of the event. Most of those have \`evt => evt\` as callback and the event itself becomes the value. However for certain cases, such as wheel and similar ones call \`preventDefault()\` and \`stopPropagation()\` etc. to invoke those in the listener. For \`evt => evt\` case, the "real thing" happens on the event that stored in the internal data structure and later processed by other functions, but \`preventDefault\` cannot work in that way.
+
+The values for the "pan and zoom" feature of the 2D canvas is stored in padView, and the canvas' transform is directly updated in the \`style\` of "#mover" element. We don't want to generate the tree of virtual DOM.
+
+Handling \`wheel\` event is complcated as there are quite a few cases to handle.`],
+[`98`, `# Pointer Handling
+
+An interesting idea about event handling in Renkon-pad is that most basic events such as pointerdown, pointermove and pointerup are handled at the "pad" level, and not individual window. Let us take \`pointermove\` as an example. \`pointermove\` can be used to resize the window by dragging one of the corners, or to move the window by dragging the title bar, or to pan the background by dragging the "pad". One might consider adding a pointermove event handler to each of those small elements such as a resizer or titlebar. But there are two reasons it is cumbersome. One reason is general to any UI; because we support multi-touch, we need to handle cases where the secondary \`pointerdown\` or \`pointermove\` needs a "global" view of where the primary \`pointerdown\` was. The second reason is that the FRP favors known set of event sources so that the "wired" dependency graph does not change all the time.
+
+The \`moveCompute\` node is used by the \`_padMove\` Events.listener node. \`moveCompute\` itself is reactive and becomes different function based on where the last \`pointerdown\` was, for example. Whenever \`moveCompute\` gets a new value, the \`_padMove\` node is updated, which means that the old listener is automatically removed and the new function is added as the listener. That way, there is only one pointer move handler for things on the pad, but its actual behavior changes based on the circumstances.
+
+`],
+[`99`, `# Search
+
+There is a global search panel that works across multiple text boees. When you look for the next match, the scale of the pad is kept the same but the search logic pans the pad to put the match in the view.
+
+The \`searchState\` node keeps track of where is the starting point when looking for the "next" match. It means that if the user moves the cursor in any of text box, the previous state needs to be cleared and the changed cursor position becomes the next search start position.
+`],
+[`100`, `# Rendering
+
+The rendering involves Preact virtual DOM, but the virtual DOM structure in effect does not change when you just move or resize a window, or pan or zoom the pad. Movement is done by generating a separate CSS in the \`_positionsCss\` node and update the \`style\` node. In this way we bypass the regeneration of the entire virtual DOM tree and diffing when you are just moving a window.
+
+\`_positionCss\` handles the case when a window is "pinned", to keep the window's position and scale in the screen coordinate even when you pan and zoom the background. There are only a handful lines that are crucial to implement this, but they have to be exactly right.`],
+[`101`, `# Graph Visualization
+
+Dependency graph visualization first analyzes the dependency relationship. We do this by creating a new \`ProgramState\` instance, feed the content of text boxes to it, and figures out what node names are imported and exported by the text box. (yes, we do this at every pointerEnter and pointerLeave on any text boxes.)
+
+The \`analyzed\` result is then fed to the \`graph\` node, which creates a list of SVG elements. Then the \`_graphRender\` renders the SVG elements to the \`overlay\` element, which is carefully located at the same position ad the \`pad\`.`],
+[`102`, `# Save and Load
+
+The file format has two parts. The first part is a JSON string that stores windows, positions, zIndex, titles, windowTypes, padTitle and windowEnabled. The second part is still JSON like, but the contents of text boxes and docs are stored with line breaks kept so that line oriented diff works better.
+`],
+[`103`, `# Load Model
+
+In the multiplayer case, the loaded data from one peer has to be sent to others. The traffic via the reflector has rate and size limits so that the loaded data is sent in chunks.`],
+[`104`, `# Doc Window
+
+A Doc window holds the Markdown text and rendered result.
+`],
+[`105`, `# CSS
+
+There is no magic here... Except any advanced feature appears to be a magic in CSS.
+
+\`transform-origin: 0px 0x\` is important for any element that is transformed. 
+
+\`mover\` is an actual element created in \`renkon\`. \`owner\` is a virtual DOM appended to \`mover\` and it is also zero-sized.
+
+SVG icons are created in 24x24 viewport, and converted to the data string.`]]}

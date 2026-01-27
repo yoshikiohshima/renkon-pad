@@ -30,8 +30,9 @@ jobs:
 
       - name: Build main branch
         run: |
-          mkdir -p output/main
-          cp -r index.html pad.js preact.standalone.module.js markdown-it.min.js index.renkon renkon-web.js assets output
+          mkdir -p output
+          cp -r index.html index.renkon loader.js pad.js renkon-core.js assets croquet-codemirror.js croquet.min.js pad.js renkon-codemirror.js renkon-inspector.js preact.standalone.module.js markdown-it.min.js renkon-web.js output
+          cp _apiKey.js output/apiKey.js
 
       - name: Checkout px25 branch
         uses: actions/checkout@v4

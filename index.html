@@ -3,58 +3,25 @@
     <head>
         <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
         <meta charset="utf-8">
+        <title>Renkon-pad</title>
         <script type="module">
-            // this part of code identifies what renkon application, including renkon-pad as default,
-            // to load.
-            // 1) When there is a ?pad= option, and the option ends with ".json" or ".renkon" and
-            //    the (partial) URL, that .json or .renkon is used as the top level app.
-            // 2) When the .html file name is other than "index.html", the basename for the .html file
-            //    is used to construct a path "./${basename}.renkon", and it is used as the top-level app.
-            // 3) otherwise (no ?pad=, or the HTML is named "index.html"), the bootstrap version of renkon-pad
-            //    in pad.js is loaded.
+            import {ProgramState, globals} from "./renkon-core.js";
+            import {newInspector} from "./renkon-inspector.js";
+            import {loader} from "./loader.js";
 
-            // it could be renkon-core.js here, though it is just handy to use a package
-            // with CodeMirror bundled.
-            import {CodeMirror, ProgramState, globals, loader} from "./renkon-web.js";
-            window.CodeMirror = CodeMirror;
-            window.ProgramState = ProgramState;
+            const padOption = new URL(window.location).searchParams.get("pad");
+
             window.RenkonWeb = {globals};
-            const programState = new ProgramState(Date.now());
-
-            // for debugging purpose, store the current programState to window
-            window.programState = programState;
-
-            function launcher() {
-                const pathname = window.location.pathname;
-                const match = /^.*\/([^/]*)\.html?$/.exec(pathname);
-                let basename = match ? match[1] : "index";
-                const url = new URL(window.location);
-                const option = url.searchParams.get("pad");
-                const bootstrap = url.searchParams.get("bootstrap");
-
-                if (bootstrap) {
-                    // bootstrap version if this file name is index.html and the file? option is not specified
-                    programState.setupProgram([`
-                        const {pad} = import("./pad.js");
-                        console.log("default renkon-pad is starting");
-                    Renkon.merge(pad);`]);
-                    programState.evaluate(Date.now());
-                    return;
-                }
-
-                let docName = `${basename}.renkon`;
-                if (option) {
-                    if (option.endsWith(".json") || option.endsWith(".renkon")) {
-                        docName = option;
-                    } else {
-                        console.log("pad option does not have .json or .renkon suffix.")
-                        return;
-                    }
-                }
-
-                loader(programState, docName);
-            }
-            window.onload = launcher;
+            window.ProgramState = ProgramState;
+            window.onload = () => {
+              loader({codemirror: true, padName: padOption}).then((obj) => {
+                const {session, CodeMirrorModel, CodeMirrorView, CodeMirror} = obj;
+                window.CodeMirror = CodeMirror;
+                window.CodeMirrorModel = CodeMirrorModel;
+                window.CodeMirrorView = CodeMirrorView;
+                window.RenkonWeb = {globals, newInspector};
+              });
+            };
         </script>
     </head>
     <body></body>
