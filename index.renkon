@@ -1477,7 +1477,7 @@ const runHandler = ((runRequest, windowContents, windowEnabled, titles) => {
   const id = runRequest.id;
   const iframe = windowContents.map.get(id);
   const enabled = [...windowContents.map]
-    .filter(([id, obj]) => obj.state && windowEnabled.map.get(id).enabled);
+    .filter(([id, obj]) => obj.state && windowEnabled.map.get(id)?.enabled !== false);
   const code = enabled
     .filter(([id, obj]) => titles.map.get(id).title !== "Croquet")
     .map(([_id, editor]) => editor.state.doc.toString());
