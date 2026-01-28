@@ -16,7 +16,11 @@ Renkon-pad lets you create multiple text boxes and "runner" iframes where the co
 
 Try Renkon-pad on [GitHub Pages](https://yoshikiohshima.github.io/renkon-pad/).
 
-The initial screen looks like this:
+Also, it is now hooked up with the Croquet library so that one can create a real-time collaborative application, and do so in collaborative manner. Check out [Croquet and Renkon-pad](#croquet) section.
+
+## The Interface
+
+The Renkon-pad screen looks like this:
 
 <img style="border: 6px solid #eee" src="./doc/initial.png"></img>
 
@@ -118,7 +122,7 @@ You can launch a saved `.renkon` file as a standalone app without loading the fu
 - Alternatively, copy `index.html` to a new file (e.g., `abc.html`) and load it in the browser. If the HTML filename is not `index`, the startup code will look for a `.renkon` file with the same base name and load it automatically.
 
 To start Renkon-pad and immediately load a file for editing, use:  
-`index.html?file=abc.renon`
+`index.html?file=abc.renkon`
 
 ### Typical Idioms and Workflow
 
@@ -139,3 +143,42 @@ Be sure to save your project regularly, although Renkon-pad is quite robust.
 Keep the browser's developer tools open during development. You can insert `debugger` statements inside reactive functions. Node names act as file names, so you’ll find them under the "Sources" tab in the developer tools as transpiled code.
 
 Use `console.log` generously during development. Clicking the filename in the console output usually opens the corresponding transpiled code.
+
+## Croquet
+When requested, Renkon-pad uses Croquet to enable multiuser collaboration. Renkon-pad uses the following rule to find the Croquet parameters.
+
+- If there is a file called apiKey.js for non-local deployment (that is, the host name does not start with `localhost`) or apiKey-dev.js for local development, the object exported from the js file is loaded.
+- On top of that the values in the text box named "Croquet" is merged. The Croquet text box in the Renkon-pad implementation looks like this:
+
+<code>
+({
+  parameters: {
+    appParameters: {
+      name: '12346ac',
+      password: '1',
+      apiKey: "234567_Paste_Your_Own_API_Key_Here_7654321",
+      box: "http://localhost:8888",
+      eventRateLimit: 60,
+    },
+    "realm": {"model": [
+      "windows", "windowTypes", "positions", "titles", "windowEnabled",
+      "zIndex", "windowContentsModel", "padTitle", "docSeparators", "initialData",
+      "newId", "padViews", "newWindowRequest", "padTitle", "viewJoin",
+      "viewExit", "xxx", "loadReceiver", "loadHandler", "runRequest", "resetRequest"]},
+    "name": "pad"
+  },
+  methods: {
+    ...
+  }
+})
+</code>
+
+- The value of `q=` parameter in the URL is merged as "name" of appParameters, and the `#pw=` parameters is merged as "password" parameter.
+
+If the combined parameter object has `name`, Renkon-pad determines that a Croquet session with given parameter to be started. Otherwise, it simply runs as single-user.
+
+When starting up in the multi-user mode, the node definitions are split into the Croquet model and Croquet view. That is, there are two Renkon ProgramState created, one for the Croquet model and another for Croquet view.
+
+The `realm.model` array specifies the names of the nodes that go to the Croquet model. All the rest, including unnamed ones go to the view. The dependency from a view node to model nodes introduces an `Events.receiver()` to be created. Furthermore, a Croquet event is sent to fill the value. When model evaluates the ProgramState on the, model side the Croquet model sends a Croquet model-to-view event, and the view updates its ProgramState based on the change.
+
+
