@@ -3071,7 +3071,7 @@ const loadReceiver = Behaviors.select(
   }
 );
 
-const loadHandler = ((loadReceiver) => {
+const loadFromFile = ((loadReceiver) => {
   if (!loadReceiver?.done) {return;}
 
   const array = loadReceiver.array;
@@ -3115,7 +3115,10 @@ const loadHandler = ((loadReceiver) => {
   }
   console.log("unknown type of data");
   return;
-})(Events.change(loadReceiver));`],
+})(Events.change(loadReceiver));
+
+const loadHandler = Events.or(loadFromFile, loadFromProgram);
+const loadFromProgram = Events.receiver();`],
 [`89`, `const newDocPane = (id, docModel) => {
   const mirror = window.CodeMirror;
   const container = document.createElement("div");
