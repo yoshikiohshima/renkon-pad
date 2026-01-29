@@ -24,8 +24,8 @@
 "id":"10",
 "type":"move",
 "width":719.4258832458329,
-"x":-7495.960808580634,
-"y":-531.1669383355377}],["14",{"height":3338.603989493141,
+"x":-7515.978011649713,
+"y":-522.9061233747047}],["14",{"height":3338.603989493141,
 "id":"14",
 "type":"resize",
 "width":691.8269342414026,
@@ -1296,7 +1296,7 @@ const newEditor = (id, docModel) => {
       "windows", "windowTypes", "positions", "titles", "windowEnabled",
       "zIndex", "windowContentsModel", "padTitle", "docSeparators", "initialData",
       "newId", "padViews", "newWindowRequest", "padTitle", "viewJoin",
-      "viewExit", "xxx", "loadReceiver", "loadHandler", "runRequest", "resetRequest"]},
+      "viewExit", "xxx", "loadReceiver", "loadHandler", "loadFromFile", "loadFromProgram", "runRequest", "resetRequest"]},
     "name": "pad"
   },
   methods: {
