@@ -1893,7 +1893,7 @@ const searchCSS = \`
   const edges = new Map(); // blockId -> {edgesOut: [{id, dest}], edgesIn: [{id, origin}], exports: [id]}
 
   const code = [...windowContents.map].filter(
-    ([id, editor]) => editor.state && windowEnabled.map.get(id)?.enabled)
+    ([id, editor]) => editor.state && windowEnabled.map.get(id)?.enabled !== false)
     .map(([id, editor]) => ({blockId: id, code: editor.state.doc.toString()}));
   try {
     code.forEach(info => {
