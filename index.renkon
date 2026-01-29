@@ -324,8 +324,8 @@ const positions = Behaviors.select(
     const padView = request.padView;
     const length = prev.map.size;
     const id = request.id;
-    const newX = (length * 5 + 40) / padView.scale - padView.x;
-    const newY = (length * 5 + 45) / padView.scale - padView.y;
+    const newX = (Math.min(length, 10) * 5 + 40) / padView.scale - padView.x;
+    const newY = (Math.min(length, 10) * 5 + 45) / padView.scale - padView.y;
 
     const newWindow = (id, type) => {
       return {
