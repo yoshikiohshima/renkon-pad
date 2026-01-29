@@ -347,7 +347,7 @@ export function extract(codeArray, data1) {
     const parsed = parseCroquet(croquet);
     return {code, croquet: parsed};
   }
-  return {code, croquet: null}
+  return {code, croquet: {}};
 }
 
 export function parseCroquet(croquet) {
