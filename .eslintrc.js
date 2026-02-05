@@ -27,7 +27,7 @@ module.exports = {
       outerIIFEBody: 1,
       FunctionDeclaration: {
         parameters: 1,
-        body: 0
+        body: 1
       },
       FunctionExpression: {
         parameters: 1,

@@ -1,127 +1,152 @@
+// when a peer sends a transaction:
+// it has the version number (number of changes since inception) that the transaction is based on.
+// the model change may not be in that base yet. So two edit events coming from different peers may have the same version number.
+// the model sequences them, meaning that a change can have a different basis.
+// then we rebase the off base one and incorporate into the Authority and publish
+
 import {CodeMirror} from "./renkon-codemirror.js";
 export {CodeMirror} from "./renkon-codemirror.js";
-const reconcileAnnotationType = CodeMirror.state.Annotation.define();
 
-const newCompartment = () => new CodeMirror.state.Compartment();
+const {ChangeSet, Text} = CodeMirror.state;
+const {receiveUpdates, rebaseUpdates, sendableUpdates, collab, getClientID, getSyncedVersion} = CodeMirror.collab;
+const {ViewPlugin} = CodeMirror.view;
 
-function handleEvent(event, _state) {
-  function handleInsert(event) {
-    const index = event.fromA;
-    return [{ from: index, to: event.toA, insert: event.text }];
-  }
-  function handleSplice(event) {
-    const index = event.index;
-    return [{ from: index, insert: event.value }];
-  }
-  function handleDel(event) {
-    const length = event.length || 1;
-    const index = event.index;
-    return [{ from: index, to: index + length }];
-  }
-
-  if (event.action === "insert") {
-    return handleInsert(event);
-  } else if (event.action === "splice") {
-    return handleSplice(event);
-  } else if (event.action === "del") {
-    return handleDel(event);
-  } else {
-    return null;
+class TextWrapper {
+  constructor(text) {
+    this.text = text;
   }
 }
 
-function applyCrEventToCm(view, events, viewId) {
-  let selection = view.state.selection;
-  for (const event of events) {
-    if (viewId !== undefined && viewId === event.viewId) {continue;}
-    const changeSpec = handleEvent(event, view.state);
-    if (changeSpec != null) {
-      const changeSet = CodeMirror.state.ChangeSet.of(changeSpec, view.state.doc.length, "\n");
-      selection = selection.map(changeSet, 1);
-      view.dispatch({
-        changes: changeSet,
-        annotations: reconcileAnnotationType.of({}),
-      });
-    }
+class UpdatesWrapper {
+  constructor(base, array) {
+    this.base = base;
+    this.array = array;
   }
-  view.dispatch({
-    selection,
-    annotations: reconcileAnnotationType.of({}),
-  });
-};
+
+  get length() {
+    return this.base + this.array.length;
+  }
+
+  at(index) {
+    const realIndex = index - this.base;
+    return this.array[realIndex];
+  }
+
+  slice(from, to) {
+    const realFrom = from - this.base;
+    const realTo = to === undefined ? undefined : to - this.base;
+    return this.array.slice(realFrom, realTo);
+  }
+
+  push(obj) {
+    this.array.push(obj);
+  }
+
+  setVersion(version) {
+    if (version <= this.base) {return;}
+    const newBase = version;
+    const diff = version - this.base;
+    const newArray = this.array.slice(diff);
+    this.base = newBase;
+    this.array = newArray;
+  }
+}
 
 export class CodeMirrorModel extends Croquet.Model {
   init(options) {
-    super.init();
-    this.editor = new CodeMirror.EditorView(this.modelConfig(options.doc, newCompartment()));
-    this.setupCroquet(this.editor, this);
-    this.subscribe(this.id, "edit", "changed");
-  }
+    let doc = options.doc;
+    if (typeof doc === "string") {
+      doc = [doc];
+    } else if (typeof doc === "undefined") {
+      doc = ["hello"];
+    }
 
-  modelConfig(doc, compartment, selection) {
-    this.croquetExt = compartment;
-    return {
-      doc: doc || "",
-      selection,
-      extensions: [
-        this.croquetExt.of([]),
-      ]
-    };
-  }
-
-  setupCroquet(editor, model) {
-    editor.croquetModel = model;
-    editor.dispatch({
-      effects: this.croquetExt.reconfigure([
-        CodeMirror.view.ViewPlugin.define(_view => model)
-      ])
-    });
-  }
-
-  changed(data) {
-    const view = this.editor;
-    //console.log("receive model", this.id, data);
-    applyCrEventToCm(view, data);
-    //console.log("changed", this.id, this.editor.state.doc.toString());
-    this.publish(this.id, "update", data);
-  }
-
-  destroy() {
-    this.unsubscribe(this.id, "edit", "changed");
+    this.doc = new TextWrapper(Text.of(doc));
+    this.updates = new UpdatesWrapper(0, []);
+    this.pending = [];
+    this.subscribe(this.id, "collabMessage", this.collabMessage);
   }
 
   static types() {
     return {
-      AnnotationType: {
-        cls: CodeMirror.state.AnnotationType,
-        read: (_obj) => reconcileAnnotationType,
-        write: () => ''
-      },
-      Compartment: {
-        cls: CodeMirror.state.Compartment,
-        read: (_obj) => newCompartment(),
-        write: () => ''
-      },
-      EditorView: {
-        cls: CodeMirror.EditorView,
-        read: (obj) => {
-          const {model, doc, selection} = obj;
-          const text = CodeMirror.state.Text.of(doc);
-          let sel;
-          if (selection.ranges) {
-            sel = CodeMirror.state.EditorSelection.fromJSON(selection);
-          } else {
-            sel = CodeMirror.state.EditorSelection.single(0, 0);
-          }
-          const editor = new window.CodeMirror.EditorView(model.modelConfig(text, model.croquetExt, sel));
-          model.setupCroquet(editor, model);
-          return editor;
-        },
+      TextWrapper: {
+        cls: TextWrapper,
         write: (obj) => {
-          return {model: obj.croquetModel, doc: obj.viewState.state.doc.toJSON(), selection: obj.viewState.state.selection.toJSON()};
+          return obj.text.toJSON();
+        },
+        read: (data) => {
+          return new TextWrapper(Text.of(data));
+        }
+      },
+      UpdatesWrapper: {
+        cls: UpdatesWrapper,
+        write: (obj) => {
+          const array = obj.array.map(u => ({
+            clientID: u.clientID,
+            changes: u.changes.toJSON()
+          }));
+          return {base: obj.base, array};
+        },
+        read: (data) => {
+          const array = data.array.map(u => ({
+            changes: ChangeSet.fromJSON(u.changes),
+            clientID: u.clientID
+          }));
+          return new UpdatesWrapper(data.base, array);
         }
       }
     }
+  }
+
+  collabMessage(event) {
+    // following code at:
+    // https://github.com/codemirror/website/tree/main/site/examples/collab
+    // an implicit logic is that only peer that the ports[0], which was the sender of the message
+    // The model to view message sent from here contains the clientID and only the receiver who has that clientID
+    // acts on it.
+    const {type, version, updates, clientID} = event;
+    // console.log("model", event);
+    if (type === "pullUpdates") {
+      if (version < this.updates.length) {
+        this.publish(this.id, "collabUpdate", {clientIDs: [clientID], type: "pullUpdates", start: version, end: this.updates.length});
+      } else {
+        this.pending.push(event.clientID);
+      }
+    } else if (type === "pushUpdates") {
+      let received = updates.map(json => ({
+        clientID: json.clientID,
+        changes: ChangeSet.fromJSON(json.changes)
+      }));
+
+      if (version !== this.updates.length) {
+        received = rebaseUpdates(received, this.updates.slice(version));
+      }
+
+      const pendingStart = this.updates.length;
+
+      for (let update of received) {
+        this.updates.push(update);
+        this.doc = new TextWrapper(update.changes.apply(this.doc.text));
+      }
+      const pendingEnd = this.updates.length;
+      this.publish(this.id, "collabUpdate", {clientIDs: [clientID], type: "ok"});
+      if (received.length > 0) {
+        // let json = received.map(update => ({
+        // clientID: update.clientID,
+        // changes: update.changes.toJSON()
+        // }));
+        const pending = this.pending;
+        this.pending = [];
+        this.publish(this.id, "collabUpdate", {clientIDs: pending, type: "pullUpdates", start: pendingStart, end: pendingEnd});
+        //while (this.pending.length > 0) {
+        // const sendTo = this.pending.pop();
+        // this.publish(this.id, "collabUpdate", {clientID: sendTo, type: "pullUpdates", start: pendingStart, end: pendingEnd});
+        //}
+      }
+    } else if (type === "getDocument") {
+      this.publish(this.id, "collabUpdate", {type: "getDocument"});
+    }
+    this.updates.setVersion(version);
   }
 }
 
@@ -131,99 +156,109 @@ export class CodeMirrorView extends Croquet.View {
   constructor(model, extensions) {
     super(model);
     this.model = model;
-    this.editor = new CodeMirror.EditorView(this.viewConfig(model.editor.state.doc, model.editor.state.selection, extensions || [], newCompartment()));
-    this.setupCroquet(this.editor, this);
-    //console.log("view constructor", this.model.id, "update", this.editor.state.doc.toString());
-    this.subscribe(this.model.id, "update", this.updated);
-    this.subscribe(this.viewId, "synced", this.synced);
-    this.viewSynced = true;
+    this.subscribe(this.model.id, "collabUpdate", this.collabUpdate);
+    const config = this.viewConfig(extensions || []);
+    this.view = new CodeMirror.EditorView(config);
+    this.clientID = getClientID(this.view.state);
+    this.pullPromise = null;
+    this.pushPromise = null;
+    this.done = false;
+    this.pull();
+    this.editor = this.view;
+    // console.log(getClientID(this.view.state));
   }
 
-  detach() {
-    super.detach();
-  }
-
-  viewConfig(doc, selection, extensions, compartment) {
-    this.croquetExt = compartment;
+  viewConfig(extensions) {
     return {
-      doc: doc || "",
-      selection,
-      extensions: [...extensions, this.croquetExt.of([])],
+      doc: this.model.doc.text || "",
+      extensions: [...extensions, collab({startVersion: this.model.updates.length}), ViewPlugin.define(_view => this)]
     }
   }
 
-  synced(value) {
-    this.viewSynced = value;
-    if (value === true) {
-      const modelJSON = this.model.editor.viewState.state.doc.toJSON();
-      const viewJSON = this.editor.viewState.state.doc.toJSON();
-      if (JSON.stringify(modelJSON) !== JSON.stringify(viewJSON)) {
-        this.editor.state.update({
-          changes: {
-            from: 0,
-            to: this.editor.state.doc.length,
-            insert: this.model.editor.state.doc.toString()
-          }
-        });
-        console.log("synced, and update", this.viewId, this.model.editor.state.doc.toString());
-      }
-    }
-  }
-
-  setupCroquet(editor, view) {
-    editor.dispatch({
-      effects: this.croquetExt.reconfigure([
-        CodeMirror.view.ViewPlugin.define(_view => view)
-      ])
+  sendPushUpdates(version, fullUpdates) {
+    let updates = fullUpdates.map(u => ({
+      clientID: u.clientID,
+      changes: u.changes.toJSON()
+    }));
+    // console.log("push", getClientID(this.view.state), version, updates);
+    this.publish(this.model.id, "collabMessage", {type: "pushUpdates", version, clientID: this.clientID, updates});
+    return new Promise((resolve) => {
+      this.pushPromise = resolve;
     });
   }
 
-  isReconcileTx(tr) {return !!tr.annotation(reconcileAnnotationType)};
-
-  transationsToEvents(transactions) {
-    // console.log("translation", transactions);
-    const transactionsWithChanges = transactions.filter(tr => !this.isReconcileTx(tr) && !tr.changes.empty);
-    if (transactionsWithChanges.length === 0) {
-      return;
-    }
-
-    const result = [];
-
-    transactionsWithChanges.forEach((tr) => {
-      tr.changes.iterChanges((fromA, toA, fromB, toB, inserted) => {
-        result.push({action: "insert", fromA, fromB, toA, toB, text: inserted.toString(), viewId: this.viewId});
-      });
+  sendPullUpdates(version) {
+    this.publish(this.model.id, "collabMessage", {type: "pullUpdates", version, clientID: this.clientID});
+    return new Promise((resolve) => {
+      this.pullPromise = resolve;
     });
-
-    return result;
   }
 
-  publishCmTransactions(events) {
-    //console.log("publish", this.viewId, "edit", events);
-    this.publish(this.model.id, "edit", events);
+  collabUpdate(data) {
+    // console.log("view message", data);
+    const type = data.type;
+    const clientIDs = data.clientIDs;
+    if (!clientIDs.includes(this.clientID)) {return;}
+    if (type === "pullUpdates") {
+      const resolve = this.pullPromise;
+      this.pullPromise = null;
+      resolve(data);
+    } else if (type === "ok") {
+      const resolve = this.pushPromise;
+      this.pushPromise = null;
+      resolve(true);
+    }
   }
 
   update(update) {
-    // console.log("update", this.viewId, update);
-    const events = this.transationsToEvents(update.transactions);
-    if (events) {
-      this.publishCmTransactions(events);
+    if (update.docChanged) {
+      // console.log("view update", this.view.dom.id, getSyncedVersion(this.view.state), update);
+      this.push();
     }
   }
 
-  updated(data) {
-    // console.log("view updated", this.viewId, data, this.viewSynced);
-    const view = this.editor;
-    if (!this.viewSynced) {return;}
-    // console.log("view before change", this.viewId, this.model.editor.state.doc.toString(), this.editor.state.doc.toString());
-    applyCrEventToCm(view, data, this.viewId);
-  };
+  async push() {
+    let updates = sendableUpdates(this.view.state);
+    // console.log("maybe push", getClientID(this.view.state), updates);
+    if (this.pushPromise || updates.length === 0) return
+    let version = getSyncedVersion(this.view.state);
+    // console.log("actually push", getClientID(this.view.state));
+    const pushResult = await this.sendPushUpdates(version, updates);
+    await pushResult;
+    // console.log("push done", pushResult);
+    // Regardless of whether the push failed or new updates came in
+    // while it was running, try again if there's updates remaining
+    if (sendableUpdates(this.view.state).length) {
+      setTimeout(() => this.push(), 100)
+    }
+  }
+
+  async pull() {
+    while (!this.done) {
+      let version = getSyncedVersion(this.view.state);
+      let pullResult = await this.sendPullUpdates(version);
+      let updateInfo = await pullResult;
+      const updates = this.model.updates.slice(updateInfo.start, updateInfo.end);
+      this.view.dispatch(receiveUpdates(this.view.state, updates));
+    }
+  }
+
+  getDocument() {
+    return {
+      version: this.model.version,
+      doc: this.model.doc.text,
+    }
+  }
+
+  destroy() {
+    super.destroy();
+    this.done = true;
+  }
 
   static create(Renkon, model, extensions) {
-    // console.log("view create", model);
     const view = new this(Renkon.app.model.getModel(model.id), extensions);
     return view;
-  }
+  }  
 }
 
 /* globals Croquet */
