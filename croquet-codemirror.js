@@ -1,9 +1,3 @@
-// when a peer sends a transaction:
-// it has the version number (number of changes since inception) that the transaction is based on.
-// the model change may not be in that base yet. So two edit events coming from different peers may have the same version number.
-// the model sequences them, meaning that a change can have a different basis.
-// then we rebase the off base one and incorporate into the Authority and publish
-
 import {CodeMirror} from "./renkon-codemirror.js";
 export {CodeMirror} from "./renkon-codemirror.js";
 
@@ -21,6 +15,8 @@ class UpdatesWrapper {
   constructor(base, array) {
     this.base = base;
     this.array = array;
+    this.versions = new Map(); // clientIDs -> high mark<number>
+    this.clientIDs = new Map(); // viewID -> [clientIDs]
   }
 
   get length() {
@@ -42,13 +38,44 @@ class UpdatesWrapper {
     this.array.push(obj);
   }
 
-  setVersion(version) {
-    if (version <= this.base) {return;}
-    const newBase = version;
-    const diff = version - this.base;
+  setLowest() {
+    const versions = [...this.versions.values()];
+    const lowest = Math.min(...versions);
+    if (lowest <= this.base) {return;}
+    const newBase = lowest;
+    const diff = lowest - this.base;
     const newArray = this.array.slice(diff);
     this.base = newBase;
     this.array = newArray;
+  }
+
+  setVersion(viewId, clientID, version) {
+    let set = this.clientIDs.get(viewId);
+    if (set === undefined) {
+      set = new Set();
+      this.clientIDs.set(viewId, set);
+    }
+    set.add(clientID);
+    this.versions.set(clientID, version);
+
+    this.setLowest();
+  }
+
+  viewExit(viewId) {
+    const clientIDs = this.clientIDs.get(viewId);
+    this.clientIDs.delete(viewId);
+    if (clientIDs === undefined) {return;}
+    for (const clientID of clientIDs) {
+      this.versions.delete(clientID);
+    }
+    this.setLowest();
+  }
+
+  clientExit(viewId, clientID) {
+    const clientIDs = this.clientIDs.get(viewId);
+    this.clientIDs.delete(viewId);
+    this.versions.delete(clientID);
+    this.setLowest();
   }
 }
 
@@ -65,6 +92,7 @@ export class CodeMirrorModel extends Croquet.Model {
     this.updates = new UpdatesWrapper(0, []);
     this.pending = [];
     this.subscribe(this.id, "collabMessage", this.collabMessage);
+    this.subscribe(this.sessionId, "view-exit", this.viewExit);
   }
 
   static types() {
@@ -104,7 +132,7 @@ export class CodeMirrorModel extends Croquet.Model {
     // an implicit logic is that only peer that the ports[0], which was the sender of the message
     // The model to view message sent from here contains the clientID and only the receiver who has that clientID
     // acts on it.
-    const {type, version, updates, clientID} = event;
+    const {type, version, updates, clientID, viewId} = event;
     // console.log("model", event);
     if (type === "pullUpdates") {
       if (version < this.updates.length) {
@@ -145,8 +173,14 @@ export class CodeMirrorModel extends Croquet.Model {
       }
     } else if (type === "getDocument") {
       this.publish(this.id, "collabUpdate", {type: "getDocument"});
+    } else if (type === "destroy") {
+      this.updates.clientExit(viewId, clientID);
     }
-    this.updates.setVersion(version);
+    this.updates.setVersion(viewId, clientID, version);
+  }
+
+  viewExit(viewId) {
+    this.updates.viewExit(viewId);
   }
 }
 
@@ -181,14 +215,14 @@ export class CodeMirrorView extends Croquet.View {
       changes: u.changes.toJSON()
     }));
     // console.log("push", getClientID(this.view.state), version, updates);
-    this.publish(this.model.id, "collabMessage", {type: "pushUpdates", version, clientID: this.clientID, updates});
+    this.publish(this.model.id, "collabMessage", {type: "pushUpdates", version, clientID: this.clientID, updates, viewId: this.viewId});
     return new Promise((resolve) => {
       this.pushPromise = resolve;
     });
   }
 
   sendPullUpdates(version) {
-    this.publish(this.model.id, "collabMessage", {type: "pullUpdates", version, clientID: this.clientID});
+    this.publish(this.model.id, "collabMessage", {type: "pullUpdates", version, clientID: this.clientID, viewId: this.viewId});
     return new Promise((resolve) => {
       this.pullPromise = resolve;
     });
@@ -201,6 +235,10 @@ export class CodeMirrorView extends Croquet.View {
     if (!clientIDs.includes(this.clientID)) {return;}
     if (type === "pullUpdates") {
       const resolve = this.pullPromise;
+      if (!resolve) {
+        console.log("probably this client went away")
+        return;
+      }
       this.pullPromise = null;
       resolve(data);
     } else if (type === "ok") {
@@ -233,6 +271,9 @@ export class CodeMirrorView extends Croquet.View {
     }
   }
 
+  // The peer has to send the "version" to say where it is.
+  // the client should get updates after that
+
   async pull() {
     while (!this.done) {
       let version = getSyncedVersion(this.view.state);
@@ -251,14 +292,15 @@ export class CodeMirrorView extends Croquet.View {
   }
 
   destroy() {
-    super.destroy();
+    this.publish(this.model.id, "collabMessage", {type: "destroy", clientID: this.clientID, viewId: this.viewId});
     this.done = true;
+    super.destroy();
   }
 
   static create(Renkon, model, extensions) {
     const view = new this(Renkon.app.model.getModel(model.id), extensions);
     return view;
-  }  
+  }
 }
 
 /* globals Croquet */
