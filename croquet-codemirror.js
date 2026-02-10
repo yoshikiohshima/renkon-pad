@@ -12,11 +12,11 @@ class TextWrapper {
 }
 
 class UpdatesWrapper {
-  constructor(base, array) {
+  constructor(base, array, versions, clientIDs) {
     this.base = base;
     this.array = array;
-    this.versions = new Map(); // clientIDs -> high mark<number>
-    this.clientIDs = new Map(); // viewID -> [clientIDs]
+    this.versions = versions || new Map(); // clientIDs -> high mark<number>
+    this.clientIDs = clientIDs || new Map(); // viewID -> [clientIDs]
   }
 
   get length() {
@@ -110,16 +110,21 @@ export class CodeMirrorModel extends Croquet.Model {
         write: (obj) => {
           const array = obj.array.map(u => ({
             clientID: u.clientID,
-            changes: u.changes.toJSON()
+            changes: u.changes.toJSON(),
           }));
-          return {base: obj.base, array};
+          return {
+            base: obj.base,
+            array,
+            versions: obj.versions,
+            clientIDs: obj.clientIDs
+          };
         },
         read: (data) => {
           const array = data.array.map(u => ({
             changes: ChangeSet.fromJSON(u.changes),
             clientID: u.clientID
           }));
-          return new UpdatesWrapper(data.base, array);
+          return new UpdatesWrapper(data.base, array, data.versions, data.clientIDs);
         }
       }
     }
