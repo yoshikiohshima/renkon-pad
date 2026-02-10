@@ -72,7 +72,6 @@ class UpdatesWrapper {
   }
 
   clientExit(viewId, clientID) {
-    const clientIDs = this.clientIDs.get(viewId);
     this.clientIDs.delete(viewId);
     this.versions.delete(clientID);
     this.setLowest();
@@ -174,6 +173,7 @@ export class CodeMirrorModel extends Croquet.Model {
     } else if (type === "getDocument") {
       this.publish(this.id, "collabUpdate", {type: "getDocument"});
     } else if (type === "destroy") {
+      console.log("destroy", this.updates, event);
       this.updates.clientExit(viewId, clientID);
     }
     this.updates.setVersion(viewId, clientID, version);
@@ -199,7 +199,7 @@ export class CodeMirrorView extends Croquet.View {
     this.done = false;
     this.pull();
     this.editor = this.view;
-    // console.log(getClientID(this.view.state));
+    console.log(getClientID(this.view.state));
   }
 
   viewConfig(extensions) {
@@ -236,22 +236,19 @@ export class CodeMirrorView extends Croquet.View {
     if (type === "pullUpdates") {
       const resolve = this.pullPromise;
       if (!resolve) {
-        console.log("probably this client went away")
+        // console.log("probably this client went away")
         return;
       }
       this.pullPromise = null;
       resolve(data);
     } else if (type === "ok") {
       const resolve = this.pushPromise;
+      if (!resolve) {
+        // console.log("probably this client went away");
+        return;
+      }
       this.pushPromise = null;
       resolve(true);
-    }
-  }
-
-  update(update) {
-    if (update.docChanged) {
-      // console.log("view update", this.view.dom.id, getSyncedVersion(this.view.state), update);
-      this.push();
     }
   }
 
@@ -261,7 +258,7 @@ export class CodeMirrorView extends Croquet.View {
     if (this.pushPromise || updates.length === 0) return
     let version = getSyncedVersion(this.view.state);
     // console.log("actually push", getClientID(this.view.state));
-    const pushResult = await this.sendPushUpdates(version, updates);
+    const pushResult = this.sendPushUpdates(version, updates);
     await pushResult;
     // console.log("push done", pushResult);
     // Regardless of whether the push failed or new updates came in
@@ -271,14 +268,13 @@ export class CodeMirrorView extends Croquet.View {
     }
   }
 
-  // The peer has to send the "version" to say where it is.
-  // the client should get updates after that
-
   async pull() {
     while (!this.done) {
       let version = getSyncedVersion(this.view.state);
-      let pullResult = await this.sendPullUpdates(version);
+      let pullResult = this.sendPullUpdates(version);
+      // console.log("pullResult", pullResult);
       let updateInfo = await pullResult;
+      // console.log("updateInfo", updateInfo);
       const updates = this.model.updates.slice(updateInfo.start, updateInfo.end);
       this.view.dispatch(receiveUpdates(this.view.state, updates));
     }
@@ -291,10 +287,22 @@ export class CodeMirrorView extends Croquet.View {
     }
   }
 
+  detach() {
+    console.log("detach editor");
+    super.detach();
+  }
+
+  // update and destroy are the required methods for a CodeMirror plugin.
+  update(update) {
+    if (update.docChanged) {
+      // console.log("view update", this.view.dom.id, getSyncedVersion(this.view.state), update);
+      this.push();
+    }
+  }
+
   destroy() {
     this.publish(this.model.id, "collabMessage", {type: "destroy", clientID: this.clientID, viewId: this.viewId});
     this.done = true;
-    super.destroy();
   }
 
   static create(Renkon, model, extensions) {
