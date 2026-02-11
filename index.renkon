@@ -1253,13 +1253,13 @@ const newEditor = (id, docModel) => {
 [`10`, `({
   parameters: {
     appParameters: {
-
+/*
       name: '12346acdg',
       password: '1',
       apiKey: "234567_Paste_Your_Own_API_Key_Here_7654321",
       box: "http://localhost:8888",
       eventRateLimit: 60,
-   
+*/   
     },
     "realm": {"model": [
       "windows", "windowTypes", "positions", "titles", "windowEnabled",
