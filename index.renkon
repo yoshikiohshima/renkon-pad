@@ -1,8 +1,8 @@
 {"padTitle":"Croquet-Renkon-pad",
 "positions":{"map":{"__map":true,
-"values":[["0",{"height":5594.609748355829,
+"values":[["0",{"height":5606.779601751426,
 "id":"0",
-"width":813.1031015830976,
+"width":814.6885043207373,
 "x":-2056.6875407359244,
 "y":152.3923214222506}],["2",{"height":1384.7453325372853,
 "id":"2",
@@ -20,11 +20,11 @@
 "id":"10",
 "width":725.6091976294842,
 "x":-7498.713611331092,
-"y":-522.4613157787267}],["14",{"height":3338.603989493141,
+"y":-522.4613157787267}],["14",{"height":3487.5212710504697,
 "id":"14",
-"width":691.8269342414026,
-"x":-5648.874228169122,
-"y":165.2253187178549}],["16",{"height":2915.9198423892362,
+"width":680.9145694184841,
+"x":-5651.268886076828,
+"y":166.24097037371905}],["16",{"height":2915.9198423892362,
 "id":"16",
 "width":763.0884327402407,
 "x":-3772.167257114569,
@@ -234,7 +234,7 @@
 "values":[["0","code"],["2","code"],["4","code"],["8","code"],["10","code"],["14","code"],["16","code"],["18","code"],["24","code"],["25","code"],["26","code"],["27","code"],["28","code"],["29","code"],["88","code"],["89","code"],["90","doc"],["91","doc"],["92","doc"],["93","doc"],["94","doc"],["95","doc"],["96","doc"],["97","doc"],["98","doc"],["99","doc"],["100","doc"],["101","doc"],["102","doc"],["103","doc"],["104","doc"],["105","doc"]]}},
 "windows":["0","2","4","8","10","14","16","18","24","25","26","27","28","29","88","89","90","91","92","93","94","95","96","97","98","99","100","101","102","103","104","105"],
 "zIndex":{"map":{"__map":true,
-"values":[["0",114],["2",120],["4",137],["8",108],["10",122],["14",124],["16",126],["18",130],["24",105],["25",133],["26",115],["27",103],["28",113],["29",123],["88",121],["89",135],["90",134],["91",102],["92",112],["93",125],["94",118],["95",127],["96",106],["97",128],["98",129],["99",131],["100",100],["101",132],["102",109],["103",107],["104",111],["105",136]]}}}
+"values":[["0",114],["2",120],["4",124],["8",108],["10",122],["14",137],["16",126],["18",130],["24",105],["25",133],["26",115],["27",103],["28",113],["29",123],["88",121],["89",135],["90",134],["91",102],["92",112],["93",125],["94",118],["95",127],["96",106],["97",128],["98",129],["99",131],["100",100],["101",132],["102",109],["103",107],["104",111],["105",136]]}}}
 {__codeMap: true, value: [[`0`, `const viewExit = Events.receiver({queued: true});
 const viewJoin = Events.receiver({queued: true});
 
@@ -266,7 +266,7 @@ const windows = Behaviors.select(
   remove, (prev, removeCommand) => prev.filter((e) => e != removeCommand.id),
 );
 
-// {map: Map<id, type:"code"|"runner">
+// {map: Map<id, type:"code"|"doc"|"runner">
 const windowTypes = Behaviors.select(
   {map: new Map()},
   loadHandler, (_prev, data) => {
@@ -1253,13 +1253,13 @@ const newEditor = (id, docModel) => {
 [`10`, `({
   parameters: {
     appParameters: {
-      /*
-      name: '12346ac',
+
+      name: '12346acdg',
       password: '1',
       apiKey: "234567_Paste_Your_Own_API_Key_Here_7654321",
       box: "http://localhost:8888",
       eventRateLimit: 60,
-      */
+   
     },
     "realm": {"model": [
       "windows", "windowTypes", "positions", "titles", "windowEnabled",
@@ -1287,6 +1287,16 @@ const newWindowRequestFromView = ((viewId, type, padViews) => {
 
 const viewId = Renkon.app?.viewId || "local";
 const isLocal = viewId === "local";
+
+const detachReceiver = Events.receiver();
+
+const detach = () => {
+  for (const [id, c] of windowContents.map) {
+    c.destroy();
+    // console.log("detach", id, c);
+  }
+  Events.send(detachReceiver, true);
+}
 
 const initialWindowFromView = isLocal ? "initial" : undefined;
 
@@ -1410,6 +1420,7 @@ const windowContents = Behaviors.select(
   resetRequest, (prev, reset) => {
     prev.map.set(reset.id, newRunner(reset.id));
   },
+  detachReceiver, (prev, _detach) => ({map: new Map()}),
   windowContentsModel, (prev, windowContentsModel) => {
     if (windowContentsModel.loaded) {
       prev.map.clear();
@@ -2287,10 +2298,10 @@ const windowDOM = (id, title, windowContent, type, windowEnabled, pinnedPosition
     ref: (ref) => {
       if (ref) {
         const holder = ref.querySelector(".windowHolder");
-        if (holder.firstChild && holder.firstChild !== windowContent.dom) {
+        if (holder.firstChild && holder.firstChild !== windowContent?.dom) {
           holder.firstChild.remove();
         }
-        if (holder !== windowContent.dom.parentNode) {
+        if (windowContent?.dom && holder !== windowContent.dom.parentNode) {
           holder.appendChild(windowContent.dom);
         }
       }

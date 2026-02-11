@@ -270,6 +270,14 @@ class ${viewName} extends Croquet.View {
       this.publish(this.model.id, "viewMessage", {name: varName, value: value});
     }
   }
+
+  detach() {
+    const detach = this.programState?.resolved.get("detach")?.value
+    if (detach) {
+      detach();
+    }
+    super.detach();
+  }
 }`.trim();
 
   const result = new Function(

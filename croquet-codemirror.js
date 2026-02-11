@@ -82,9 +82,9 @@ export class CodeMirrorModel extends Croquet.Model {
   init(options) {
     let doc = options.doc;
     if (typeof doc === "string") {
-      doc = [doc];
+      doc = doc.split("\n");
     } else if (typeof doc === "undefined") {
-      doc = ["hello"];
+      doc = [""];
     }
 
     this.doc = new TextWrapper(Text.of(doc));
