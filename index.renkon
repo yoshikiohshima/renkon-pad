@@ -1042,6 +1042,13 @@ html, body {
   white-space: pre-wrap;
   overflow: scroll;
 }
+
+.cm-remoteCursor {
+    display: inline-block;
+    border-left: 2px solid rgba(80, 140, 220, 0.9);
+    margin-left: -1px;
+    height: 1.2em;
+    vertical-align: text-bottom;
 \`;
 
 ((css, renkon) => {
