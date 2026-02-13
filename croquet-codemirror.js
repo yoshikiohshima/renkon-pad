@@ -5,6 +5,238 @@ const {ChangeSet, Text, StateEffect, StateField, EditorState, Transaction, Facet
 const {receiveUpdates, rebaseUpdates, sendableUpdates, collab, getClientID, getSyncedVersion} = CodeMirror.collab;
 const {Decoration, EditorView, ViewPlugin, WidgetType} = CodeMirror.view;
 
+function encodeEffects(effects) {
+  return effects.map((effect) => {
+    if (effect.is(sharedSelectionEffect)) {
+      return {type: "selection", value: effect.value};
+    }
+    return null;
+  }).filter(e => e);
+}
+
+function decodeEffects(effects) {
+  return effects.map((effect) => {
+    if (effect.type === "selection") {
+      return sharedSelectionEffect.of(effect.value);
+    }
+    return null;
+  }).filter(e => e);
+}
+
+class TextWrapper {
+  constructor(text) {
+    this.text = text;
+  }
+}
+
+class UpdatesWrapper {
+  constructor(base, array, versions, clientIDs, lastUpdates) {
+    this.base = base;
+    this.array = array;
+    this.versions = versions || new Map(); // clientIDs -> high mark<number>
+    this.clientIDs = clientIDs || new Map(); // viewID -> [clientIDs]
+    this.lastUpdates = lastUpdates || new Map(); // clientIDs -> updates
+  }
+
+  get length() {
+    return this.base + this.array.length;
+  }
+
+  at(index) {
+    const realIndex = index - this.base;
+    return this.array[realIndex];
+  }
+
+  slice(from, to) {
+    const realFrom = from - this.base;
+    const realTo = to === undefined ? undefined : to - this.base;
+    return this.array.slice(realFrom, realTo);
+  }
+
+  push(obj) {
+    this.lastUpdates.set(obj.clientID, obj);
+    this.array.push(obj);
+  }
+
+  setLowest() {
+    const versions = [...this.versions.values()];
+    const lowest = Math.min(...versions);
+    if (lowest <= this.base) {return;}
+    const newBase = lowest;
+    const diff = lowest - this.base;
+    const newArray = this.array.slice(diff);
+    this.base = newBase;
+    this.array = newArray;
+  }
+
+  setVersion(viewId, clientID, version) {
+    let set = this.clientIDs.get(viewId);
+    if (set === undefined) {
+      set = new Set();
+      this.clientIDs.set(viewId, set);
+    }
+    set.add(clientID);
+    this.versions.set(clientID, version);
+
+    this.setLowest();
+  }
+
+  viewExit(viewId) {
+    const clientIDs = this.clientIDs.get(viewId);
+    this.clientIDs.delete(viewId);
+    if (clientIDs === undefined) {return;}
+    for (const clientID of clientIDs) {
+      this.versions.delete(clientID);
+      this.lastUpdates.delete(clientID);
+    }
+    this.setLowest();
+  }
+
+  clientExit(viewId, clientID) {
+    this.clientIDs.delete(viewId);
+    this.versions.delete(clientID);
+    this.setLowest();
+  }
+}
+
+export class CodeMirrorModel extends Croquet.Model {
+  init(options) {
+    let doc = options.doc;
+    if (typeof doc === "string") {
+      doc = doc.split("\n");
+    } else if (typeof doc === "undefined") {
+      doc = [""];
+    }
+
+    this.doc = new TextWrapper(Text.of(doc));
+    this.updates = new UpdatesWrapper(0, []);
+    this.pending = [];
+    this.colors = new Map() // viewId => css color string
+    this.subscribe(this.id, "collabMessage", this.collabMessage);
+    this.subscribe(this.sessionId, "view-exit", this.viewExit);
+  }
+
+  static types() {
+    return {
+      TextWrapper: {
+        cls: TextWrapper,
+        write: (obj) => {
+          return obj.text.toJSON();
+        },
+        read: (data) => {
+          return new TextWrapper(Text.of(data));
+        }
+      },
+      UpdatesWrapper: {
+        cls: UpdatesWrapper,
+        write: (obj) => {
+          const writer = u => ({
+            clientID: u.clientID,
+            changes: u.changes.toJSON(),
+            effects: encodeEffects(u.effects || [])
+          });
+          const array = obj.array.map(writer);
+          const lastUpdates = [...obj.lastUpdates.values()].map(writer)
+          return {
+            base: obj.base,
+            array,
+            versions: obj.versions,
+            clientIDs: obj.clientIDs,
+            lastUpdates
+          };
+        },
+        read: (data) => {
+          const reader = u => ({
+            changes: ChangeSet.fromJSON(u.changes),
+            clientID: u.clientID,
+            effects: decodeEffects(u.effects || []),
+          });
+          const array = data.array.map(reader);
+          const mapped = data.lastUpdates.map((u) => {
+            const read = reader(u);
+            return [read.clientID, read]
+          });
+          const lastUpdates = new Map(mapped);
+          return new UpdatesWrapper(data.base, array, data.versions, data.clientIDs, lastUpdates);
+        }
+      }
+    }
+  }
+
+  collabMessage(event) {
+    // following code at:
+    // https://github.com/codemirror/website/tree/main/site/examples/collab
+    // an implicit logic is that only peer that the ports[0], which was the sender of the message
+    // The model to view message sent from here contains the clientID and only the receiver who has that clientID
+    // acts on it.
+    const {type, version, updates, clientID, viewId} = event;
+    // console.log("model", event);
+    if (!this.colors.get(viewId)) {
+      this.colors.set(viewId, this.randomColor(viewId));
+    }
+    if (type === "pullUpdates") {
+      if (version < this.updates.length) {
+        this.publish(this.id, "collabUpdate", {clientIDs: [clientID], type: "pullUpdates", start: version, end: this.updates.length});
+      } else {
+        this.pending.push(event.clientID);
+      }
+    } else if (type === "pushUpdates") {
+      let received = updates.map(json => ({
+        clientID: json.clientID,
+        changes: ChangeSet.fromJSON(json.changes),
+        effects: decodeEffects(json.effects || [])
+      }));
+
+      if (version !== this.updates.length) {
+        received = rebaseUpdates(received, this.updates.slice(version));
+      }
+
+      const pendingStart = this.updates.length;
+
+      for (let update of received) {
+        this.updates.push(update);
+        this.doc = new TextWrapper(update.changes.apply(this.doc.text));
+      }
+      const pendingEnd = this.updates.length;
+      this.publish(this.id, "collabUpdate", {clientIDs: [clientID], type: "ok"});
+      if (received.length > 0) {
+        // let json = received.map(update => ({
+        // clientID: update.clientID,
+        // changes: update.changes.toJSON()
+        // }));
+        const pending = this.pending;
+        this.pending = [];
+        this.publish(this.id, "collabUpdate", {clientIDs: pending, type: "pullUpdates", start: pendingStart, end: pendingEnd});
+        //while (this.pending.length > 0) {
+        // const sendTo = this.pending.pop();
+        // this.publish(this.id, "collabUpdate", {clientID: sendTo, type: "pullUpdates", start: pendingStart, end: pendingEnd});
+        //}
+      }
+    } else if (type === "getDocument") {
+      this.publish(this.id, "collabUpdate", {type: "getDocument"});
+    } else if (type === "destroy") {
+      console.log("destroy", this.updates, event);
+      this.updates.clientExit(viewId, clientID);
+    }
+    this.updates.setVersion(viewId, clientID, version);
+  }
+
+  randomColor(viewId) {
+    let h = Math.floor(parseInt(viewId, 36) / (36 ** 10) * 360);
+    let s = "40%";
+    let l = "40%";
+    return `hsl(${h}, ${s}, ${l})`;
+  }
+
+  viewExit(viewId) {
+    this.updates.viewExit(viewId);
+    this.colors.delete(viewId);
+  }
+}
+
+CodeMirrorModel.register("CodeMirrorModel");
+
+
 const viewIdFacet = Facet.define({
   combine(values) {
     return values.length ? values[0] : null;
@@ -120,225 +352,6 @@ const remoteSelectionsDecorations = EditorView.decorations.compute(
   }
 );
 
-function encodeEffects(effects) {
-  return effects.map((effect) => {
-    if (effect.is(sharedSelectionEffect)) {
-      return {type: "selection", value: effect.value};
-    }
-    return null;
-  }).filter(e => e);
-}
-
-function decodeEffects(effects) {
-  return effects.map((effect) => {
-    if (effect.type === "selection") {
-      return sharedSelectionEffect.of(effect.value);
-    }
-    return null;
-  }).filter(e => e);
-}
-
-class TextWrapper {
-  constructor(text) {
-    this.text = text;
-  }
-}
-
-class UpdatesWrapper {
-  constructor(base, array, versions, clientIDs) {
-    this.base = base;
-    this.array = array;
-    this.versions = versions || new Map(); // clientIDs -> high mark<number>
-    this.clientIDs = clientIDs || new Map(); // viewID -> [clientIDs]
-  }
-
-  get length() {
-    return this.base + this.array.length;
-  }
-
-  at(index) {
-    const realIndex = index - this.base;
-    return this.array[realIndex];
-  }
-
-  slice(from, to) {
-    const realFrom = from - this.base;
-    const realTo = to === undefined ? undefined : to - this.base;
-    return this.array.slice(realFrom, realTo);
-  }
-
-  push(obj) {
-    this.array.push(obj);
-  }
-
-  setLowest() {
-    const versions = [...this.versions.values()];
-    const lowest = Math.min(...versions);
-    if (lowest <= this.base) {return;}
-    const newBase = lowest;
-    const diff = lowest - this.base;
-    const newArray = this.array.slice(diff);
-    this.base = newBase;
-    this.array = newArray;
-  }
-
-  setVersion(viewId, clientID, version) {
-    let set = this.clientIDs.get(viewId);
-    if (set === undefined) {
-      set = new Set();
-      this.clientIDs.set(viewId, set);
-    }
-    set.add(clientID);
-    this.versions.set(clientID, version);
-
-    this.setLowest();
-  }
-
-  viewExit(viewId) {
-    const clientIDs = this.clientIDs.get(viewId);
-    this.clientIDs.delete(viewId);
-    if (clientIDs === undefined) {return;}
-    for (const clientID of clientIDs) {
-      this.versions.delete(clientID);
-    }
-    this.setLowest();
-  }
-
-  clientExit(viewId, clientID) {
-    this.clientIDs.delete(viewId);
-    this.versions.delete(clientID);
-    this.setLowest();
-  }
-}
-
-export class CodeMirrorModel extends Croquet.Model {
-  init(options) {
-    let doc = options.doc;
-    if (typeof doc === "string") {
-      doc = doc.split("\n");
-    } else if (typeof doc === "undefined") {
-      doc = [""];
-    }
-
-    this.doc = new TextWrapper(Text.of(doc));
-    this.updates = new UpdatesWrapper(0, []);
-    this.pending = [];
-    this.colors = new Map() // viewId => css color string
-    this.subscribe(this.id, "collabMessage", this.collabMessage);
-    this.subscribe(this.sessionId, "view-exit", this.viewExit);
-  }
-
-  static types() {
-    return {
-      TextWrapper: {
-        cls: TextWrapper,
-        write: (obj) => {
-          return obj.text.toJSON();
-        },
-        read: (data) => {
-          return new TextWrapper(Text.of(data));
-        }
-      },
-      UpdatesWrapper: {
-        cls: UpdatesWrapper,
-        write: (obj) => {
-          const array = obj.array.map(u => ({
-            clientID: u.clientID,
-            changes: u.changes.toJSON(),
-            effects: encodeEffects(u.effects || [])
-          }));
-          return {
-            base: obj.base,
-            array,
-            versions: obj.versions,
-            clientIDs: obj.clientIDs
-          };
-        },
-        read: (data) => {
-          const array = data.array.map(u => ({
-            changes: ChangeSet.fromJSON(u.changes),
-            clientID: u.clientID,
-            effects: decodeEffects(u.effects || [])
-          }));
-          return new UpdatesWrapper(data.base, array, data.versions, data.clientIDs);
-        }
-      }
-    }
-  }
-
-  collabMessage(event) {
-    // following code at:
-    // https://github.com/codemirror/website/tree/main/site/examples/collab
-    // an implicit logic is that only peer that the ports[0], which was the sender of the message
-    // The model to view message sent from here contains the clientID and only the receiver who has that clientID
-    // acts on it.
-    const {type, version, updates, clientID, viewId} = event;
-    // console.log("model", event);
-    if (!this.colors.get(viewId)) {
-      this.colors.set(viewId, this.randomColor(viewId));
-    }
-    if (type === "pullUpdates") {
-      if (version < this.updates.length) {
-        this.publish(this.id, "collabUpdate", {clientIDs: [clientID], type: "pullUpdates", start: version, end: this.updates.length});
-      } else {
-        this.pending.push(event.clientID);
-      }
-    } else if (type === "pushUpdates") {
-      let received = updates.map(json => ({
-        clientID: json.clientID,
-        changes: ChangeSet.fromJSON(json.changes),
-        effects: decodeEffects(json.effects || [])
-      }));
-
-      if (version !== this.updates.length) {
-        received = rebaseUpdates(received, this.updates.slice(version));
-      }
-
-      const pendingStart = this.updates.length;
-
-      for (let update of received) {
-        this.updates.push(update);
-        this.doc = new TextWrapper(update.changes.apply(this.doc.text));
-      }
-      const pendingEnd = this.updates.length;
-      this.publish(this.id, "collabUpdate", {clientIDs: [clientID], type: "ok"});
-      if (received.length > 0) {
-        // let json = received.map(update => ({
-        // clientID: update.clientID,
-        // changes: update.changes.toJSON()
-        // }));
-        const pending = this.pending;
-        this.pending = [];
-        this.publish(this.id, "collabUpdate", {clientIDs: pending, type: "pullUpdates", start: pendingStart, end: pendingEnd});
-        //while (this.pending.length > 0) {
-        // const sendTo = this.pending.pop();
-        // this.publish(this.id, "collabUpdate", {clientID: sendTo, type: "pullUpdates", start: pendingStart, end: pendingEnd});
-        //}
-      }
-    } else if (type === "getDocument") {
-      this.publish(this.id, "collabUpdate", {type: "getDocument"});
-    } else if (type === "destroy") {
-      console.log("destroy", this.updates, event);
-      this.updates.clientExit(viewId, clientID);
-    }
-    this.updates.setVersion(viewId, clientID, version);
-  }
-
-  randomColor(viewId) {
-    let h = Math.floor(parseInt(viewId, 36) / (36 ** 10) * 360);
-    let s = "40%";
-    let l = "40%";
-    return `hsl(${h}, ${s}, ${l})`;
-  }
-
-  viewExit(viewId) {
-    this.updates.viewExit(viewId);
-    this.colors.delete(viewId);
-  }
-}
-
-CodeMirrorModel.register("CodeMirrorModel");
-
 export class CodeMirrorView extends Croquet.View {
   constructor(model, extensions) {
     super(model);
@@ -347,12 +360,35 @@ export class CodeMirrorView extends Croquet.View {
     const config = this.viewConfig(extensions || []);
     this.view = new CodeMirror.EditorView(config);
     this.clientID = getClientID(this.view.state);
+    this.applyLastUpdates();
     this.pullPromise = null;
     this.pushPromise = null;
     this.done = false;
     this.pull();
     this.editor = this.view;
-    console.log(getClientID(this.view.state));
+  }
+
+  applyLastUpdates() {
+    const lastUpdates = this.getLastUpdates();
+    if (!lastUpdates || lastUpdates.size === 0) {
+      return;
+    }
+
+    const effects = [];
+    for (const update of lastUpdates.values()) {
+      if (!update.effects || update.clientID === this.clientID) {
+        continue;
+      }
+      for (const effect of update.effects) {
+        if (effect.is(sharedSelectionEffect)) {
+          effects.push(effect);
+        }
+      }
+    }
+
+    if (effects.length) {
+      this.view.dispatch({effects, annotations: [Transaction.remote.of(true)]});
+    }
   }
 
   viewConfig(extensions) {
@@ -473,6 +509,10 @@ export class CodeMirrorView extends Croquet.View {
       this.push();
       return;
     }
+  }
+
+  getLastUpdates() {
+    return this.model.updates.lastUpdates;
   }
 
   destroy() {
