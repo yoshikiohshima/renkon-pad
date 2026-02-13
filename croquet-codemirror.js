@@ -226,7 +226,7 @@ export class CodeMirrorModel extends Croquet.Model {
     let s = "40%";
     let l = "40%";
     let a = "70%";
-    return `hsl(${h}, ${s}, ${l} / ${a})`;
+    return `hsl(${h} ${s} ${l} / ${a})`;
   }
 
   viewExit(viewId) {
@@ -340,7 +340,7 @@ const remoteSelectionsDecorations = EditorView.decorations.compute(
         const to = Math.max(range.anchor, range.head);
         if (from !== to) {
           const spec = color
-            ? {class: "cm-remoteSelection", attributes: {style: `background-color: ${color};`}}
+            ? {class: "cm-remoteSelection", attributes: {style: `background-color: ${color}`}}
             : {class: "cm-remoteSelection"};
           decorations.push(Decoration.mark(spec).range(from, to));
         } else {
