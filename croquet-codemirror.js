@@ -225,7 +225,8 @@ export class CodeMirrorModel extends Croquet.Model {
     let h = Math.floor(parseInt(viewId, 36) / (36 ** 10) * 360);
     let s = "40%";
     let l = "40%";
-    return `hsl(${h}, ${s}, ${l})`;
+    let a = "70%";
+    return `hsl(${h}, ${s}, ${l} / ${a})`;
   }
 
   viewExit(viewId) {

@@ -8,9 +8,9 @@
 "id":"2",
 "width":853.7266463585069,
 "x":-7505.722858609955,
-"y":170.10927727887955}],["4",{"height":8937.581724868889,
+"y":170.10927727887955}],["4",{"height":9222.759056286837,
 "id":"4",
-"width":1633.1015245180788,
+"width":1469.0487873359816,
 "x":9226.2127280215,
 "y":151.6731674050339}],["8",{"height":3652.9904166809183,
 "id":"8",
@@ -20,11 +20,11 @@
 "id":"10",
 "width":725.6091976294842,
 "x":-7498.713611331092,
-"y":-522.4613157787267}],["14",{"height":3487.5212710504697,
+"y":-522.4613157787267}],["14",{"height":3541.4236148004697,
 "id":"14",
-"width":680.9145694184841,
-"x":-5651.268886076828,
-"y":166.24097037371905}],["16",{"height":2915.9198423892362,
+"width":677.1411319184841,
+"x":-5647.784511076828,
+"y":167.53003287371905}],["16",{"height":2915.9198423892362,
 "id":"16",
 "width":763.0884327402407,
 "x":-3772.167257114569,
@@ -1043,10 +1043,14 @@ html, body {
   overflow: scroll;
 }
 
+.cm-remoteSelection {
+  background-color: rgba(80, 140, 220, 0.35);
+}
+
 .cm-remoteCursor {
     display: inline-block;
-    border-left: 2px solid rgba(80, 140, 220, 0.9);
-    margin-left: -1px;
+    border-left: 2px solid rgba(80, 140, 220, 0.7);
+    margin-left: -2px;
     height: 1.2em;
     vertical-align: text-bottom;
 }
@@ -1300,7 +1304,11 @@ const detachReceiver = Events.receiver();
 
 const detach = () => {
   for (const [id, c] of windowContents.map) {
-    c.destroy();
+    if (c.destroy) {
+      c.destroy();
+    } else if (c.editor.destroy) {
+      c.editor.destroy();
+    }
     // console.log("detach", id, c);
   }
   Events.send(detachReceiver, true);
