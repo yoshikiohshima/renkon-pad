@@ -1,9 +1,142 @@
 import {CodeMirror} from "./renkon-codemirror.js";
 export {CodeMirror} from "./renkon-codemirror.js";
 
-const {ChangeSet, Text} = CodeMirror.state;
+const {ChangeSet, Text, StateEffect, StateField, EditorState, Transaction, Facet} = CodeMirror.state;
 const {receiveUpdates, rebaseUpdates, sendableUpdates, collab, getClientID, getSyncedVersion} = CodeMirror.collab;
-const {ViewPlugin} = CodeMirror.view;
+const {Decoration, EditorView, ViewPlugin, WidgetType} = CodeMirror.view;
+
+const viewIdFacet = Facet.define({
+  combine(values) {
+    return values.length ? values[0] : null;
+  }
+});
+
+const colorLookupFacet = Facet.define({
+  combine(values) {
+    return values.length ? values[0] : () => null;
+  }
+});
+
+const sharedSelectionEffect = StateEffect.define({
+  map(value, changes) {
+    const ranges = value.ranges.map((range) => mapSelectionRange(range, changes));
+    return {clientID: value.clientID, viewId: value.viewId, ranges};
+  }
+});
+
+const remoteSelectionsField = StateField.define({
+  create() {
+    return new Map();
+  },
+  update(value, tr) {
+    let mapped = value;
+    if (tr.docChanged && value.size) {
+      const next = new Map();
+      for (const [key, ranges] of value.entries()) {
+        next.set(key, ranges.map((range) => mapSelectionRange(range, tr.changes)));
+      }
+      mapped = next;
+    }
+    for (const effect of tr.effects) {
+      if (effect.is(sharedSelectionEffect)) {
+        const {viewId, clientID, ranges} = effect.value;
+        const key = viewId || clientID;
+        const next = new Map(mapped);
+        if (!ranges || ranges.length === 0) {
+          next.delete(key);
+        } else {
+          next.set(key, ranges);
+        }
+        mapped = next;
+      }
+    }
+    return mapped;
+  }
+});
+
+const sharedSelectionExtender = EditorState.transactionExtender.of((tr) => {
+  if (!tr.selection) return null;
+  if (tr.annotation(Transaction.remote)) return null;
+  if (tr.effects.some((effect) => effect.is(sharedSelectionEffect))) return null;
+  const ranges = tr.selection.ranges.map((range) => ({
+    anchor: range.anchor,
+    head: range.head
+  }));
+  const viewId = tr.startState.facet(viewIdFacet);
+  return {effects: sharedSelectionEffect.of({clientID: getClientID(tr.startState), viewId, ranges})};
+});
+
+function mapSelectionRange(range, changes) {
+  const forward = range.anchor <= range.head;
+  const anchor = changes.mapPos(range.anchor, forward ? 1 : -1);
+  const head = changes.mapPos(range.head, forward ? -1 : 1);
+  return {anchor, head};
+}
+
+class RemoteCursorWidget extends WidgetType {
+  constructor(color) {
+    super();
+    this.color = color;
+  }
+
+  eq(other) {
+    return other.color === this.color;
+  }
+
+  toDOM() {
+    const dom = document.createElement("span");
+    dom.className = "cm-remoteCursor";
+    if (this.color) {
+      dom.style.borderColor = this.color;
+    }
+    return dom;
+  }
+}
+
+const remoteSelectionsDecorations = EditorView.decorations.compute(
+  [remoteSelectionsField],
+  (state) => {
+    const selections = state.field(remoteSelectionsField);
+    const colorLookup = state.facet(colorLookupFacet);
+    const decorations = [];
+
+    for (const [viewId, ranges] of selections.entries()) {
+      const color = colorLookup(viewId);
+      for (const range of ranges) {
+        const from = Math.min(range.anchor, range.head);
+        const to = Math.max(range.anchor, range.head);
+        if (from !== to) {
+          const spec = color
+            ? {class: "cm-remoteSelection", attributes: {style: `background-color: ${color};`}}
+            : {class: "cm-remoteSelection"};
+          decorations.push(Decoration.mark(spec).range(from, to));
+        } else {
+          decorations.push(Decoration.widget({widget: new RemoteCursorWidget(color), side: 1}).range(from));
+        }
+      }
+    }
+
+    return Decoration.set(decorations, true);
+  }
+);
+
+function encodeEffects(effects) {
+  return effects.map((effect) => {
+    if (effect.is(sharedSelectionEffect)) {
+      return {type: "selection", value: effect.value};
+    }
+    return null;
+  }).filter(e => e);
+}
+
+function decodeEffects(effects) {
+  return effects.map((effect) => {
+    if (effect.type === "selection") {
+      return sharedSelectionEffect.of(effect.value);
+    }
+    return null;
+  }).filter(e => e);
+}
 
 class TextWrapper {
   constructor(text) {
@@ -90,6 +223,7 @@ export class CodeMirrorModel extends Croquet.Model {
     this.doc = new TextWrapper(Text.of(doc));
     this.updates = new UpdatesWrapper(0, []);
     this.pending = [];
+    this.colors = new Map() // viewId => css color string
     this.subscribe(this.id, "collabMessage", this.collabMessage);
     this.subscribe(this.sessionId, "view-exit", this.viewExit);
   }
@@ -111,6 +245,7 @@ export class CodeMirrorModel extends Croquet.Model {
           const array = obj.array.map(u => ({
             clientID: u.clientID,
             changes: u.changes.toJSON(),
+            effects: encodeEffects(u.effects || [])
           }));
           return {
             base: obj.base,
@@ -122,7 +257,8 @@ export class CodeMirrorModel extends Croquet.Model {
         read: (data) => {
           const array = data.array.map(u => ({
             changes: ChangeSet.fromJSON(u.changes),
-            clientID: u.clientID
+            clientID: u.clientID,
+            effects: decodeEffects(u.effects || [])
           }));
           return new UpdatesWrapper(data.base, array, data.versions, data.clientIDs);
         }
@@ -138,6 +274,9 @@ export class CodeMirrorModel extends Croquet.Model {
     // acts on it.
     const {type, version, updates, clientID, viewId} = event;
     // console.log("model", event);
+    if (!this.colors.get(viewId)) {
+      this.colors.set(viewId, this.randomColor(viewId));
+    }
     if (type === "pullUpdates") {
       if (version < this.updates.length) {
         this.publish(this.id, "collabUpdate", {clientIDs: [clientID], type: "pullUpdates", start: version, end: this.updates.length});
@@ -147,7 +286,8 @@ export class CodeMirrorModel extends Croquet.Model {
     } else if (type === "pushUpdates") {
       let received = updates.map(json => ({
         clientID: json.clientID,
-        changes: ChangeSet.fromJSON(json.changes)
+        changes: ChangeSet.fromJSON(json.changes),
+        effects: decodeEffects(json.effects || [])
       }));
 
       if (version !== this.updates.length) {
@@ -184,8 +324,16 @@ export class CodeMirrorModel extends Croquet.Model {
     this.updates.setVersion(viewId, clientID, version);
   }
 
+  randomColor(viewId) {
+    let h = Math.floor(parseInt(viewId, 36) / (36 ** 10) * 360);
+    let s = "40%";
+    let l = "40%";
+    return `hsl(${h}, ${s}, ${l})`;
+  }
+
   viewExit(viewId) {
     this.updates.viewExit(viewId);
+    this.colors.delete(viewId);
   }
 }
 
@@ -208,16 +356,29 @@ export class CodeMirrorView extends Croquet.View {
   }
 
   viewConfig(extensions) {
+    const sharedEffects = (tr) => {
+      return tr.effects.filter(e => e.is(sharedSelectionEffect));
+    };
     return {
       doc: this.model.doc.text || "",
-      extensions: [...extensions, collab({startVersion: this.model.updates.length}), ViewPlugin.define(_view => this)]
+      extensions: [
+        ...extensions,
+        viewIdFacet.of(this.viewId),
+        colorLookupFacet.of((viewId) => this.model.colors.get(viewId)),
+        remoteSelectionsField,
+        remoteSelectionsDecorations,
+        sharedSelectionExtender,
+        collab({startVersion: this.model.updates.length, sharedEffects}),
+        ViewPlugin.define(_view => this)
+      ]
     }
   }
 
   sendPushUpdates(version, fullUpdates) {
     let updates = fullUpdates.map(u => ({
       clientID: u.clientID,
-      changes: u.changes.toJSON()
+      changes: u.changes.toJSON(),
+      effects: encodeEffects(u.effects || [])
     }));
     // console.log("push", getClientID(this.view.state), version, updates);
     this.publish(this.model.id, "collabMessage", {type: "pushUpdates", version, clientID: this.clientID, updates, viewId: this.viewId});
@@ -292,6 +453,10 @@ export class CodeMirrorView extends Croquet.View {
     }
   }
 
+  getRemoteSelections() {
+    return this.view.state.field(remoteSelectionsField);
+  }
+
   detach() {
     console.log("detach editor");
     super.detach();
@@ -299,9 +464,14 @@ export class CodeMirrorView extends Croquet.View {
 
   // update and destroy are the required methods for a CodeMirror plugin.
   update(update) {
-    if (update.docChanged) {
+    const hasSharedSelectionEffect = update.transactions.some((tr) =>
+      tr.effects.some((effect) => effect.is(sharedSelectionEffect))
+    );
+
+    if (update.docChanged || hasSharedSelectionEffect) {
       // console.log("view update", this.view.dom.id, getSyncedVersion(this.view.state), update);
       this.push();
+      return;
     }
   }
 
