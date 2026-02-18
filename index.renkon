@@ -2614,6 +2614,7 @@ const moveOrResize = Events.receiver();
 const moveCompute = ((downOrUpOrResize, positions, padView, viewId) => {
   if (downOrUpOrResize.type === "moveDown" || downOrUpOrResize.type === "windowResizeDown") {
     const start = positions.map.get(downOrUpOrResize.id);
+    if (!start) {return evt => evt}
     const scale = padView.scale;
     const downPoint = {x: downOrUpOrResize.x, y: downOrUpOrResize.y};
     const type = downOrUpOrResize.type === "moveDown" ? "move" : "resize";
@@ -3401,7 +3402,7 @@ function randomHue(viewId) {
 const rects = ((views, padView) => {
   let s = "40%";
   let l = "40%";
-  let a = "10%";
+  let a = "2%";
   let a2 = "30%";
   return views.map((view) => {
     const hue = view.hue;
