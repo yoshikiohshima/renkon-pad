@@ -1,12 +1,12 @@
 {"padTitle":"Croquet-Renkon-pad",
 "positions":{"map":{"__map":true,
-"values":[["0",{"height":5896.788509238271,
+"values":[["0",{"height":6136.762004307069,
 "id":"0",
-"width":894.7120557052317,
+"width":922.3049983230725,
 "x":-2056.6875407359244,
-"y":152.3923214222506}],["2",{"height":1384.7453325372853,
+"y":152.3923214222506}],["2",{"height":1414.1196898576852,
 "id":"2",
-"width":853.7266463585069,
+"width":855.6565069403343,
 "x":-7505.722858609955,
 "y":170.10927727887955}],["4",{"height":9239.274064137167,
 "id":"4",
@@ -20,9 +20,9 @@
 "id":"10",
 "width":725.6091976294842,
 "x":-7498.713611331092,
-"y":-522.4613157787267}],["14",{"height":3876.482564447107,
+"y":-522.4613157787267}],["14",{"height":4032.7086527663005,
 "id":"14",
-"width":858.5995431319433,
+"width":913.3542919288564,
 "x":-5647.784511076828,
 "y":167.53003287371905}],["16",{"height":2915.9198423892362,
 "id":"16",
@@ -128,9 +128,9 @@
 "id":"105",
 "width":800,
 "x":8284.815013324254,
-"y":163.09341064898467}],["113",{"height":853.5124991205403,
+"y":163.09341064898467}],["113",{"height":2501.983046487201,
 "id":"113",
-"width":609.3515291080735,
+"width":1106.4520359968305,
 "x":7126.678016932005,
 "y":153.34810490089606}],["186",{"height":555.7937438018236,
 "id":"186",
@@ -204,7 +204,7 @@
 "state":false,
 "title":"CSS"}],["113",{"id":"113",
 "state":false,
-"title":"Viewport Visualizer"}],["186",{"id":"186",
+"title":"Viewport and Remote Cursor Visualizer"}],["186",{"id":"186",
 "state":false,
 "title":"untitled"}]]}},
 "version":3,
@@ -374,6 +374,20 @@ const padExtent = Behaviors.select(
   padExtentChange, (prev, extent) => {
     const {w, h, top, viewId} = extent;
     prev.map.set(viewId, {w, h, top});
+    return {map: prev.map};
+  }
+)
+
+// viewId -> {x, y}
+const cursorPositions = Behaviors.select(
+  {map: new Map()},
+  viewExit, (prev, viewExit) => {
+    viewExit.forEach((view) => prev.map.delete(view));
+    return {map: prev.map};
+  },
+  cursorPosition, (prev, move) => {
+    const {x, y, viewId} = move;
+    prev.map.set(viewId, {x, y});
     return {map: prev.map};
   }
 )
@@ -588,7 +602,8 @@ const renkon = (() => {
   <button class="menuButton" id="loadButton">load</button>
 </div>
 <div id="pad"><div id="mover"></div></div>
-<div id="overlay"></div>
+<div id="overlay" class="overlay"></div>
+<div id="cursorOverlay" class="overlay"></div>
 <div id="navigationBox">
   <div class="navigationButton"><div id="homeButton" class="navigationButtonImage"></div></div>
   <div class="navigationButton with-border"><div id="zoomInButton" class="navigationButtonImage"></div></div>
@@ -691,7 +706,7 @@ html, body {
   border-radius: 0px 0px 6px 6px;
 }
 
-#overlay {
+.overlay {
   pointer-events: none;
   height: 100%;
   width: 100%;
@@ -1295,7 +1310,7 @@ const newEditor = (id, docModel) => {
   parameters: {
     appParameters: {
 /*
-      name: '1346exadac',
+      name: '1346exag',
       password: '1',
       apiKey: "234567_Paste_Your_Own_API_Key_Here_7654321",
       box: "http://localhost:8888",
@@ -1305,7 +1320,7 @@ const newEditor = (id, docModel) => {
     "realm": {"model": [
       "windows", "windowTypes", "positions", "titles", "windowEnabled",
       "zIndex", "windowContentsModel", "padTitle", "docSeparators", "initialData",
-      "newId", "padViews", "padExtent", "newWindowRequest", "padTitle", "viewJoin",
+      "newId", "padViews", "padExtent", "cursorPositions", "newWindowRequest", "padTitle", "viewJoin",
       "viewExit", "xxx", "loadReceiver", "loadHandler", "loadFromFile", "loadFromProgram", "runRequest", "resetRequest"]},
     "name": "pad"
   },
@@ -1346,7 +1361,6 @@ const detach = () => {
 
 const synced = (arg) => {
   if (!isLocal && arg) {
-    console.log(viewId, arg);
     Events.send(initialExtent, arg);
   }
 };   
@@ -1529,7 +1543,13 @@ const padExtentChange = ((trigger) => {
   const buttonBox = document.querySelector("#buttonBox");
   const rect = buttonBox.getBoundingClientRect();
   return {viewId, w: window.innerWidth, h: window.innerHeight - rect.height, top: rect.height * padView.scale};
-})(Events.or(windowResize, initialExtent));`],
+})(Events.or(windowResize, initialExtent));
+
+const cursorPosition = ((move) => {
+  const x = (move.clientX / padView.scale) - padView.x;
+  const y = (move.clientY / padView.scale) - padView.y;
+  return {x, y, viewId}
+})(moveReporter);`],
 [`16`, `function hoverTooltip(source, options = {}) {
   let setHover = window.CodeMirror.state.StateEffect.define();
   let hoverState = window.CodeMirror.state.StateField.define({
@@ -2587,6 +2607,7 @@ const padUp = Events.listener(renkon.querySelector("#pad"), "pointerup", (evt) =
 const downOrUpOrResize = Events.or(padDown, padUp, pointercancel, lostpointercapture);
 
 const _padMove = Events.listener("#pad", "pointermove", moveCompute);
+const moveReporter = Events.listener("#pad", "pointermove", evt => evt);
 
 const moveOrResize = Events.receiver();
 
@@ -3025,7 +3046,7 @@ const _goTo = ((padView, positions, dblClick, viewId) => {
               prevSession = session;
               prevView = session.view;
             } else {
-              const func = toFunction(evt.data.code, prevSession.name);
+              const func = toFunction(evt.data.code, croquet.parameters.name);
               const strs = splitStrs(func, new Map(croquet.parameters.realm.model.map((key) => [key, "Model"])));
               const {viewNodeStr, modelEventsStr} = strs;
               prevView.programState.updateProgram([viewNodeStr, modelEventsStr]);            
@@ -3394,7 +3415,93 @@ const rects = ((views, padView) => {
         stroke-width="2"/>\`;
   });
 })(viewports, padView);
-`],
-[`186`, `# Viewport Visualizer
+
+const cursors = Behaviors.select(
+  {map: new Map()},
+  cursorPositions, (prev, cursorPositions) => {
+    if (viewId === "local") {return;}
+    const prevKeys = [...prev.map.keys()];
+    const newKeys = [...cursorPositions.map.keys()];
+    const olds = prevKeys.filter((e) => !newKeys.includes(e));
+    const news = newKeys.filter((e) => !prevKeys.includes(e));
+    olds.forEach((id) => {
+      const old = prev.map.get(\`\${id}\`);
+      old?.remove();
+      prev.map.delete(\`\${id}\`);
+    });
+    const overlay = document.querySelector("#cursorOverlay");
+    const overlayRect = overlay.getBoundingClientRect();
+    const buttonBox = document.querySelector("#buttonBox");
+    const buttonBoxRect = buttonBox.getBoundingClientRect();
+    news.forEach((id) => {
+      if (id === viewId) {return;}
+      const hue = randomHue(id);
+      let s = "40%";
+      let l = "40%";
+      let a1 = "60%";
+      let a2 = "100%";
+      const svg = cursorSVG(\`hsl(\${hue} \${s} \${l} / \${a1})\`, \`hsl(\${hue} \${s} \${l} / \${a2})\`,  \`hsl(\${hue} \${s} \${l} / \${a2})\`, "");
+      const div = document.createElement("div");
+      div.id = \`\${id}-cursor\`;
+      div.innerHTML = svg;
+      overlay.appendChild(div);
+      prev.map.set(id, div);
+    });
+
+    let style = document.body.querySelector("#cursorPositions-css");
+    if (!style) {
+      style = document.createElement("style");
+      style.id = "cursorPositions-css";
+      document.body.appendChild(style);
+    }
+    const css = [...cursorPositions.map].map(([id, pos]) => {
+      let x = (pos.x + padView.x) * padView.scale;
+      let y = (pos.y + padView.y) * padView.scale;
+      if (x < 0) {x = 0;}
+      if (x - 32 > overlayRect.width) {x = overlayRect.width - 32;}
+      if (y < buttonBoxRect.height) {y = buttonBoxRect.height;}
+      if (y - 32 > overlayRect.height) {y = overlayRect.height - 32;}
+      return \`
+[id="\${id}-cursor"] {
+    transform: translate(\${x}px, \${y}px);
+}\`.trim();
+    }).join("\\n");
+    style.textContent = css;
+  }
+);
+
+function cursorSVG(initialsColor, outlineColor, fillColor, initials) {
+  return \`<svg width="32px" height="32px" viewBox="0 0 32 34" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 64 (93537) - https://sketch.com -->
+    <title>avatar/cursor/small</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M17,0 L17.0002994,0.0307604489 C25.3708878,0.547104153 32,7.49939602 32,16 C32,24.836556 24.836556,32 16,32 C7.49939602,32 0.547104153,25.3708878 0.0307604489,17.0002994 L0,17 L0,0 L17,0 Z" id="path-1"></path>
+        <filter x="-15.6%" y="-12.5%" width="131.2%" height="131.2%" filterUnits="objectBoundingBox" id="filter-2">
+            <feOffset dx="0" dy="1" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="1.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.203780594 0" type="matrix" in="shadowBlurOuter1" result="shadowMatrixOuter1"></feColorMatrix>
+            <feOffset dx="0" dy="0.5" in="SourceAlpha" result="shadowOffsetOuter2"></feOffset>
+            <feGaussianBlur stdDeviation="0.5" in="shadowOffsetOuter2" result="shadowBlurOuter2"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.304223121 0" type="matrix" in="shadowBlurOuter2" result="shadowMatrixOuter2"></feColorMatrix>
+            <feMerge>
+                <feMergeNode in="shadowMatrixOuter1"></feMergeNode>
+                <feMergeNode in="shadowMatrixOuter2"></feMergeNode>
+            </feMerge>
+        </filter>
+    </defs>
+    <g id="avatar/cursor/small" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Combined-Shape">
+            <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+            <use fill="\${outlineColor}" fill-rule="evenodd" xlink:href="#path-1"></use>
+        </g>
+        <path d="M17,2 L17.0008661,2.0352252 C24.2657313,2.54839185 30,8.60454082 30,16 C30,23.7319865 23.7319865,30 16,30 C8.94734804,30 3.11271995,24.7850199 2.14189822,18.0008423 L2,18 L2,2 L17,2 Z" id="Combined-Shape" fill="\${fillColor}"></path>
+        <text id="TD" font-family="Poppins-Medium, Poppins, sans-serif" font-size="13" font-weight="500" fill="\${initialsColor}">
+            <tspan x="7.0" y="20">\${initials}</tspan>
+        </text>
+    </g>
+</svg>\`
+}`],
+[`186`, `# Viewport and Remote Cursor Visualizer
 
 It takes other views' visible areas and make them visible in your view when the session is running multiuser.`]]}
