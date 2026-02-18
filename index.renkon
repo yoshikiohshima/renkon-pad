@@ -8,7 +8,7 @@
 "id":"2",
 "width":853.7266463585069,
 "x":-7505.722858609955,
-"y":170.10927727887955}],["4",{"height":9222.759056286837,
+"y":170.10927727887955}],["4",{"height":9239.274064137167,
 "id":"4",
 "width":1469.0487873359816,
 "x":9226.2127280215,
@@ -32,9 +32,9 @@
 "id":"18",
 "width":888.4478502148212,
 "x":1604.3270139606657,
-"y":4410.649137488393}],["24",{"height":2558.6994626918395,
+"y":4410.649137488393}],["24",{"height":2583.455328660108,
 "id":"24",
-"width":739.2688656962409,
+"width":748.2924733297128,
 "x":5192.0901287411625,
 "y":153.23622200307503}],["25",{"height":3167.5540276899956,
 "id":"25",
@@ -128,9 +128,9 @@
 "id":"105",
 "width":800,
 "x":8284.815013324254,
-"y":163.09341064898467}],["113",{"height":817.8106090927249,
+"y":163.09341064898467}],["113",{"height":853.5124991205403,
 "id":"113",
-"width":565.1057637450946,
+"width":609.3515291080735,
 "x":7126.678016932005,
 "y":153.34810490089606}],["186",{"height":555.7937438018236,
 "id":"186",
@@ -1346,7 +1346,8 @@ const detach = () => {
 
 const synced = (arg) => {
   if (!isLocal && arg) {
-    Events.send(initialExtent, arg)
+    console.log(viewId, arg);
+    Events.send(initialExtent, arg);
   }
 };   
 
@@ -2053,9 +2054,11 @@ const graph = ((positions, padView, analyzed, hoveredB, showGraph) => {
   return html\`<g>\${outEdges}\${inEdges}</g>\`;
 })(positions, padView, Behaviors.keep(analyzed), hoveredB, showGraph === "showGraph");
 
+const realGraph = Behaviors.collect([], (_prev, graph) => graph);
+
 const _graphRender = render(
   html\`<svg viewBox="0 0 \${window.innerWidth} \${window.innerHeight}"
-    xmlns="http://www.w3.org/2000/svg">\${graph}\${rects}</svg>\`, document.querySelector("#overlay"));
+    xmlns="http://www.w3.org/2000/svg">\${realGraph}\${rects}</svg>\`, document.querySelector("#overlay"));
 `],
 [`25`, `const saveData = (windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
   const code = new Map(
@@ -3366,6 +3369,7 @@ SVG icons are created in 24x24 viewport, and converted to the data string.`],
     };
     result.push(view);
   }
+
   return result;
 })(padViews, padExtent);
 
