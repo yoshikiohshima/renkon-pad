@@ -1,8 +1,8 @@
 {"padTitle":"Croquet-Renkon-pad",
 "positions":{"map":{"__map":true,
-"values":[["0",{"height":5606.779601751426,
+"values":[["0",{"height":5896.788509238271,
 "id":"0",
-"width":814.6885043207373,
+"width":894.7120557052317,
 "x":-2056.6875407359244,
 "y":152.3923214222506}],["2",{"height":1384.7453325372853,
 "id":"2",
@@ -20,9 +20,9 @@
 "id":"10",
 "width":725.6091976294842,
 "x":-7498.713611331092,
-"y":-522.4613157787267}],["14",{"height":3541.4236148004697,
+"y":-522.4613157787267}],["14",{"height":3876.482564447107,
 "id":"14",
-"width":677.1411319184841,
+"width":858.5995431319433,
 "x":-5647.784511076828,
 "y":167.53003287371905}],["16",{"height":2915.9198423892362,
 "id":"16",
@@ -40,7 +40,7 @@
 "id":"25",
 "width":728.9915280920748,
 "x":5186.73225701981,
-"y":2830.4931425640784}],["26",{"height":4892.327415416062,
+"y":2830.4931425640784}],["26",{"height":4935.886420259676,
 "id":"26",
 "width":851.32232821802,
 "x":3446.156384599422,
@@ -48,11 +48,11 @@
 "id":"27",
 "width":784.7910896421135,
 "x":1607.0445248513663,
-"y":155.3053442530741}],["28",{"height":4729.75306896208,
+"y":155.3053442530741}],["28",{"height":4738.909234990079,
 "id":"28",
-"width":702.4770201465312,
-"x":-285.2855133531855,
-"y":151.16910000208054}],["29",{"height":2153.912480907299,
+"width":747.9132943145014,
+"x":-157.57583714356667,
+"y":152.28502210578887}],["29",{"height":2153.912480907299,
 "id":"29",
 "width":860.5724852794904,
 "x":-7511.728773633648,
@@ -63,8 +63,8 @@
 "y":6107.024769750996}],["89",{"height":1475.9824959204543,
 "id":"89",
 "width":945.5396981979883,
-"x":7016.617666289972,
-"y":155.1066768003194}],["90",{"height":395.11443821079865,
+"x":7083.22979233265,
+"y":2823.343603246923}],["90",{"height":395.11443821079865,
 "id":"90",
 "width":785.0824912605583,
 "x":-8350.534856693012,
@@ -95,8 +95,8 @@
 "y":152.94656526595696}],["97",{"height":425.16384641060284,
 "id":"97",
 "width":799.8133245815237,
-"x":-1142.622157820525,
-"y":152.79002858339436}],["98",{"height":400,
+"x":-1021.3670765062191,
+"y":149.56907160223628}],["98",{"height":400,
 "id":"98",
 "width":800,
 "x":735.8947260092311,
@@ -123,12 +123,20 @@
 "y":6112.6621492460545}],["104",{"height":447.9135641802801,
 "id":"104",
 "width":844.7603993464369,
-"x":6032.113342546147,
-"y":146.6445807693559}],["105",{"height":400,
+"x":6073.02829250681,
+"y":2826.5252874419193}],["105",{"height":400,
 "id":"105",
 "width":800,
 "x":8284.815013324254,
-"y":163.09341064898467}]]}},
+"y":163.09341064898467}],["113",{"height":817.8106090927249,
+"id":"113",
+"width":565.1057637450946,
+"x":7126.678016932005,
+"y":153.34810490089606}],["186",{"height":555.7937438018236,
+"id":"186",
+"width":834.6357947150393,
+"x":6199.73078571295,
+"y":152.44480114472776}]]}},
 "titles":{"map":{"__map":true,
 "values":[["0",{"id":"0",
 "state":false,
@@ -194,7 +202,11 @@
 "state":false,
 "title":"Doc Window"}],["105",{"id":"105",
 "state":false,
-"title":"CSS"}]]}},
+"title":"CSS"}],["113",{"id":"113",
+"state":false,
+"title":"Viewport Visualizer"}],["186",{"id":"186",
+"state":false,
+"title":"untitled"}]]}},
 "version":3,
 "windowEnabled":{"map":{"__map":true,
 "values":[["0",{"enabled":true,
@@ -229,12 +241,14 @@
 "id":"102"}],["103",{"enabled":true,
 "id":"103"}],["104",{"enabled":true,
 "id":"104"}],["105",{"enabled":true,
-"id":"105"}]]}},
+"id":"105"}],["113",{"enabled":true,
+"id":"113"}],["186",{"enabled":true,
+"id":"186"}]]}},
 "windowTypes":{"map":{"__map":true,
-"values":[["0","code"],["2","code"],["4","code"],["8","code"],["10","code"],["14","code"],["16","code"],["18","code"],["24","code"],["25","code"],["26","code"],["27","code"],["28","code"],["29","code"],["88","code"],["89","code"],["90","doc"],["91","doc"],["92","doc"],["93","doc"],["94","doc"],["95","doc"],["96","doc"],["97","doc"],["98","doc"],["99","doc"],["100","doc"],["101","doc"],["102","doc"],["103","doc"],["104","doc"],["105","doc"]]}},
-"windows":["0","2","4","8","10","14","16","18","24","25","26","27","28","29","88","89","90","91","92","93","94","95","96","97","98","99","100","101","102","103","104","105"],
+"values":[["0","code"],["2","code"],["4","code"],["8","code"],["10","code"],["14","code"],["16","code"],["18","code"],["24","code"],["25","code"],["26","code"],["27","code"],["28","code"],["29","code"],["88","code"],["89","code"],["90","doc"],["91","doc"],["92","doc"],["93","doc"],["94","doc"],["95","doc"],["96","doc"],["97","doc"],["98","doc"],["99","doc"],["100","doc"],["101","doc"],["102","doc"],["103","doc"],["104","doc"],["105","doc"],["113","code"],["186","doc"]]}},
+"windows":["0","2","4","8","10","14","16","18","24","25","26","27","28","29","88","89","90","91","92","93","94","95","96","97","98","99","100","101","102","103","104","105","113","186"],
 "zIndex":{"map":{"__map":true,
-"values":[["0",114],["2",120],["4",124],["8",108],["10",122],["14",137],["16",126],["18",130],["24",105],["25",133],["26",115],["27",103],["28",113],["29",123],["88",121],["89",135],["90",134],["91",102],["92",112],["93",125],["94",118],["95",127],["96",106],["97",128],["98",129],["99",131],["100",100],["101",132],["102",109],["103",107],["104",111],["105",136]]}}}
+"values":[["0",114],["2",120],["4",124],["8",108],["10",122],["14",135],["16",126],["18",130],["24",105],["25",133],["26",115],["27",103],["28",113],["29",123],["88",121],["89",137],["90",134],["91",102],["92",112],["93",125],["94",118],["95",127],["96",106],["97",141],["98",129],["99",131],["100",100],["101",132],["102",109],["103",107],["104",111],["105",136],["113",128],["186",140]]}}}
 {__codeMap: true, value: [[`0`, `const viewExit = Events.receiver({queued: true});
 const viewJoin = Events.receiver({queued: true});
 
@@ -319,6 +333,7 @@ const positions = Behaviors.select(
   }
 );
 
+// viewId -> {x, y: scale}
 const padViews = Behaviors.select(
   {map: new Map()},
   viewJoin, (prev, viewJoin) => {
@@ -345,6 +360,20 @@ const padViews = Behaviors.select(
     }
     let result = {...prev.map.get(viewId), ...{x, y, scale}};
     prev.map.set(viewId, result);
+    return {map: prev.map};
+  }
+)
+
+// viewId -> {w, h, top}
+const padExtent = Behaviors.select(
+  {map: new Map()},
+  viewExit, (prev, viewExit) => {
+    viewExit.forEach((view) => prev.map.delete(view));
+    return {map: prev.map};
+  },
+  padExtentChange, (prev, extent) => {
+    const {w, h, top, viewId} = extent;
+    prev.map.set(viewId, {w, h, top});
     return {map: prev.map};
   }
 )
@@ -1266,17 +1295,17 @@ const newEditor = (id, docModel) => {
   parameters: {
     appParameters: {
 /*
-      name: '12346acdg',
+      name: '1346exadac',
       password: '1',
       apiKey: "234567_Paste_Your_Own_API_Key_Here_7654321",
       box: "http://localhost:8888",
       eventRateLimit: 60,
-*/   
+*/
     },
     "realm": {"model": [
       "windows", "windowTypes", "positions", "titles", "windowEnabled",
       "zIndex", "windowContentsModel", "padTitle", "docSeparators", "initialData",
-      "newId", "padViews", "newWindowRequest", "padTitle", "viewJoin",
+      "newId", "padViews", "padExtent", "newWindowRequest", "padTitle", "viewJoin",
       "viewExit", "xxx", "loadReceiver", "loadHandler", "loadFromFile", "loadFromProgram", "runRequest", "resetRequest"]},
     "name": "pad"
   },
@@ -1301,6 +1330,7 @@ const viewId = Renkon.app?.viewId || "local";
 const isLocal = viewId === "local";
 
 const detachReceiver = Events.receiver();
+const initialExtent = Events.receiver();
 
 const detach = () => {
   for (const [id, c] of windowContents.map) {
@@ -1309,10 +1339,16 @@ const detach = () => {
     } else if (c.editor.destroy) {
       c.editor.destroy();
     }
-    // console.log("detach", id, c);
+    console.log("detach", id, c);
   }
   Events.send(detachReceiver, true);
 }
+
+const synced = (arg) => {
+  if (!isLocal && arg) {
+    Events.send(initialExtent, arg)
+  }
+};   
 
 const initialWindowFromView = isLocal ? "initial" : undefined;
 
@@ -1485,7 +1521,14 @@ const runHandler = ((runRequest, windowContents, windowEnabled, titles) => {
   if (!iframe?.dom?.contentWindow) {/* console.log("iframe is not there yet"); */ return}
   iframe.dom.contentWindow.postMessage({code: code, croquet, path: id});
 })(Events.or(runRequest, doReset), windowContents, windowEnabled, titles);
-`],
+
+const windowResize = Events.listener(window, "resize", evt => evt);
+
+const padExtentChange = ((trigger) => {
+  const buttonBox = document.querySelector("#buttonBox");
+  const rect = buttonBox.getBoundingClientRect();
+  return {viewId, w: window.innerWidth, h: window.innerHeight - rect.height, top: rect.height * padView.scale};
+})(Events.or(windowResize, initialExtent));`],
 [`16`, `function hoverTooltip(source, options = {}) {
   let setHover = window.CodeMirror.state.StateEffect.define();
   let hoverState = window.CodeMirror.state.StateField.define({
@@ -2007,11 +2050,12 @@ const graph = ((positions, padView, analyzed, hoveredB, showGraph) => {
     return line(p1, p2, "#88d", e);
   });
 
-  return html\`<svg viewBox="0 0 \${window.innerWidth} \${window.innerHeight}"
-                     xmlns="http://www.w3.org/2000/svg">\${outEdges}\${inEdges}</svg>\`;
+  return html\`<g>\${outEdges}\${inEdges}</g>\`;
 })(positions, padView, Behaviors.keep(analyzed), hoveredB, showGraph === "showGraph");
 
-const _graphRender = render(graph, document.querySelector("#overlay"));
+const _graphRender = render(
+  html\`<svg viewBox="0 0 \${window.innerWidth} \${window.innerHeight}"
+    xmlns="http://www.w3.org/2000/svg">\${graph}\${rects}</svg>\`, document.querySelector("#overlay"));
 `],
 [`25`, `const saveData = (windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) => {
   const code = new Map(
@@ -2099,7 +2143,7 @@ const loadData = async (data, maybeImageInput) => {
     ind += 2880;
     if (throttle) {
       await new Promise((resolve) => {
-        setTimeout(resolve, 16);
+        setTimeout(resolve, 34);
       });
     }
   }
@@ -2279,11 +2323,13 @@ const _positionsCss = ((positions, zIndex, pinnedPositions, padView) => {
     let x;
     let y;
     let scale;
+    let z;
     const pinned = pinnedPositions.map.get(id);
     if (!pinned) {
       x = rect.x;
       y = rect.y;
       scale = 1;
+      z = zIndex.map.get(id);
     } else {
       // t(x) = pinned.x
       // t(a) = a * padView.scale + padView.x;
@@ -2293,13 +2339,14 @@ const _positionsCss = ((positions, zIndex, pinnedPositions, padView) => {
       x = pinned.x / padView.scale - padView.x;
       y = pinned.y / padView.scale - padView.y;
       // console.log(pinned.x, scale, x, padView.x);
+      z = zIndex.map.get(id) + 10000;
     }
     return \`
 [id="\${id}-win"] {
     transform: translate(\${x}px, \${y}px) scale(\${scale});
     width: \${rect.width}px;
     height: \${rect.height}px;
-    z-index: \${zIndex.map.get(id)};
+    z-index: \${z};
 }\`.trim();
   }).join("\\n");
   style.textContent = css;
@@ -2534,11 +2581,10 @@ const padUp = Events.listener(renkon.querySelector("#pad"), "pointerup", (evt) =
   return {type: "pointerup", x: evt.clientX, y: evt.clientY};
 });
 
-const downOrUpOrResize = Events.or(padDown, padUp, pointercancel, lostpointercapture, windowResize);
+const downOrUpOrResize = Events.or(padDown, padUp, pointercancel, lostpointercapture);
 
 const _padMove = Events.listener("#pad", "pointermove", moveCompute);
 
-const windowResize = Events.receiver();
 const moveOrResize = Events.receiver();
 
 const moveCompute = ((downOrUpOrResize, positions, padView, viewId) => {
@@ -2977,7 +3023,7 @@ const _goTo = ((padView, positions, dblClick, viewId) => {
               prevView = session.view;
             } else {
               const func = toFunction(evt.data.code, prevSession.name);
-              const strs = splitStrs(func, new Map(croquet.realm.model.map((key) => [key, "Model"])));
+              const strs = splitStrs(func, new Map(croquet.parameters.realm.model.map((key) => [key, "Model"])));
               const {viewNodeStr, modelEventsStr} = strs;
               prevView.programState.updateProgram([viewNodeStr, modelEventsStr]);            
             }
@@ -3301,4 +3347,50 @@ There is no magic here... Except any advanced feature appears to be a magic in C
 
 \`mover\` is an actual element created in \`renkon\`. \`owner\` is a virtual DOM appended to \`mover\` and it is also zero-sized.
 
-SVG icons are created in 24x24 viewport, and converted to the data string.`]]}
+SVG icons are created in 24x24 viewport, and converted to the data string.`],
+[`113`, `const viewports = ((padViews, padExtent) => {
+  // if (padViews.map.size <= 1 || padExtent.map.size <= 1) {return new Map();}
+  const result = [];
+  for (const [id, padView] of padViews.map) {
+    const extent = padExtent.map.get(id);
+    if (!extent) continue;
+    if (id === viewId) continue;
+
+    const view = {
+      x: padView.x,
+      y: padView.y - extent.top,
+      w: extent.w / padView.scale,
+      h: extent.h / padView.scale,
+      top: extent.top,
+      hue: randomHue(id)
+    };
+    result.push(view);
+  }
+  return result;
+})(padViews, padExtent);
+
+function randomHue(viewId) {
+  return Math.floor(parseInt(viewId, 36) / (36 ** 10) * 360);
+}
+
+const rects = ((views, padView) => {
+  let s = "40%";
+  let l = "40%";
+  let a = "10%";
+  let a2 = "30%";
+  return views.map((view) => {
+    const hue = view.hue;
+    const x = (-view.x + padView.x) * padView.scale;
+    const y = (-view.y + padView.y) * padView.scale;
+    const width = view.w * padView.scale;
+    const height = view.h * padView.scale;
+    return html\`<rect x="\${x}" y="\${y}" width="\${width}" height="\${height}"
+        fill="hsl(\${hue} \${s} \${l} / \${a})"
+        stroke="hsl(\${hue} \${s} \${l} / \${a2})"
+        stroke-width="2"/>\`;
+  });
+})(viewports, padView);
+`],
+[`186`, `# Viewport Visualizer
+
+It takes other views' visible areas and make them visible in your view when the session is running multiuser.`]]}

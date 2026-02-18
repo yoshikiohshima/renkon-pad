@@ -250,6 +250,7 @@ class ${viewName} extends Croquet.View {
 
     this.initViewState();
     this.subscribe(this.model.id, {event: "modelUpdate", handling: "oncePerFrame"}, this.modelUpdate);
+    this.subscribe(this.viewId, "synced", this.synced);
   }
 
   initViewState() {
@@ -272,11 +273,17 @@ class ${viewName} extends Croquet.View {
   }
 
   detach() {
-    const detach = this.programState?.resolved.get("detach")?.value
+    const detach = this.programState?.resolved.get("detach")?.value;
     if (detach) {
       detach();
     }
     super.detach();
+  }
+  synced(arg) {
+    const synced = this.programState?.resolved.get("synced")?.value;
+    if (synced) {
+      synced(arg);
+    }
   }
 }`.trim();
 
