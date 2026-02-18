@@ -441,7 +441,7 @@ const titles = Behaviors.select(
   },
   newWindowRequest, (prev, request) => {
     const id = request.id;
-    prev.map.set(id, {id, state: false, title: "untitled"});
+    prev.map.set(id, {id, state: false, title: \`untitled-\${id}\`});
     return {map: prev.map};
   },
   remove, (prev, remove) => {
