@@ -16,11 +16,11 @@
 "id":"8",
 "width":752.5265951306149,
 "x":-3768.8549944407373,
-"y":162.74088184915206}],["10",{"height":601.7173331699967,
+"y":162.74088184915206}],["10",{"height":2964.836543029842,
 "id":"10",
-"width":725.6091976294842,
-"x":-7498.713611331092,
-"y":-522.4613157787267}],["14",{"height":4032.7086527663005,
+"width":1038.071952788944,
+"x":-7447.084203312636,
+"y":-3234.3328587226706}],["14",{"height":4032.7086527663005,
 "id":"14",
 "width":913.3542919288564,
 "x":-5647.784511076828,
@@ -67,8 +67,8 @@
 "y":2823.343603246923}],["90",{"height":395.11443821079865,
 "id":"90",
 "width":785.0824912605583,
-"x":-8350.534856693012,
-"y":-523.4098922384826}],["91",{"height":399.78479399032983,
+"x":-8284.47407987052,
+"y":-3216.650641499678}],["91",{"height":399.78479399032983,
 "id":"91",
 "width":786.4592378715543,
 "x":-8343.60063445745,
@@ -248,7 +248,7 @@
 "values":[["0","code"],["2","code"],["4","code"],["8","code"],["10","code"],["14","code"],["16","code"],["18","code"],["24","code"],["25","code"],["26","code"],["27","code"],["28","code"],["29","code"],["88","code"],["89","code"],["90","doc"],["91","doc"],["92","doc"],["93","doc"],["94","doc"],["95","doc"],["96","doc"],["97","doc"],["98","doc"],["99","doc"],["100","doc"],["101","doc"],["102","doc"],["103","doc"],["104","doc"],["105","doc"],["113","code"],["186","doc"]]}},
 "windows":["0","2","4","8","10","14","16","18","24","25","26","27","28","29","88","89","90","91","92","93","94","95","96","97","98","99","100","101","102","103","104","105","113","186"],
 "zIndex":{"map":{"__map":true,
-"values":[["0",114],["2",120],["4",124],["8",108],["10",122],["14",135],["16",126],["18",130],["24",105],["25",133],["26",115],["27",103],["28",113],["29",123],["88",121],["89",137],["90",134],["91",102],["92",112],["93",125],["94",118],["95",127],["96",106],["97",141],["98",129],["99",131],["100",100],["101",132],["102",109],["103",107],["104",111],["105",136],["113",128],["186",140]]}}}
+"values":[["0",114],["2",120],["4",124],["8",108],["10",122],["14",135],["16",126],["18",130],["24",105],["25",133],["26",115],["27",103],["28",113],["29",123],["88",121],["89",137],["90",141],["91",102],["92",112],["93",125],["94",118],["95",127],["96",106],["97",134],["98",129],["99",131],["100",100],["101",132],["102",109],["103",107],["104",111],["105",136],["113",128],["186",140]]}}}
 {__codeMap: true, value: [[`0`, `const viewExit = Events.receiver({queued: true});
 const viewJoin = Events.receiver({queued: true});
 
@@ -1317,22 +1317,149 @@ const newEditor = (id, docModel) => {
       eventRateLimit: 60,
 */
     },
-    "realm": {"model": [
+    realm: {model: [
       "windows", "windowTypes", "positions", "titles", "windowEnabled",
       "zIndex", "windowContentsModel", "padTitle", "docSeparators", "initialData",
       "newId", "padViews", "padExtent", "cursorPositions", "newWindowRequest", "padTitle", "viewJoin",
       "viewExit", "xxx", "loadReceiver", "loadHandler", "loadFromFile", "loadFromProgram", "runRequest", "resetRequest"]},
-    "name": "pad"
+    persistentNodes: [["windows", 60000]],
+    name: "pad"
   },
   methods: {
     renkonInit() {
       // this.programState.registerEvent("initialWindow", "code");
     },
     savePersistentData() {
-      console.log("save");
+      const e = ["windows", "positions", "zIndex", "titles", "windowContentsModel", "windowTypes", "padTitle", "windowEnabled"].map(k => {
+        return [k, this.programState.resolved.get(k).value];
+      });
+      const m = Object.fromEntries(e);
+      const windowContents = {map: new Map([...m.windowContentsModel.map].map(([id, model]) => ([id, {doc: model.doc?.doc?.text.toString()}])))};
+      return this.saveData(m.windows, m.positions, m.zIndex, m.titles, windowContents, m.windowTypes, m.padTitle, m.windowEnabled);
     },
-    loadPersistentData() {
-      console.log("load");
+    loadPersistentData(data) {
+      // const result = new TextDecoder("utf-8").decode(data.data);
+      const result = data.data;
+
+      const parse = (string) => {
+        return JSON.parse(string, (_key, value) => {
+          if (typeof value === "object" && value !== null && value.__map) {
+            return new Map(value.values);
+          } else if (typeof value === "object" && value !== null && value.__set) {
+            return new Set(value.values);
+          }
+          return value;
+        });
+      }
+
+      const parseCodeMap = (string) => {
+        const array = eval("(" + string + ")");
+        return new Map(array.value);
+      }
+
+      const index = result.indexOf("{__codeMap: true, value:");
+
+      const data1 = result.slice(0, index);
+      const data2 = result.slice(index);
+
+      const loaded = parse(data1);
+
+      if (loaded.version === 2 || loaded.version === 3) {
+        const code = parseCodeMap(data2);
+        loaded.code = code;
+        return {loadHandler: loaded};
+      }
+    },
+    saveData(windows, positions, zIndex, titles, windowContents, windowTypes, padTitle, windowEnabled) {
+      const code = new Map(
+        [...windowContents.map].map(([id, content]) => {
+          if (content.state) {
+            return [id, content.state.doc.toString()];
+          } else if (content.editor) {
+            let state = content.editor.editor?.state;
+            if (!state) {
+              state = content.editor.state;
+            }
+            return [id, state.doc.toString()];
+          } else if (content.doc) {
+            return [id, content.doc];
+          } else {
+            return null;
+          }
+        }).filter(item => item !== null));
+      const myTitles = new Map([...titles.map].map(([id, obj]) => ([id, {...obj, state: false}])));
+      const data1 = this.stringify({
+        version: 3,
+        windows,
+        positions,
+        zIndex,
+        titles: {map: myTitles},
+        windowTypes,
+        padTitle,
+        windowEnabled
+      });
+
+      const data2 = this.stringifyCodeMap(code);
+
+      return data1 + data2;
+    },
+    stringifyInner(node, seen) {
+      if (node === undefined) return undefined;
+      if (typeof node === 'number') return Number.isFinite(node) ? \`\${node}\` : 'null';
+      if (typeof node !== 'object') return JSON.stringify(node, null, 4);
+
+      let out;
+      if (Array.isArray(node)) {
+        out = '[';
+        for (let i = 0; i < node.length; i++) {
+          if (i > 0) out += ',';
+          out += this.stringifyInner(node[i], seen) || 'null';
+        }
+        return out + ']';
+      }
+
+      if (node === null) return 'null';
+
+      if (seen.has(node)) {
+        throw new TypeError('Converting circular structure to JSON');
+      }
+
+      seen.add(node);
+
+      if (node.constructor === window.Map) {
+        let replacement = {__map: true, values: [...node]};
+        return this.stringifyInner(replacement, seen);
+      }
+
+      if (node.constructor === window.Set) {
+        let replacement = {__set: true, values: [...node]};
+        return this.stringifyInner(replacement, seen);
+      }
+
+      let keys = Object.keys(node).sort();
+      out = '';
+      for (let i = 0; i < keys.length; i++) {
+        let key = keys[i];
+        let value = this.stringifyInner(node[key], seen, out);
+        if (!value) continue;
+        if (out !== '') out += ',\\n';
+        out += JSON.stringify(key) + ':' + value;
+      }
+      seen.delete(node);
+      return '{' + out + '}';
+    },
+    stringify(obj) {
+      let seen = new Set();
+      return this.stringifyInner(obj, seen);
+    },
+    stringifyCodeMap(map) {
+      const replace = (str) => {
+        return str.replaceAll("\\\\", "\\\\\\\\").replaceAll("\`", "\\\\\`").replaceAll("\$", "\\\\\$");
+      }
+
+      return "\\n{__codeMap: true, value: " + "[" +
+        [...map].map(([key, value]) => ("[" + "\`" + replace(key) + "\`" + ", " + "\`" +
+                                        replace(value) + "\`" + "]")).join(",\\n") + "]" + "}"
     }
   }
 })`],
@@ -2136,9 +2263,9 @@ const loader = (() => {
       let reader = new FileReader();
       reader.onload = () => resolve(reader.result);
       reader.readAsArrayBuffer(file);
-    }).then(async (data) => {
+    }).then((data) => {
       const result = new TextDecoder("utf-8").decode(data);
-    loadData(result, imageInput);
+      loadData(result, imageInput);
     });
     imageInput.value = "";
   };

@@ -92,13 +92,18 @@ function makeMethodsString(methods) {
   return result.join("\n\t");
 }
 
-export function croquetify(func, p, appName, realm, typesString, methods) {
+export function croquetify(func, options) {
+  const {ProgramState:p, appName, realm, persistentNodes, typesString, methods} = options;
   ProgramState = p;
   const funcStr = typeof func === "function" ? func.toString() : func;
   const modelName = appName + "Model";
   const viewName = appName + "View";
 
   const methodsString = makeMethodsString(methods);
+
+  Croquet.Constants.funcStr = funcStr;
+  Croquet.Constants.methodsString = methodsString;
+  Croquet.Constants.persistentNodes = persistentNodes;
 
   const modelStr = `
 class ${modelName} extends Croquet.Model {
@@ -108,7 +113,9 @@ class ${modelName} extends Croquet.Model {
     this.$lastPublishTime = this.now();
     this.$changedKeys = new Set();
 
-    this.funcStr = funcStr;
+    let persistentData;
+    const now = this.now();
+
     const nodes = decls(funcStr, realm);
     this.realm = nodes.realm;
     this.viewToModel = nodes.viewToModel;
@@ -119,13 +126,22 @@ class ${modelName} extends Croquet.Model {
     this.programState = new ProgramState(0, this);
     this.programState.setupProgram([modelNodeStr, viewEventsStr]);
     this.programState.options = {once: true};
+    this.lastPersistentTime = now;
 
-    this.programState.evaluate(this.now());
+    this.programState.evaluate(now);
 
     this.initCallFuture();
 
     if (this.renkonInit) {
        this.renkonInit();
+    }
+
+    if (persistent) {
+      persistentData = this.loadPersistentData(persistent);
+      for (const key in persistentData) {
+        this.programState.setResolved(key, {value: persistentData[key], time: this.now()});
+      }
+      this.programState.evaluate(now);
     }
 
     this.subscribe(this.id, "viewMessage", this.viewMessage);
@@ -196,8 +212,27 @@ class ${modelName} extends Croquet.Model {
 
     let changedKeys = this.programState.evaluate(now);
     changedKeys = this.$changedKeys.union(changedKeys);
+
     this.$changedKeys = changedKeys.intersection(this.modelToView);
     this.publish(this.id, "modelUpdate", this.$changedKeys);
+
+    if (this.checkPersistent(this.$changedKeys)) {
+      this.persistSession(() => ({data: this.savePersistentData()}));
+      this.lastPersistentTime = now;
+    }
+  }
+
+  checkPersistent(changedKeys) {
+    let now = this.now();
+    for (const changed of changedKeys) {
+      const timing = Croquet.Constants.persistentNodes?.get(changed);
+      if (timing) {
+        if (now - this.lastPersistentTime >= timing) {
+          return true;
+        }
+      }
+   }
+   return false;
   }
 
   ${methodsString}
@@ -240,7 +275,7 @@ class ${viewName} extends Croquet.View {
     super(model);
     this.model = model;
 
-    const nodes = decls(model.funcStr, this.model.realm);
+    const nodes = decls(Croquet.Constants.funcStr, this.model.realm);
     const {modelNodeStr, viewEventsStr, viewNodeStr, modelEventsStr} = strs(nodes);
     this.programState = new ProgramState(0, this);
     this.programState.setupProgram([viewNodeStr, modelEventsStr]);
@@ -458,7 +493,7 @@ export async function startWithCodeMirrorWithCroquet(args) {
   let croquetParameters = {...parameters, ...apiKeyParameters};
   // parameters.appParameters = appParameters;
 
-  let {name, realm, types} = croquetParameters;
+  let {name, realm, types, persistentNodes} = croquetParameters;
 
   const code = codeArray.map(((pair) => pair[1]));
 
@@ -492,13 +527,11 @@ export async function startWithCodeMirrorWithCroquet(args) {
   }
 
   realm = realm ? new Map(realm.model.map((key) => [key, "Model"])) : new Map();
+  persistentNodes = persistentNodes ? new Map(persistentNodes) : new Map();
   const {model, view} = croquetify(
     toFunction(code, name),
-    ProgramState,
-    name,
-    realm,
-    types,
-    methods);
+    {ProgramState, appName: name, realm, typesString: types, persistentNodes, methods}
+  );
   model.register(model.name);
 
   const session = await window.Croquet.Session.join({...appParameters, debug, model, view});
@@ -523,7 +556,7 @@ export async function startNoCodeMirrorWithCroquet(args) {
   let croquetParameters = {...parameters, ...apiKeyParameters};
   // parameters.appParameters = appParameters;
 
-  let {name, realm, types} = croquetParameters;
+  let {name, realm, types, persistentNodes} = croquetParameters;
 
   const code = codeArray.map(((pair) => pair[1]));
 
@@ -549,13 +582,10 @@ export async function startNoCodeMirrorWithCroquet(args) {
   }
 
   realm = realm ? new Map(realm.model.map((key) => [key, "Model"])) : new Map();
+  persistentNodes = persistentNodes ? new Map(persistentNodes) : new Map();
   const {model, view} = croquetify(
-    toFunction(code, name),
-    ProgramState,
-    name,
-    realm,
-    types,
-    methods);
+    toFunction(code, name), {ProgramState, appName: name, realm, typesString: types, persistentNodes, methods}
+  )
   model.register(model.name);
 
   const session = await window.Croquet.Session.join({...appParameters, debug, model, view});
