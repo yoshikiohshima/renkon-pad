@@ -519,7 +519,7 @@ export async function startWithCodeMirrorWithCroquet(args) {
   }
 
   if (!codeMirrorObj) {
-    const {CodeMirrorModel, CodeMirrorView, CodeMirror} = await import("./croquet-codemirror.js");
+    const {CodeMirrorModel, CodeMirrorView, CodeMirror} = await eval('import(' + '"./croquet-codemirror.js")');
     codeMirrorObj = {CodeMirrorModel, CodeMirrorView, CodeMirror};
     window.CodeMirrorModel = CodeMirrorModel;
     window.CodeMirrorView = CodeMirrorView;
@@ -597,7 +597,7 @@ export async function startWithCodeMirrorNoCroquet(args) {
   const codeArray = args.code;
 
   if (!codeMirrorObj) {
-    const {CodeMirror} = await import("./renkon-codemirror.js");
+    const {CodeMirror} = await eval('import(' + '"./renkon-codemirror.js")');
     window.CodeMirror = CodeMirror;
     window.CodeMirrorModel = {
       create: ({doc, id, creator}) => {
