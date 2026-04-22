@@ -1,8 +1,8 @@
 {"padTitle":"Croquet-Renkon-pad",
 "positions":{"map":{"__map":true,
-"values":[["0",{"height":6136.762004307069,
+"values":[["0",{"height":5989.479578568274,
 "id":"0",
-"width":922.3049983230725,
+"width":838.222334514106,
 "x":-2056.6875407359244,
 "y":152.3923214222506}],["2",{"height":1414.1196898576852,
 "id":"2",
@@ -424,28 +424,20 @@ const zIndex = Behaviors.select(
   moveOrResize, (prev, command) => {
     if (command.type === "move") {
       const z = prev.map.get(command.id);
-
-      const findMax = (map)  => {
-        let maxId = -1;
-        let max = -1;
-        for (let [id, value] of map) {
-          if (value > max) {
-            maxId = id;
-            max = value;
-          }
-        }
-        return {maxId, max};
-      };
-
-      const {maxId, max} = findMax(prev.map);
-      if (maxId !== command.id) {
-        prev.map.set(maxId, z);
-        prev.map.set(command.id, max);
+      const sorted = [...prev.map].sort((a, b) => a[1] - b[1]);
+      const index = sorted.findIndex((f) => f[0] === command.id);
+      if (index === sorted.length - 1) {
+        return prev;
       }
+      let max = sorted[sorted.length - 1][1];
+      sorted.slice(index + 1).forEach(([id, zInd]) => {
+        prev.map.set(id, zInd - 1);
+      });
+      prev.map.set(command.id, max);
       return {map: prev.map};
     }
     return prev;
-  },
+  }
 );
 
 const titles = Behaviors.select(
