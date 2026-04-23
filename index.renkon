@@ -393,10 +393,10 @@ const cursorPositions = Behaviors.select(
 )
   
 const zIndex = Behaviors.select(
-  {map: new Map()},
+  {map: new Map(), sorted: null},
   loadHandler, (_prev, data) => {
     if (data.zIndex) return data.zIndex;
-    return {map: new Map(data.windows.map((w, i) => [w, i + 100]))};
+    return {map: new Map(data.windows.map((w, i) => [w, i + 100])), sorted: null};
   },
   newWindowRequest, (prev, request) => {
     const id = request.id;
@@ -415,26 +415,26 @@ const zIndex = Behaviors.select(
     const {maxId:_maxId, max} = findMax(prev.map);
     let z = max < 0 ? 100 : max + 1;
     prev.map.set(id, z++);
-    return {map: prev.map};
+    return {map: prev.map, sorted: null};
   },
   remove, (prev, remove) => {
     prev.map.delete(\`\${remove.id}\`);
-    return {map: prev.map};
+    return {map: prev.map, sorted: null};
   },
   moveOrResize, (prev, command) => {
     if (command.type === "move") {
       const z = prev.map.get(command.id);
-      const sorted = [...prev.map].sort((a, b) => a[1] - b[1]);
+      const sorted = prev.sorted || [...prev.map].sort((a, b) => a[1] - b[1]);
       const index = sorted.findIndex((f) => f[0] === command.id);
       if (index === sorted.length - 1) {
-        return prev;
+        return prev.sorted ? prev : {map: prev.map, sorted};
       }
       let max = sorted[sorted.length - 1][1];
       sorted.slice(index + 1).forEach(([id, zInd]) => {
         prev.map.set(id, zInd - 1);
       });
       prev.map.set(command.id, max);
-      return {map: prev.map};
+      return {map: prev.map, sorted};
     }
     return prev;
   }
