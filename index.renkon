@@ -434,7 +434,7 @@ const zIndex = Behaviors.select(
         prev.map.set(id, zInd - 1);
       });
       prev.map.set(command.id, max);
-      return {map: prev.map, sorted};
+      return {map: prev.map, sorted: [...prev.map].sort((a, b) => a[1] - b[1])};
     }
     return prev;
   }
