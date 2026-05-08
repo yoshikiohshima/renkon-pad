@@ -1662,7 +1662,7 @@ const windowResize = Events.listener(window, "resize", evt => evt);
 const padExtentChange = ((trigger) => {
   const buttonBox = document.querySelector("#buttonBox");
   const rect = buttonBox.getBoundingClientRect();
-  return {viewId, w: window.innerWidth, h: window.innerHeight - rect.height, top: rect.height * padView.scale};
+  return {viewId, w: window.innerWidth, h: window.innerHeight - rect.height, top: rect.height};
 })(Events.or(windowResize, initialExtent));
 
 const cursorPosition = ((move) => {
@@ -3503,7 +3503,7 @@ SVG icons are created in 24x24 viewport, and converted to the data string.`],
 
     const view = {
       x: padView.x,
-      y: padView.y - extent.top,
+      y: padView.y - extent.top / padView.scale,
       w: extent.w / padView.scale,
       h: extent.h / padView.scale,
       top: extent.top,
