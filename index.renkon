@@ -325,10 +325,25 @@ const positions = Behaviors.select(
     prev.map.delete(remove.id);
     return {map: prev.map};
   },
-  moveOrResize, (prev, command) => {
-    const newRect = {...prev.map.get(command.id), ...command};
-    delete newRect.type;
-    prev.map.set(command.id, newRect);
+  gatedMoveOrResize, (prev, command) => {
+    const old = prev.map.get(command.id);
+    if (!old) return prev;
+    const e = command.edges || {};
+    let left = e.left ?? old.x;
+    let top = e.top ?? old.y;
+    let right = e.right ?? (old.x + old.width);
+    let bottom = e.bottom ?? (old.y + old.height);
+    // min-size: clamp the edge that was actually moved
+    const minW = 120, minH = 70;
+    if (right - left < minW) {
+      if (e.left !== undefined) left = right - minW;
+      else if (e.right !== undefined) right = left + minW;
+    }
+    if (bottom - top < minH) {
+      if (e.top !== undefined) top = bottom - minH;
+      else if (e.bottom !== undefined) bottom = top + minH;
+    }
+    prev.map.set(command.id, {...old, x: left, y: top, width: right - left, height: bottom - top});
     return {map: prev.map};
   }
 );
@@ -439,6 +454,107 @@ const zIndex = Behaviors.select(
     return prev;
   }
 );
+
+// === INTERACTION LOCK ===
+// Map<windowId, Map<viewId, {heldLocks: string[], lockTime: number}>>
+// heldLocks is a subset of ["top","right","bottom","left"]
+// Lock claim: full move = all 4 edges; corner resize = the 2 edges of that corner.
+const interactionStatus = Behaviors.select(
+  {map: new Map()},
+  loadHandler, (_prev, _data) => ({map: new Map()}),
+  interactionLockRequest, (prev, requests) => {
+    for (const request of requests) {
+      const {windowId, viewId: requesterId, requestedLocks} = request;
+      let windowMap = prev.map.get(windowId);
+      if (!windowMap) {
+        windowMap = new Map();
+        prev.map.set(windowId, windowMap);
+      }
+      let viewState = windowMap.get(requesterId);
+      if (!viewState) {
+        // partial grant: grant whichever requested edges aren't already held
+        // by another view. The mover can fall back to a partial drag — e.g.
+        // a frame move with two edges already held by others becomes a
+        // 2-edge corner drag.
+        const conflicting = new Set();
+        for (const [otherId, otherState] of windowMap) {
+          if (otherId !== requesterId) {
+            for (const lk of otherState.heldLocks) conflicting.add(lk);
+          }
+        }
+        const granted = requestedLocks.filter((l) => !conflicting.has(l));
+        if (granted.length === 0) continue;
+        windowMap.set(requesterId, {heldLocks: granted, lockTime: Renkon.time});
+      } else {
+        viewState.lockTime = Renkon.time;
+      }
+    }
+    return {map: prev.map};
+  },
+  interactionLockEnd, (prev, ends) => {
+    for (const end of ends) {
+      const windowMap = prev.map.get(end.windowId);
+      if (windowMap) {
+        windowMap.delete(end.viewId);
+        if (windowMap.size === 0) prev.map.delete(end.windowId);
+      }
+    }
+    return {map: prev.map};
+  },
+  moveOrResize, (prev, cmd) => {
+    // each successful move keeps the lock alive
+    const windowMap = prev.map.get(cmd.id);
+    if (windowMap) {
+      const viewState = windowMap.get(cmd.viewId);
+      if (viewState) viewState.lockTime = Renkon.time;
+    }
+    return prev;
+  },
+  remove, (prev, removeCmd) => {
+    prev.map.delete(removeCmd.id);
+    return {map: prev.map};
+  },
+  viewExit, (prev, viewExits) => {
+    for (const vid of viewExits) {
+      for (const [windowId, windowMap] of prev.map) {
+        windowMap.delete(vid);
+        if (windowMap.size === 0) prev.map.delete(windowId);
+      }
+    }
+    return {map: prev.map};
+  },
+  interactionLockTimer, (prev, _) => {
+    const now = Renkon.time;
+    const timeout = 5000;
+    for (const [windowId, windowMap] of prev.map) {
+      for (const [vid, state] of windowMap) {
+        if (now - state.lockTime > timeout) windowMap.delete(vid);
+      }
+      if (windowMap.size === 0) prev.map.delete(windowId);
+    }
+    return {map: prev.map};
+  }
+);
+
+const interactionLockTimer = Events.timer(500);
+
+// Filters moveOrResize: keeps only the edges the sender actually holds.
+// If the sender holds none of the requested edges, returns undefined to
+// suppress entirely. Partial application — e.g. a whole-frame move with
+// two edges already held by others passes through as the corner drag
+// formed by the remaining two.
+const gatedMoveOrResize = ((cmd, status) => {
+  const windowMap = status.map.get(cmd.id);
+  if (!windowMap) return undefined;
+  const viewState = windowMap.get(cmd.viewId);
+  if (!viewState) return undefined;
+  const allowed = {};
+  for (const [edge, value] of Object.entries(cmd.edges || {})) {
+    if (viewState.heldLocks.includes(edge)) allowed[edge] = value;
+  }
+  if (Object.keys(allowed).length === 0) return undefined;
+  return {...cmd, edges: allowed};
+})(moveOrResize, interactionStatus);
 
 const titles = Behaviors.select(
   {map: new Map()},
@@ -912,7 +1028,7 @@ html, body {
 }
 
 .windowHolder {
-  height: calc(100% - 23px);
+  height: calc(100% - 28px);
 }
 
 .windowHolder[blurred="true"] {
@@ -1313,7 +1429,8 @@ const newEditor = (id, docModel) => {
       "windows", "windowTypes", "positions", "titles", "windowEnabled",
       "zIndex", "windowContentsModel", "padTitle", "docSeparators", "initialData",
       "newId", "padViews", "padExtent", "cursorPositions", "newWindowRequest", "padTitle", "viewJoin",
-      "viewExit", "xxx", "loadReceiver", "loadHandler", "loadFromFile", "loadFromProgram", "runRequest", "resetRequest"]},
+      "viewExit", "xxx", "loadReceiver", "loadHandler", "loadFromFile", "loadFromProgram", "runRequest", "resetRequest",
+      "interactionStatus", "interactionLockTimer", "gatedMoveOrResize"]},
     persistentNodes: [["windows", 60000]],
     name: "pad"
   },
@@ -2728,7 +2845,9 @@ const downOrUpOrResize = Events.or(padDown, padUp, pointercancel, lostpointercap
 const _padMove = Events.listener("#pad", "pointermove", moveCompute);
 const moveReporter = Events.listener("#pad", "pointermove", evt => evt);
 
-const moveOrResize = Events.receiver();
+const moveOrResizeRaw = Events.receiver();
+// throttle to ~30Hz to reduce wasted bandwidth
+const moveOrResize = Events.calm(moveOrResizeRaw, 32);
 
 const moveCompute = ((downOrUpOrResize, positions, padView, viewId) => {
   if (downOrUpOrResize.type === "moveDown" || downOrUpOrResize.type === "windowResizeDown") {
@@ -2740,40 +2859,29 @@ const moveCompute = ((downOrUpOrResize, positions, padView, viewId) => {
     return (move) => {
       const diffX = (move.clientX - downPoint.x) / scale;
       const diffY = (move.clientY - downPoint.y) / scale;
-      const result = {id: downOrUpOrResize.id, type};
-      // const position = positions.map.get(downOrUpOrResize.id);
+      const edges = {};
+      // We send only the edges the user actually controls (in absolute
+      // coordinates). The model derives x/y/w/h, preserving any edges that
+      // another user may be controlling on the same window. Min-size
+      // clamping is also done in the model since it depends on the
+      // current rect, which may include another user's contributions.
+      const startRight = start.x + start.width;
+      const startBottom = start.y + start.height;
       if (type === "move") {
         if (pinnedPositions.map.get(downOrUpOrResize.id)) {return move;}
-        result.x = start.x + diffX;
-        result.y = start.y + diffY;
+        edges.left = start.x + diffX;
+        edges.top = start.y + diffY;
+        edges.right = startRight + diffX;
+        edges.bottom = startBottom + diffY;
       } else {
-        if (downOrUpOrResize.corner === "bottomRight") {
-          const realDiffX = start.width + diffX < 120 ? 120 - start.width : diffX;
-          const realDiffY = start.height + diffY < 70 ? 70 - start.height : diffY;
-          result.width = start.width + realDiffX;
-          result.height = start.height + realDiffY;
-        } else if (downOrUpOrResize.corner === "topLeft") {
-          const realDiffX = start.width - diffX < 120 ? start.width - 120 : diffX;
-          const realDiffY = start.height - diffY < 70 ? start.height - 70 : diffY;
-          result.width = start.width - realDiffX;
-          result.height = start.height - realDiffY;
-          result.x = start.x + realDiffX;
-          result.y = start.y + realDiffY;
-        } else if (downOrUpOrResize.corner === "topRight") {
-          const realDiffX = start.width + diffX < 120 ? 120 - start.width : diffX;
-          const realDiffY = start.height - diffY < 70 ? start.height - 70 : diffY;
-          result.width = start.width + realDiffX;
-          result.height = start.height - realDiffY;
-          result.y = start.y + realDiffY;
-        } else if (downOrUpOrResize.corner === "bottomLeft") {
-          const realDiffX = start.width - diffX < 120 ? start.width - 120 : diffX;
-          const realDiffY = start.height + diffY < 70 ? 70 - start.height : diffY;
-          result.width = start.width - realDiffX;
-          result.height = start.height + realDiffY;
-          result.x = start.x + realDiffX;
-        }
+        const c = downOrUpOrResize.corner;
+        if (c === "bottomRight" || c === "topRight") edges.right = startRight + diffX;
+        if (c === "topLeft" || c === "bottomLeft") edges.left = start.x + diffX;
+        if (c === "topLeft" || c === "topRight") edges.top = start.y + diffY;
+        if (c === "bottomLeft" || c === "bottomRight") edges.bottom = startBottom + diffY;
       }
-      Events.send(moveOrResize, result);
+      const result = {id: downOrUpOrResize.id, type, viewId, corner: downOrUpOrResize.corner, edges};
+      Events.send(moveOrResizeRaw, result);
       return move;
     }
   } else if (downOrUpOrResize.type === "padDragDown") {
@@ -2858,6 +2966,49 @@ const moveCompute = ((downOrUpOrResize, positions, padView, viewId) => {
     return (move) => move;
   }
 })(downOrUpOrResize, positions, padView, viewId);
+
+// Interaction locking ----------------------------------------------------
+const interactionLockRequest = Events.receiver({queued: true});
+const interactionLockEnd = Events.receiver({queued: true});
+
+// Track which window this view is currently interacting with, so we can
+// release on pointerup/cancel.
+const activeLockWindow = Behaviors.select(
+  null,
+  padDown, (_prev, ev) => {
+    if (ev.type === "moveDown" || ev.type === "windowResizeDown") return ev.id;
+    return null;
+  },
+  Events.or(padUp, pointercancel, lostpointercapture), (_prev, _) => null
+);
+
+// On moveDown / windowResizeDown, claim the appropriate edge locks.
+const _lockClaim = ((ev, viewId) => {
+  const cornerLocks = {
+    topLeft: ["top","left"], topRight: ["top","right"],
+    bottomLeft: ["bottom","left"], bottomRight: ["bottom","right"]
+  };
+  let requestedLocks;
+  if (ev.type === "moveDown") {
+    requestedLocks = ["top","right","bottom","left"];
+  } else if (ev.type === "windowResizeDown") {
+    requestedLocks = cornerLocks[ev.corner];
+  } else {
+    return;
+  }
+  Events.send(interactionLockRequest, {windowId: ev.id, viewId, requestedLocks});
+})(padDown, viewId);
+
+// (Lock auto-refresh happens model-side: each successful moveOrResize that
+// passes the gate updates lockTime via the moveOrResize trigger on
+// interactionStatus.)
+
+// On pointerup/cancel, release whatever this view was holding.
+const _lockRelease = ((trigger, prevWindow, viewId) => {
+  if (prevWindow) {
+    Events.send(interactionLockEnd, {windowId: prevWindow, viewId});
+  }
+})(Events.or(padUp, pointercancel, lostpointercapture), $activeLockWindow, viewId);
 `],
 [`28`, `const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
 const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
@@ -3621,7 +3772,54 @@ function cursorSVG(initialsColor, outlineColor, fillColor, initials) {
         </text>
     </g>
 </svg>\`
-}`],
+}
+
+// Colored box-shadows showing per-user lock state on each window.
+const _lockShadowsCss = ((interactionStatus, isLocal) => {
+  const rules = [];
+  if (isLocal) {
+    // single-user pad: locks always granted to "local", no need to visualize
+    let style = document.body.querySelector("#lockShadows-css");
+    if (style) style.textContent = "";
+    return;
+  }
+  for (const [windowId, windowMap] of interactionStatus.map) {
+    if (!windowMap || windowMap.size === 0) continue;
+
+    const shadows = [];
+    for (const [otherViewId, state] of windowMap) {
+      const hue = randomHue(otherViewId);
+      const color = \`hsl(\${hue} 50% 45%)\`;
+      const locks = state.heldLocks;
+
+      if (locks.length === 4) {
+        // full move - uniform glow around the whole window
+        shadows.push(\`0 0 0 3px \${color}\`);
+      } else if (locks.length === 2) {
+        // corner resize - offset blob at the held corner
+        let xOffset = 0, yOffset = 0;
+        if (locks.includes("right")) xOffset = 4;
+        if (locks.includes("left")) xOffset = -4;
+        if (locks.includes("bottom")) yOffset = 4;
+        if (locks.includes("top")) yOffset = -4;
+        shadows.push(\`\${xOffset}px \${yOffset}px 0 2px \${color}\`);
+      }
+    }
+    if (shadows.length > 0) {
+      const defaultShadow = "inset 0 2px 2px 0 rgba(255, 255, 255, 0.8), 1px 1px 8px 0 rgba(0, 35, 46, 0.2)";
+      rules.push(\`[id="\${windowId}-win"] { box-shadow: \${defaultShadow}, \${shadows.join(", ")}; }\`);
+    }
+  }
+
+  let style = document.body.querySelector("#lockShadows-css");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "lockShadows-css";
+    document.body.appendChild(style);
+  }
+  style.textContent = rules.join("\\n");
+})(interactionStatus, isLocal);
+`],
 [`186`, `# Viewport and Remote Cursor Visualizer
 
 It takes other views' visible areas and make them visible in your view when the session is running multiuser.`]]}
