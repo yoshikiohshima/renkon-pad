@@ -436,22 +436,28 @@ const zIndex = Behaviors.select(
     prev.map.delete(\`\${remove.id}\`);
     return {map: prev.map, sorted: null};
   },
-  moveOrResize, (prev, command) => {
-    if (command.type === "move") {
-      const z = prev.map.get(command.id);
-      const sorted = prev.sorted || [...prev.map].sort((a, b) => a[1] - b[1]);
-      const index = sorted.findIndex((f) => f[0] === command.id);
-      if (index === sorted.length - 1) {
-        return prev.sorted ? prev : {map: prev.map, sorted};
-      }
-      let max = sorted[sorted.length - 1][1];
-      sorted.slice(index + 1).forEach(([id, zInd]) => {
-        prev.map.set(id, zInd - 1);
+  interactionLockRequest, (prev, requests) => {
+    // Bring-to-front on grab, not on every move tick. Triggering off raw
+    // moveOrResize caused two concurrent draggers to ping-pong the z-stack.
+    let map = prev.map;
+    let sorted = prev.sorted || [...map].sort((a, b) => a[1] - b[1]);
+    let changed = false;
+    for (const request of requests) {
+      // full move only (all 4 edges); corner resizes don't raise
+      if (request.requestedLocks.length !== 4) continue;
+      const id = request.windowId;
+      const index = sorted.findIndex((f) => f[0] === id);
+      if (index === -1 || index === sorted.length - 1) continue;
+      const max = sorted[sorted.length - 1][1];
+      sorted.slice(index + 1).forEach(([otherId, zInd]) => {
+        map.set(otherId, zInd - 1);
       });
-      prev.map.set(command.id, max);
-      return {map: prev.map, sorted: [...prev.map].sort((a, b) => a[1] - b[1])};
+      map.set(id, max);
+      sorted = [...map].sort((a, b) => a[1] - b[1]);
+      changed = true;
     }
-    return prev;
+    if (!changed) return prev.sorted ? prev : {map, sorted};
+    return {map, sorted};
   }
 );
 
@@ -510,6 +516,15 @@ const interactionStatus = Behaviors.select(
     }
     return prev;
   },
+  separatorMove, (prev, cmd) => {
+    // each separator move keeps its lock alive
+    const windowMap = prev.map.get(cmd.id);
+    if (windowMap) {
+      const viewState = windowMap.get(cmd.viewId);
+      if (viewState) viewState.lockTime = Renkon.time;
+    }
+    return prev;
+  },
   remove, (prev, removeCmd) => {
     prev.map.delete(removeCmd.id);
     return {map: prev.map};
@@ -555,6 +570,17 @@ const gatedMoveOrResize = ((cmd, status) => {
   if (Object.keys(allowed).length === 0) return undefined;
   return {...cmd, edges: allowed};
 })(moveOrResize, interactionStatus);
+
+// Filters separatorMove: only passes through when the sender holds the
+// "separator" lock for the target window.
+const gatedSeparatorMove = ((cmd, status) => {
+  const windowMap = status.map.get(cmd.id);
+  if (!windowMap) return undefined;
+  const viewState = windowMap.get(cmd.viewId);
+  if (!viewState) return undefined;
+  if (!viewState.heldLocks.includes("separator")) return undefined;
+  return cmd;
+})(separatorMove, interactionStatus);
 
 const titles = Behaviors.select(
   {map: new Map()},
@@ -656,33 +682,51 @@ const padTitle = Behaviors.select(
 
 const docSeparators = Behaviors.select(
   {map: new Map()},
-  separatorMove, (prev, separatorMove) => {
+  gatedSeparatorMove, (prev, separatorMove) => {
     const id = separatorMove.id;
     const containerPosition = positions.map.get(id);
     const containerWidth = containerPosition.width;
     const newX = separatorMove.x;
     const docWidth = Math.min(containerWidth - 8, Math.max(newX - 8, 0));
-    const editorWidth = Math.max(containerWidth - 22 - docWidth, 60);
-    const editorRight = editorWidth === 60 ? -60 - 16 + (containerWidth - newX) : 0;
+    const editorWidth = Math.max(containerWidth - 8 - docWidth, 60);
+    const editorRight = 0;
     prev.map.set(id, {docWidth, editorWidth, editorRight});
-    return {map: prev.map};   
+    return {map: prev.map};
   },
   remove, (prev, remove) => {
     prev.map.delete(remove.id);
     return {map: prev.map};
   },
   moveOrResize, (prev, command) => {
+    // window resize: preserve editor width, adjust doc width to fill the rest.
+    // If another user holds the separator lock, defer to them — preserve the
+    // docWidth they've chosen and let the editor shrink/grow instead. Without
+    // this, a corner-resize and a separator drag fight over docWidth.
+    // Skips when there's no entry yet — CSS defaults already track the resize.
     if (command.type !== "resize") {return prev;}
     const id = command.id;
     const winType = windowTypes.map.get(id);
     if (winType !== "doc") {return prev;}
+    const existing = prev.map.get(id);
+    if (!existing) {return prev;}
     const containerPosition = positions.map.get(id);
     const containerWidth = containerPosition.width;
-    const newX = containerWidth - 22;
-    const docWidth = containerWidth - 8;
-    const editorWidth = 60;
-    const editorRight = -60;
-    prev.map.set(id, {docWidth, editorWidth, editorRight});
+    const lockMap = interactionStatus.map.get(id);
+    let separatorHeld = false;
+    if (lockMap) {
+      for (const [, state] of lockMap) {
+        if (state.heldLocks.includes("separator")) { separatorHeld = true; break; }
+      }
+    }
+    let docWidth, editorWidth;
+    if (separatorHeld) {
+      docWidth = existing.docWidth;
+      editorWidth = Math.max(containerWidth - 8 - docWidth, 60);
+    } else {
+      editorWidth = existing.editorWidth;
+      docWidth = Math.max(containerWidth - 8 - editorWidth, 0);
+    }
+    prev.map.set(id, {docWidth, editorWidth, editorRight: 0});
     return {map: prev.map};
   }
 )
@@ -1153,7 +1197,7 @@ html, body {
 
 .doc-result {
   height: 100%;
-  width: calc(100% - 220px);
+  width: calc(100% - 208px);
   overflow: scroll;
   scroll-behavior: smooth;
   font-size: 13px;
@@ -1180,19 +1224,21 @@ html, body {
 
 .doc-editor {
   width: 100%;
+  height: 100%;
 }
 
 .doc-editor-container {
   position: fixed;
   right: 0px;
-  height: calc(100% - 36px);
+  height: calc(100% - 28px);
   width: 200px;
   border: 1px solid black;
   padding: 6px;
+  box-sizing: border-box;
   min-width: 0px;
   background-color: white;
   white-space: pre-wrap;
-  overflow: scroll;
+  overflow: hidden;
 }
 
 .cm-remoteSelection {
@@ -1430,7 +1476,7 @@ const newEditor = (id, docModel) => {
       "zIndex", "windowContentsModel", "padTitle", "docSeparators", "initialData",
       "newId", "padViews", "padExtent", "cursorPositions", "newWindowRequest", "padTitle", "viewJoin",
       "viewExit", "xxx", "loadReceiver", "loadHandler", "loadFromFile", "loadFromProgram", "runRequest", "resetRequest",
-      "interactionStatus", "interactionLockTimer", "gatedMoveOrResize"]},
+      "interactionStatus", "interactionLockTimer", "gatedMoveOrResize", "gatedSeparatorMove"]},
     persistentNodes: [["windows", 60000]],
     name: "pad"
   },
@@ -2906,7 +2952,7 @@ const moveCompute = ((downOrUpOrResize, positions, padView, viewId) => {
     const type = downOrUpOrResize.type;
     return (move) => {
       const winX = move.clientX / scale - padView.x - start.x;
-      const result = {id: downOrUpOrResize.id, type};
+      const result = {id: downOrUpOrResize.id, type, viewId};
       if (pinnedPositions.map.get(downOrUpOrResize.id)) {return move;}
       result.x = winX;
       result.startX = scaledDownX;
@@ -2976,13 +3022,13 @@ const interactionLockEnd = Events.receiver({queued: true});
 const activeLockWindow = Behaviors.select(
   null,
   padDown, (_prev, ev) => {
-    if (ev.type === "moveDown" || ev.type === "windowResizeDown") return ev.id;
+    if (ev.type === "moveDown" || ev.type === "windowResizeDown" || ev.type === "docSeparator") return ev.id;
     return null;
   },
   Events.or(padUp, pointercancel, lostpointercapture), (_prev, _) => null
 );
 
-// On moveDown / windowResizeDown, claim the appropriate edge locks.
+// On moveDown / windowResizeDown / docSeparator, claim the appropriate locks.
 const _lockClaim = ((ev, viewId) => {
   const cornerLocks = {
     topLeft: ["top","left"], topRight: ["top","right"],
@@ -2993,6 +3039,8 @@ const _lockClaim = ((ev, viewId) => {
     requestedLocks = ["top","right","bottom","left"];
   } else if (ev.type === "windowResizeDown") {
     requestedLocks = cornerLocks[ev.corner];
+  } else if (ev.type === "docSeparator") {
+    requestedLocks = ["separator"];
   } else {
     return;
   }
@@ -3792,7 +3840,12 @@ const _lockShadowsCss = ((interactionStatus, isLocal) => {
       const color = \`hsl(\${hue} 50% 45%)\`;
       const locks = state.heldLocks;
 
-      if (locks.length === 4) {
+      if (locks.length === 1 && locks[0] === "separator") {
+        // separator drag - color the separator strip itself.
+        // Chain .doc-separator to match :hover specificity so the lock
+        // colour shows on the dragger's own cursor too.
+        rules.push(\`.doc-separator[id="\${windowId}-doc-separator"] { background-color: \${color}; }\`);
+      } else if (locks.length === 4) {
         // full move - uniform glow around the whole window
         shadows.push(\`0 0 0 3px \${color}\`);
       } else if (locks.length === 2) {
