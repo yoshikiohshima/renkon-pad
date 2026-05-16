@@ -132,8 +132,26 @@ export class CodeMirrorModel extends Croquet.Model {
     this.updates = new UpdatesWrapper(0, []);
     this.pending = [];
     this.colors = new Map() // viewId => css color string
+    // In-flight chunked pushUpdates, keyed by sendKey.
+    // Entries: {chunks: Uint8Array[], version, clientID, viewId, lastTime}.
+    this.pushChunkBuffers = new Map();
     this.subscribe(this.id, "collabMessage", this.collabMessage);
     this.subscribe(this.sessionId, "view-exit", this.viewExit);
+    this.future(5000).expireChunkBuffers();
+  }
+
+  expireChunkBuffers() {
+    // GC chunked-push entries whose senders went away without completing
+    // (or whose connection dropped). 30s is plenty for any reasonable
+    // sized paste.
+    const STALE_MS = 30000;
+    const now = this.now();
+    if (this.pushChunkBuffers) {
+      for (const [sendKey, entry] of this.pushChunkBuffers) {
+        if (now - entry.lastTime > STALE_MS) this.pushChunkBuffers.delete(sendKey);
+      }
+    }
+    this.future(5000).expireChunkBuffers();
   }
 
   static types() {
@@ -160,6 +178,38 @@ export class CodeMirrorModel extends Croquet.Model {
   }
 
   collabMessage(event) {
+    // Chunked pushUpdates path: large transactions (e.g. pasting hundreds
+    // of KB) exceed Croquet's per-message limit, so the view splits the
+    // serialized updates into chunks. We assemble them by sendKey and
+    // re-dispatch as a normal pushUpdates when the last chunk lands.
+    if (event.type === "pushUpdatesChunk") {
+      let entry = this.pushChunkBuffers.get(event.sendKey);
+      if (event.isFirst) {
+        entry = {
+          chunks: [], version: event.version,
+          clientID: event.clientID, viewId: event.viewId,
+          lastTime: this.now(),
+        };
+        this.pushChunkBuffers.set(event.sendKey, entry);
+      }
+      if (!entry) return; // chunk for an unknown send (stale)
+      entry.chunks.push(event.buf);
+      entry.lastTime = this.now();
+      if (event.isLast) {
+        const len = entry.chunks.reduce((a, b) => a + b.length, 0);
+        const all = new Uint8Array(len);
+        let ind = 0;
+        for (const b of entry.chunks) { all.set(b, ind); ind += b.length; }
+        const updates = JSON.parse(new TextDecoder().decode(all));
+        this.pushChunkBuffers.delete(event.sendKey);
+        this.collabMessage({
+          type: "pushUpdates",
+          version: entry.version, clientID: entry.clientID, viewId: entry.viewId,
+          updates,
+        });
+      }
+      return;
+    }
     // following code at:
     // https://github.com/codemirror/website/tree/main/site/examples/collab
     // an implicit logic is that only peer that the ports[0], which was the sender of the message
@@ -216,6 +266,12 @@ export class CodeMirrorModel extends Croquet.Model {
   }
 
   viewExit(viewId) {
+    // Drop any in-flight chunked pushes from the departing view.
+    if (this.pushChunkBuffers) {
+      for (const [sendKey, entry] of this.pushChunkBuffers) {
+        if (entry.viewId === viewId) this.pushChunkBuffers.delete(sendKey);
+      }
+    }
     this.updates.viewExit(viewId);
     this.colors.delete(viewId);
     this.publish(this.id, "updateSelections");
@@ -287,7 +343,16 @@ const sharedSelectionExtender = EditorState.transactionExtender.of((tr) => {
 });
 
 function mapSelectionRange(range, changes) {
-  const forward = range.anchor <= range.head;
+  // Collapsed range (a cursor): map both ends with the same associativity
+  // so it stays collapsed. Mapping the two ends with opposite biases — as
+  // the selection case below does to keep insertions from being swallowed
+  // — would stretch a cursor sitting exactly at an insertion point into a
+  // full selection spanning the inserted text.
+  if (range.anchor === range.head) {
+    const pos = changes.mapPos(range.anchor, -1);
+    return {anchor: pos, head: pos};
+  }
+  const forward = range.anchor < range.head;
   const anchor = changes.mapPos(range.anchor, forward ? 1 : -1);
   const head = changes.mapPos(range.head, forward ? -1 : 1);
   return {anchor, head};
@@ -400,12 +465,50 @@ export class CodeMirrorView extends Croquet.View {
     }
   }
 
-  sendPushUpdates(version, fullUpdates) {
-    let updates = encodeUpdates(fullUpdates);
-    this.publish(this.model.id, "collabMessage", {type: "pushUpdates", version, clientID: this.clientID, updates, viewId: this.viewId});
-    return new Promise((resolve) => {
-      this.pushPromise = resolve;
-    });
+  async sendPushUpdates(version, fullUpdates) {
+    // Set up pushPromise SYNCHRONOUSLY before any await. The collab
+    // plugin's push() gates on this.pushPromise; if we left it unset
+    // during the chunking loop, new transactions arriving mid-chunking
+    // would trigger a second sendPushUpdates with overlapping updates,
+    // producing duplicated content and "Mismatched change set lengths"
+    // when the model later rebases the second against the first.
+    let resolvePush;
+    const pushPromise = new Promise((resolve) => { resolvePush = resolve; });
+    this.pushPromise = resolvePush;
+
+    const updates = encodeUpdates(fullUpdates);
+    const serialized = JSON.stringify(updates);
+    // Croquet caps reflector payloads at ~16 KB. Anything below this
+    // threshold fits in one message after framing; above it we split
+    // into chunks reassembled in CodeMirrorModel.collabMessage.
+    const SINGLE_MSG_THRESHOLD = 12000;
+    if (serialized.length <= SINGLE_MSG_THRESHOLD) {
+      this.publish(this.model.id, "collabMessage",
+        {type: "pushUpdates", version, clientID: this.clientID, updates, viewId: this.viewId});
+    } else {
+      const bytes = new TextEncoder().encode(serialized);
+      const CHUNK_SIZE = 2500;
+      const sendKey = `${this.clientID}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      let ind = 0, isFirst = true;
+      while (true) {
+        const isLast = ind + CHUNK_SIZE >= bytes.length;
+        const payload = {
+          type: "pushUpdatesChunk", sendKey, isFirst, isLast,
+          buf: bytes.slice(ind, ind + CHUNK_SIZE),
+          clientID: this.clientID, viewId: this.viewId,
+        };
+        if (isFirst) payload.version = version;
+        this.publish(this.model.id, "collabMessage", payload);
+        ind += CHUNK_SIZE;
+        isFirst = false;
+        if (isLast) break;
+        // yield so each publish goes out as its own message; without
+        // this the Croquet view-side bundles them. ~60 msg/s is fine for
+        // these short bursts.
+        await new Promise((resolve) => setTimeout(resolve, 17));
+      }
+    }
+    return pushPromise;
   }
 
   sendPullUpdates(version) {
