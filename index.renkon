@@ -1,142 +1,142 @@
 {"padTitle":"Croquet-Renkon-pad",
 "positions":{"map":{"__map":true,
-"values":[["0",{"height":6080.794199143006,
+"values":[["0",{"height":9022.163084480806,
 "id":"0",
-"width":839.5842525446877,
-"x":-2056.6875407359244,
-"y":152.3923214222506}],["2",{"height":1744.920323732381,
+"width":987.4732780628943,
+"x":-2058.3838282137963,
+"y":109.59741162336444}],["2",{"height":1781.728454124542,
 "id":"2",
-"width":850.3675048798228,
-"x":-7505.722858609955,
-"y":170.10927727887955}],["4",{"height":9665.88497033803,
+"width":850.5823048937826,
+"x":-7486.82136957081,
+"y":82.0719571773204}],["4",{"height":9775.609470444973,
 "id":"4",
-"width":1500.5844621217818,
-"x":9226.2127280215,
-"y":151.6731674050339}],["8",{"height":3899.1934625977315,
+"width":1501.4211555576028,
+"x":10019.929871596087,
+"y":132.19009408776068}],["8",{"height":3899.1934625977315,
 "id":"8",
 "width":758.0139347683956,
 "x":-3768.8549944407373,
-"y":162.74088184915206}],["10",{"height":2964.836543029842,
+"y":86.48064337967597}],["10",{"height":2964.836543029842,
 "id":"10",
 "width":1038.071952788944,
 "x":-7447.084203312636,
 "y":-3234.3328587226706}],["14",{"height":4032.7086527663005,
 "id":"14",
 "width":913.3542919288564,
-"x":-5647.784511076828,
-"y":167.53003287371905}],["16",{"height":2915.9198423892362,
+"x":-5649.916986763295,
+"y":87.17447177909473}],["16",{"height":2974.4641792239713,
 "id":"16",
-"width":763.0884327402407,
+"width":822.5840416479172,
 "x":-3767.93605546616,
 "y":4191.928511451859}],["18",{"height":4410.081132077622,
 "id":"18",
 "width":910.344318745339,
-"x":1604.3270139606657,
-"y":4410.649137488393}],["24",{"height":2655.465091713973,
+"x":1657.7860506642633,
+"y":5296.812055889807}],["24",{"height":2719.91203204342,
 "id":"24",
-"width":752.3253374008528,
-"x":5192.0901287411625,
-"y":153.23622200307503}],["25",{"height":3167.5540276899956,
+"width":792.6549508621905,
+"x":5873.997694845724,
+"y":99.48814163278651}],["25",{"height":3226.576611199408,
 "id":"25",
-"width":728.9915280920748,
-"x":5219.167062155898,
-"y":2927.347992797196}],["26",{"height":4977.497643970751,
+"width":779.6654816076897,
+"x":5873.699295510772,
+"y":2957.235795744076}],["26",{"height":5904.447686504109,
 "id":"26",
-"width":853.3718165164681,
-"x":3446.156384599422,
-"y":156.2909297451856}],["27",{"height":4105.436433008831,
+"width":1169.67565281936,
+"x":3557.142051008764,
+"y":111.89666318144864}],["27",{"height":4849.740905532504,
 "id":"27",
-"width":786.7770346390894,
-"x":1607.0445248513663,
-"y":155.3053442530741}],["28",{"height":4873.408557388888,
+"width":1009.9811201141797,
+"x":1603.8215786434093,
+"y":118.9320941918464}],["28",{"height":4859.832378175056,
 "id":"28",
-"width":792.8962568391522,
-"x":-157.57583714356667,
-"y":152.28502210578887}],["29",{"height":2196.5021699995687,
+"width":909.9144659106264,
+"x":-183.5772738039685,
+"y":121.30397252622912}],["29",{"height":2238.731852744076,
 "id":"29",
 "width":875.0511284201408,
 "x":-7510.723863242151,
 "y":2046.4175268827316}],["88",{"height":1499.6102374170123,
 "id":"88",
 "width":734.0176315252023,
-"x":5217.499345601886,
-"y":6159.571005222178}],["89",{"height":1475.9824959204543,
+"x":5918.502262171636,
+"y":6323.902213918862}],["89",{"height":1518.5754211377098,
 "id":"89",
-"width":945.5396981979883,
-"x":7121.997951410412,
-"y":2822.709493481974}],["90",{"height":395.11443821079865,
+"width":984.3021362793764,
+"x":7833.259328890456,
+"y":3635.918331149146}],["90",{"height":395.11443821079865,
 "id":"90",
 "width":785.0824912605583,
 "x":-8284.47407987052,
 "y":-3216.650641499678}],["91",{"height":399.78479399032983,
 "id":"91",
 "width":786.4592378715543,
-"x":-8343.60063445745,
-"y":170.5477662620383}],["92",{"height":400,
+"x":-8361.314722262086,
+"y":70.61220113711951}],["92",{"height":400,
 "id":"92",
 "width":800,
-"x":-8351.56645680697,
-"y":2080.937468689512}],["93",{"height":400,
+"x":-8356.53415584931,
+"y":2035.6223603520732}],["93",{"height":400,
 "id":"93",
 "width":800,
-"x":-6506.08449182103,
-"y":164.91758073104134}],["94",{"height":400,
+"x":-6518.976276652857,
+"y":89.48125332224596}],["94",{"height":400,
 "id":"94",
 "width":800,
-"x":-4601.874090924307,
-"y":162.00688272439712}],["95",{"height":400,
+"x":-4640.840237558853,
+"y":95.00352734845133}],["95",{"height":400,
 "id":"95",
 "width":800,
 "x":-4623.0704286915825,
 "y":4195.159406439077}],["96",{"height":654.5675027366065,
 "id":"96",
 "width":759.9280880101138,
-"x":-2874.4275106309483,
-"y":152.94656526595696}],["97",{"height":425.16384641060284,
+"x":-2903.0947690069856,
+"y":102.03370825154029}],["97",{"height":425.16384641060284,
 "id":"97",
 "width":799.8133245815237,
-"x":-1021.3670765062191,
-"y":149.56907160223628}],["98",{"height":400,
+"x":-1026.7224984006436,
+"y":121.70149160862411}],["98",{"height":400,
 "id":"98",
 "width":800,
-"x":735.8947260092311,
-"y":155.49785569117438}],["99",{"height":400,
+"x":776.5329274433943,
+"y":119.996982047138}],["99",{"height":400,
 "id":"99",
 "width":800,
-"x":744.8483840607839,
-"y":4409.83231055079}],["100",{"height":400,
+"x":749.3129422969563,
+"y":5313.24607923201}],["100",{"height":400,
 "id":"100",
 "width":800,
-"x":2594.852375193863,
-"y":155.418241982143}],["101",{"height":400,
+"x":2707.437398368056,
+"y":120.74127939878733}],["101",{"height":400,
 "id":"101",
 "width":800,
-"x":4350.01526721649,
-"y":156.91844645652895}],["102",{"height":400,
+"x":4932.4961544394955,
+"y":106.1994508681548}],["102",{"height":400,
 "id":"102",
 "width":800,
-"x":4364.274393601232,
-"y":2933.522163891459}],["103",{"height":400,
+"x":4935.268991331218,
+"y":2957.05209447737}],["103",{"height":400,
 "id":"103",
 "width":800,
-"x":4372.344067895909,
-"y":6158.147566966454}],["104",{"height":447.9135641802801,
+"x":4978.01562820925,
+"y":6325.715107953063}],["104",{"height":447.9135641802801,
 "id":"104",
 "width":844.7603993464369,
-"x":6073.02829250681,
-"y":2826.5252874419193}],["105",{"height":400,
+"x":6920.596904265421,
+"y":3631.0470299952685}],["105",{"height":400,
 "id":"105",
 "width":800,
-"x":8284.815013324254,
-"y":163.09341064898467}],["113",{"height":2492.2350387758065,
+"x":9088.588718374795,
+"y":128.36798270911837}],["113",{"height":2809.791916441798,
 "id":"113",
-"width":1105.4568797571524,
-"x":7126.678016932005,
-"y":153.34810490089606}],["186",{"height":555.7937438018236,
+"width":1187.0938817776405,
+"x":7755.855275153002,
+"y":116.562899309328}],["186",{"height":555.7937438018236,
 "id":"186",
 "width":834.6357947150393,
-"x":6199.73078571295,
-"y":152.44480114472776}]]}},
+"x":6775.1621446762165,
+"y":109.11824614408943}]]}},
 "titles":{"map":{"__map":true,
 "values":[["0",{"id":"0",
 "state":false,
@@ -248,8 +248,8 @@
 "values":[["0","code"],["2","code"],["4","code"],["8","code"],["10","code"],["14","code"],["16","code"],["18","code"],["24","code"],["25","code"],["26","code"],["27","code"],["28","code"],["29","code"],["88","code"],["89","code"],["90","doc"],["91","doc"],["92","doc"],["93","doc"],["94","doc"],["95","doc"],["96","doc"],["97","doc"],["98","doc"],["99","doc"],["100","doc"],["101","doc"],["102","doc"],["103","doc"],["104","doc"],["105","doc"],["113","code"],["186","doc"]]}},
 "windows":["0","2","4","8","10","14","16","18","24","25","26","27","28","29","88","89","90","91","92","93","94","95","96","97","98","99","100","101","102","103","104","105","113","186"],
 "zIndex":{"map":{"__map":true,
-"values":[["0",111],["2",117],["4",119],["8",107],["10",118],["14",127],["16",137],["18",123],["24",105],["25",139],["26",112],["27",103],["28",110],["29",135],["88",141],["89",133],["90",132],["91",102],["92",134],["93",120],["94",115],["95",136],["96",106],["97",126],["98",122],["99",124],["100",100],["101",125],["102",138],["103",140],["104",109],["105",128],["113",121],["186",131]]},
-"sorted":[["100",100],["91",102],["27",103],["24",105],["96",106],["8",107],["104",109],["28",110],["0",111],["26",112],["94",115],["2",117],["10",118],["4",119],["93",120],["113",121],["98",122],["18",123],["99",124],["101",125],["97",126],["14",127],["105",128],["186",131],["90",132],["89",133],["92",134],["29",135],["95",136],["16",137],["102",138],["25",139],["103",140],["88",141]]}}
+"values":[["0",131],["2",137],["4",115],["8",133],["10",106],["14",135],["16",112],["18",114],["24",120],["25",140],["26",125],["27",127],["28",129],["29",110],["88",123],["89",118],["90",109],["91",138],["92",139],["93",136],["94",134],["95",111],["96",132],["97",130],["98",128],["99",113],["100",126],["101",121],["102",122],["103",124],["104",119],["105",116],["113",117],["186",141]]},
+"sorted":[["10",106],["90",109],["29",110],["95",111],["16",112],["99",113],["18",114],["4",115],["105",116],["113",117],["89",118],["104",119],["24",120],["101",121],["102",122],["88",123],["103",124],["26",125],["100",126],["27",127],["98",128],["28",129],["97",130],["0",131],["96",132],["8",133],["94",134],["14",135],["93",136],["2",137],["91",138],["92",139],["25",140],["186",141]]}}
 {__codeMap: true, value: [[`0`, `const viewExit = Events.receiver({queued: true});
 const viewJoin = Events.receiver({queued: true});
 
@@ -326,10 +326,25 @@ const positions = Behaviors.select(
     prev.map.delete(remove.id);
     return {map: prev.map};
   },
-  moveOrResize, (prev, command) => {
-    const newRect = {...prev.map.get(command.id), ...command};
-    delete newRect.type;
-    prev.map.set(command.id, newRect);
+  gatedMoveOrResize, (prev, command) => {
+    const old = prev.map.get(command.id);
+    if (!old) return prev;
+    const e = command.edges || {};
+    let left = e.left ?? old.x;
+    let top = e.top ?? old.y;
+    let right = e.right ?? (old.x + old.width);
+    let bottom = e.bottom ?? (old.y + old.height);
+    // min-size: clamp the edge othat was actually moved
+    const minW = 120, minH = 70;
+    if (right - left < minW) {
+      if (e.left !== undefined) left = right - minW;
+      else if (e.right !== undefined) right = left + minW;
+    }
+    if (bottom - top < minH) {
+      if (e.top !== undefined) top = bottom - minH;
+      else if (e.bottom !== undefined) bottom = top + minH;
+    }
+    prev.map.set(command.id, {...old, x: left, y: top, width: right - left, height: bottom - top});
     return {map: prev.map};
   }
 );
@@ -422,24 +437,151 @@ const zIndex = Behaviors.select(
     prev.map.delete(\`\${remove.id}\`);
     return {map: prev.map, sorted: null};
   },
-  moveOrResize, (prev, command) => {
-    if (command.type === "move") {
-      const z = prev.map.get(command.id);
-      const sorted = prev.sorted || [...prev.map].sort((a, b) => a[1] - b[1]);
-      const index = sorted.findIndex((f) => f[0] === command.id);
-      if (index === sorted.length - 1) {
-        return prev.sorted ? prev : {map: prev.map, sorted};
-      }
-      let max = sorted[sorted.length - 1][1];
-      sorted.slice(index + 1).forEach(([id, zInd]) => {
-        prev.map.set(id, zInd - 1);
+  interactionLockRequest, (prev, requests) => {
+    // Bring-to-front on grab, not on every move tick. Triggering off raw
+    // moveOrResize caused two concurrent draggers to ping-pong the z-stack.
+    let map = prev.map;
+    let sorted = prev.sorted || [...map].sort((a, b) => a[1] - b[1]);
+    let changed = false;
+    for (const request of requests) {
+      // full move only (all 4 edges); corner resizes don't raise
+      if (request.requestedLocks.length !== 4) continue;
+      const id = request.windowId;
+      const index = sorted.findIndex((f) => f[0] === id);
+      if (index === -1 || index === sorted.length - 1) continue;
+      const max = sorted[sorted.length - 1][1];
+      sorted.slice(index + 1).forEach(([otherId, zInd]) => {
+        map.set(otherId, zInd - 1);
       });
-      prev.map.set(command.id, max);
-      return {map: prev.map, sorted: [...prev.map].sort((a, b) => a[1] - b[1])};
+      map.set(id, max);
+      sorted = [...map].sort((a, b) => a[1] - b[1]);
+      changed = true;
     }
-    return prev;
+    if (!changed) return prev.sorted ? prev : {map, sorted};
+    return {map, sorted};
   }
 );
+
+// === INTERACTION LOCK ===
+// Map<windowId, Map<viewId, {heldLocks: string[], lockTime: number}>>
+// heldLocks is a subset of ["top","right","bottom","left"]
+// Lock claim: full move = all 4 edges; corner resize = the 2 edges of that corner.
+const interactionStatus = Behaviors.select(
+  {map: new Map()},
+  loadHandler, (_prev, _data) => ({map: new Map()}),
+  interactionLockRequest, (prev, requests) => {
+    for (const request of requests) {
+      const {windowId, viewId: requesterId, requestedLocks} = request;
+      let windowMap = prev.map.get(windowId);
+      if (!windowMap) {
+        windowMap = new Map();
+        prev.map.set(windowId, windowMap);
+      }
+      let viewState = windowMap.get(requesterId);
+      if (!viewState) {
+        // partial grant: grant whichever requested edges aren't already held
+        // by another view. The mover can fall back to a partial drag — e.g.
+        // a frame move with two edges already held by others becomes a
+        // 2-edge corner drag.
+        const conflicting = new Set();
+        for (const [otherId, otherState] of windowMap) {
+          if (otherId !== requesterId) {
+            for (const lk of otherState.heldLocks) conflicting.add(lk);
+          }
+        }
+        const granted = requestedLocks.filter((l) => !conflicting.has(l));
+        if (granted.length === 0) continue;
+        windowMap.set(requesterId, {heldLocks: granted, lockTime: Renkon.time});
+      } else {
+        viewState.lockTime = Renkon.time;
+      }
+    }
+    return {map: prev.map};
+  },
+  interactionLockEnd, (prev, ends) => {
+    for (const end of ends) {
+      const windowMap = prev.map.get(end.windowId);
+      if (windowMap) {
+        windowMap.delete(end.viewId);
+        if (windowMap.size === 0) prev.map.delete(end.windowId);
+      }
+    }
+    return {map: prev.map};
+  },
+  moveOrResize, (prev, cmd) => {
+    // each successful move keeps the lock alive
+    const windowMap = prev.map.get(cmd.id);
+    if (windowMap) {
+      const viewState = windowMap.get(cmd.viewId);
+      if (viewState) viewState.lockTime = Renkon.time;
+    }
+    return prev;
+  },
+  separatorMove, (prev, cmd) => {
+    // each separator move keeps its lock alive
+    const windowMap = prev.map.get(cmd.id);
+    if (windowMap) {
+      const viewState = windowMap.get(cmd.viewId);
+      if (viewState) viewState.lockTime = Renkon.time;
+    }
+    return prev;
+  },
+  remove, (prev, removeCmd) => {
+    prev.map.delete(removeCmd.id);
+    return {map: prev.map};
+  },
+  viewExit, (prev, viewExits) => {
+    for (const vid of viewExits) {
+      for (const [windowId, windowMap] of prev.map) {
+        windowMap.delete(vid);
+        if (windowMap.size === 0) prev.map.delete(windowId);
+      }
+    }
+    return {map: prev.map};
+  },
+  interactionLockTimer, (prev, _) => {
+    const now = Renkon.time;
+    const timeout = 5000;
+    for (const [windowId, windowMap] of prev.map) {
+      for (const [vid, state] of windowMap) {
+        if (now - state.lockTime > timeout) windowMap.delete(vid);
+      }
+      if (windowMap.size === 0) prev.map.delete(windowId);
+    }
+    return {map: prev.map};
+  }
+);
+
+const interactionLockTimer = Events.timer(500);
+
+// Filters moveOrResize: keeps only the edges the sender actually holds.
+// If the sender holds none of the requested edges, returns undefined to
+// suppress entirely. Partial application — e.g. a whole-frame move with
+// two edges already held by others passes through as the corner drag
+// formed by the remaining two.
+const gatedMoveOrResize = ((cmd, status) => {
+  const windowMap = status.map.get(cmd.id);
+  if (!windowMap) return undefined;
+  const viewState = windowMap.get(cmd.viewId);
+  if (!viewState) return undefined;
+  const allowed = {};
+  for (const [edge, value] of Object.entries(cmd.edges || {})) {
+    if (viewState.heldLocks.includes(edge)) allowed[edge] = value;
+  }
+  if (Object.keys(allowed).length === 0) return undefined;
+  return {...cmd, edges: allowed};
+})(moveOrResize, interactionStatus);
+
+// Filters separatorMove: only passes through when the sender holds the
+// "separator" lock for the target window.
+const gatedSeparatorMove = ((cmd, status) => {
+  const windowMap = status.map.get(cmd.id);
+  if (!windowMap) return undefined;
+  const viewState = windowMap.get(cmd.viewId);
+  if (!viewState) return undefined;
+  if (!viewState.heldLocks.includes("separator")) return undefined;
+  return cmd;
+})(separatorMove, interactionStatus);
 
 const titles = Behaviors.select(
   {map: new Map()},
@@ -541,33 +683,51 @@ const padTitle = Behaviors.select(
 
 const docSeparators = Behaviors.select(
   {map: new Map()},
-  separatorMove, (prev, separatorMove) => {
+  gatedSeparatorMove, (prev, separatorMove) => {
     const id = separatorMove.id;
     const containerPosition = positions.map.get(id);
     const containerWidth = containerPosition.width;
     const newX = separatorMove.x;
     const docWidth = Math.min(containerWidth - 8, Math.max(newX - 8, 0));
-    const editorWidth = Math.max(containerWidth - 22 - docWidth, 60);
-    const editorRight = editorWidth === 60 ? -60 - 16 + (containerWidth - newX) : 0;
+    const editorWidth = Math.max(containerWidth - 8 - docWidth, 60);
+    const editorRight = 0;
     prev.map.set(id, {docWidth, editorWidth, editorRight});
-    return {map: prev.map};   
+    return {map: prev.map};
   },
   remove, (prev, remove) => {
     prev.map.delete(remove.id);
     return {map: prev.map};
   },
   moveOrResize, (prev, command) => {
+    // window resize: preserve editor width, adjust doc width to fill the rest.
+    // If another user holds the separator lock, defer to them — preserve the
+    // docWidth they've chosen and let the editor shrink/grow instead. Without
+    // this, a corner-resize and a separator drag fight over docWidth.
+    // Skips when there's no entry yet — CSS defaults already track the resize.
     if (command.type !== "resize") {return prev;}
     const id = command.id;
     const winType = windowTypes.map.get(id);
     if (winType !== "doc") {return prev;}
+    const existing = prev.map.get(id);
+    if (!existing) {return prev;}
     const containerPosition = positions.map.get(id);
     const containerWidth = containerPosition.width;
-    const newX = containerWidth - 22;
-    const docWidth = containerWidth - 8;
-    const editorWidth = 60;
-    const editorRight = -60;
-    prev.map.set(id, {docWidth, editorWidth, editorRight});
+    const lockMap = interactionStatus.map.get(id);
+    let separatorHeld = false;
+    if (lockMap) {
+      for (const [, state] of lockMap) {
+        if (state.heldLocks.includes("separator")) { separatorHeld = true; break; }
+      }
+    }
+    let docWidth, editorWidth;
+    if (separatorHeld) {
+      docWidth = existing.docWidth;
+      editorWidth = Math.max(containerWidth - 8 - docWidth, 60);
+    } else {
+      editorWidth = existing.editorWidth;
+      docWidth = Math.max(containerWidth - 8 - editorWidth, 0);
+    }
+    prev.map.set(id, {docWidth, editorWidth, editorRight: 0});
     return {map: prev.map};
   }
 )
@@ -936,7 +1096,7 @@ html, body {
 }
 
 .windowHolder {
-  height: calc(100% - 23px);
+  height: calc(100% - 28px);
 }
 
 .windowHolder[blurred="true"] {
@@ -1061,7 +1221,7 @@ html, body {
 
 .doc-result {
   height: 100%;
-  width: calc(100% - 220px);
+  width: calc(100% - 208px);
   overflow: scroll;
   scroll-behavior: smooth;
   font-size: 13px;
@@ -1088,19 +1248,21 @@ html, body {
 
 .doc-editor {
   width: 100%;
+  height: 100%;
 }
 
 .doc-editor-container {
   position: fixed;
   right: 0px;
-  height: calc(100% - 36px);
+  height: calc(100% - 28px);
   width: 200px;
   border: 1px solid black;
   padding: 6px;
+  box-sizing: border-box;
   min-width: 0px;
   background-color: white;
   white-space: pre-wrap;
-  overflow: scroll;
+  overflow: hidden;
 }
 
 .cm-remoteSelection {
@@ -1350,7 +1512,8 @@ const newEditor = (id, docModel) => {
       "windows", "windowTypes", "positions", "titles", "windowEnabled",
       "zIndex", "windowContentsModel", "padTitle", "docSeparators", "initialData",
       "newId", "padViews", "padExtent", "cursorPositions", "newWindowRequest", "padTitle", "viewJoin",
-      "viewExit", "xxx", "loadReceiver", "loadHandler", "loadFromFile", "loadFromProgram", "runRequest", "resetRequest"]},
+      "viewExit", "xxx", "loadReceiver", "loadHandler", "loadFromFile", "loadFromProgram", "runRequest", "resetRequest",
+      "interactionStatus", "interactionLockTimer", "gatedMoveOrResize", "gatedSeparatorMove"]},
     persistentNodes: [["windows", 60000]],
     name: "pad"
   },
@@ -2528,6 +2691,57 @@ const _positionsCss = ((positions, zIndex, pinnedPositions, padView) => {
   style.textContent = css;
 })(positions, zIndex, pinnedPositions, padView);
 
+// Colored box-shadows showing per-user lock state on each window.
+const _lockShadowsCss = ((interactionStatus, isLocal) => {
+  const rules = [];
+  if (isLocal) {
+    // single-user pad: locks always granted to "local", no need to visualize
+    let style = document.body.querySelector("#lockShadows-css");
+    if (style) style.textContent = "";
+    return;
+  }
+  for (const [windowId, windowMap] of interactionStatus.map) {
+    if (!windowMap || windowMap.size === 0) continue;
+
+    const shadows = [];
+    for (const [otherViewId, state] of windowMap) {
+      const hue = randomHue(otherViewId);
+      const color = \`hsl(\${hue} 50% 45%)\`;
+      const locks = state.heldLocks;
+
+      if (locks.length === 1 && locks[0] === "separator") {
+        // separator drag - color the separator strip itself.
+        // Chain .doc-separator to match :hover specificity so the lock
+        // colour shows on the dragger's own cursor too.
+        rules.push(\`.doc-separator[id="\${windowId}-doc-separator"] { background-color: \${color}; }\`);
+      } else if (locks.length === 4) {
+        // full move - uniform glow around the whole window
+        shadows.push(\`0 0 0 3px \${color}\`);
+      } else if (locks.length === 2) {
+        // corner resize - offset blob at the held corner
+        let xOffset = 0, yOffset = 0;
+        if (locks.includes("right")) xOffset = 4;
+        if (locks.includes("left")) xOffset = -4;
+        if (locks.includes("bottom")) yOffset = 4;
+        if (locks.includes("top")) yOffset = -4;
+        shadows.push(\`\${xOffset}px \${yOffset}px 0 2px \${color}\`);
+      }
+    }
+    if (shadows.length > 0) {
+      const defaultShadow = "inset 0 2px 2px 0 rgba(255, 255, 255, 0.8), 1px 1px 8px 0 rgba(0, 35, 46, 0.2)";
+      rules.push(\`[id="\${windowId}-win"] { box-shadow: \${defaultShadow}, \${shadows.join(", ")}; }\`);
+    }
+  }
+
+  let style = document.body.querySelector("#lockShadows-css");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "lockShadows-css";
+    document.body.appendChild(style);
+  }
+  style.textContent = rules.join("\\n");
+})(interactionStatus, isLocal);
+
 const windowDOM = (id, title, windowContent, type, windowEnabled, pinnedPosition, delayed) => {
   return h("div", {
     key: \`\${id}\`,
@@ -2762,7 +2976,8 @@ const downOrUpOrResize = Events.or(padDown, padUp, pointercancel, lostpointercap
 const _padMove = Events.listener("#pad", "pointermove", moveCompute);
 const moveReporter = Events.listener("#pad", "pointermove", evt => evt);
 
-const moveOrResize = Events.receiver();
+const moveOrResizeRaw = Events.receiver();
+const moveOrResize = moveOrResizeRaw;
 
 const moveCompute = ((downOrUpOrResize, positions, padView, viewId) => {
   if (downOrUpOrResize.type === "moveDown" || downOrUpOrResize.type === "windowResizeDown") {
@@ -2774,40 +2989,29 @@ const moveCompute = ((downOrUpOrResize, positions, padView, viewId) => {
     return (move) => {
       const diffX = (move.clientX - downPoint.x) / scale;
       const diffY = (move.clientY - downPoint.y) / scale;
-      const result = {id: downOrUpOrResize.id, type};
-      // const position = positions.map.get(downOrUpOrResize.id);
+      const edges = {};
+      // We send only the edges the user actually controls (in absolute
+      // coordinates). The model derives x/y/w/h, preserving any edges that
+      // another user may be controlling on the same window. Min-size
+      // clamping is also done in the model since it depends on the
+      // current rect, which may include another user's contributions.
+      const startRight = start.x + start.width;
+      const startBottom = start.y + start.height;
       if (type === "move") {
         if (pinnedPositions.map.get(downOrUpOrResize.id)) {return move;}
-        result.x = start.x + diffX;
-        result.y = start.y + diffY;
+        edges.left = start.x + diffX;
+        edges.top = start.y + diffY;
+        edges.right = startRight + diffX;
+        edges.bottom = startBottom + diffY;
       } else {
-        if (downOrUpOrResize.corner === "bottomRight") {
-          const realDiffX = start.width + diffX < 120 ? 120 - start.width : diffX;
-          const realDiffY = start.height + diffY < 70 ? 70 - start.height : diffY;
-          result.width = start.width + realDiffX;
-          result.height = start.height + realDiffY;
-        } else if (downOrUpOrResize.corner === "topLeft") {
-          const realDiffX = start.width - diffX < 120 ? start.width - 120 : diffX;
-          const realDiffY = start.height - diffY < 70 ? start.height - 70 : diffY;
-          result.width = start.width - realDiffX;
-          result.height = start.height - realDiffY;
-          result.x = start.x + realDiffX;
-          result.y = start.y + realDiffY;
-        } else if (downOrUpOrResize.corner === "topRight") {
-          const realDiffX = start.width + diffX < 120 ? 120 - start.width : diffX;
-          const realDiffY = start.height - diffY < 70 ? start.height - 70 : diffY;
-          result.width = start.width + realDiffX;
-          result.height = start.height - realDiffY;
-          result.y = start.y + realDiffY;
-        } else if (downOrUpOrResize.corner === "bottomLeft") {
-          const realDiffX = start.width - diffX < 120 ? start.width - 120 : diffX;
-          const realDiffY = start.height + diffY < 70 ? 70 - start.height : diffY;
-          result.width = start.width - realDiffX;
-          result.height = start.height + realDiffY;
-          result.x = start.x + realDiffX;
-        }
+        const c = downOrUpOrResize.corner;
+        if (c === "bottomRight" || c === "topRight") edges.right = startRight + diffX;
+        if (c === "topLeft" || c === "bottomLeft") edges.left = start.x + diffX;
+        if (c === "topLeft" || c === "topRight") edges.top = start.y + diffY;
+        if (c === "bottomLeft" || c === "bottomRight") edges.bottom = startBottom + diffY;
       }
-      Events.send(moveOrResize, result);
+      const result = {id: downOrUpOrResize.id, type, viewId, corner: downOrUpOrResize.corner, edges};
+      Events.send(moveOrResizeRaw, result);
       return move;
     }
   } else if (downOrUpOrResize.type === "padDragDown") {
@@ -2832,7 +3036,7 @@ const moveCompute = ((downOrUpOrResize, positions, padView, viewId) => {
     const type = downOrUpOrResize.type;
     return (move) => {
       const winX = move.clientX / scale - padView.x - start.x;
-      const result = {id: downOrUpOrResize.id, type};
+      const result = {id: downOrUpOrResize.id, type, viewId};
       if (pinnedPositions.map.get(downOrUpOrResize.id)) {return move;}
       result.x = winX;
       result.startX = scaledDownX;
@@ -2892,6 +3096,51 @@ const moveCompute = ((downOrUpOrResize, positions, padView, viewId) => {
     return (move) => move;
   }
 })(downOrUpOrResize, positions, padView, viewId);
+
+// Interaction locking ----------------------------------------------------
+const interactionLockRequest = Events.receiver({queued: true});
+const interactionLockEnd = Events.receiver({queued: true});
+
+// Track which window this view is currently interacting with, so we can
+// release on pointerup/cancel.
+const activeLockWindow = Behaviors.select(
+  null,
+  padDown, (_prev, ev) => {
+    if (ev.type === "moveDown" || ev.type === "windowResizeDown" || ev.type === "docSeparator") return ev.id;
+    return null;
+  },
+  Events.or(padUp, pointercancel, lostpointercapture), (_prev, _) => null
+);
+
+// On moveDown / windowResizeDown / docSeparator, claim the appropriate locks.
+const _lockClaim = ((ev, viewId) => {
+  const cornerLocks = {
+    topLeft: ["top","left"], topRight: ["top","right"],
+    bottomLeft: ["bottom","left"], bottomRight: ["bottom","right"]
+  };
+  let requestedLocks;
+  if (ev.type === "moveDown") {
+    requestedLocks = ["top","right","bottom","left"];
+  } else if (ev.type === "windowResizeDown") {
+    requestedLocks = cornerLocks[ev.corner];
+  } else if (ev.type === "docSeparator") {
+    requestedLocks = ["separator"];
+  } else {
+    return;
+  }
+  Events.send(interactionLockRequest, {windowId: ev.id, viewId, requestedLocks});
+})(padDown, viewId);
+
+// (Lock auto-refresh happens model-side: each successful moveOrResize that
+// passes the gate updates lockTime via the moveOrResize trigger on
+// interactionStatus.)
+
+// On pointerup/cancel, release whatever this view was holding.
+const _lockRelease = ((trigger, prevWindow, viewId) => {
+  if (prevWindow) {
+    Events.send(interactionLockEnd, {windowId: prevWindow, viewId});
+  }
+})(Events.or(padUp, pointercancel, lostpointercapture), \$activeLockWindow, viewId);
 `],
 [`28`, `const addCode = Events.listener(renkon.querySelector("#addCodeButton"), "click", () => "code");
 const addRunner = Events.listener(renkon.querySelector("#addRunnerButton"), "click", () => "runner");
@@ -3655,7 +3904,8 @@ function cursorSVG(initialsColor, outlineColor, fillColor, initials) {
         </text>
     </g>
 </svg>\`
-}`],
+}
+`],
 [`186`, `# Viewport and Remote Cursor Visualizer
 
 It takes other views' visible areas and make them visible in your view when the session is running multiuser.`]]}
