@@ -78,6 +78,12 @@ class UpdatesWrapper {
   }
 
   setLowest() {
+    // No connected clients => nothing to compact against. Bail out before
+    // Math.min(): Math.min() of an empty list is +Infinity, which would set
+    // base = Infinity, empty the array, and permanently break version
+    // accounting (rebase disabled, infinite resend loops). This happens when
+    // the last client's view-exit is replayed into a rejoined session.
+    if (this.versions.size === 0) {return;}
     const versions = [...this.versions.values()];
     const lowest = Math.min(...versions);
     if (lowest <= this.base) {return;}
