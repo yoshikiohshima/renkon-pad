@@ -2482,7 +2482,7 @@ const loadData = async (data, maybeImageInput) => {
     ind += 2880;
     if (throttle) {
       await new Promise((resolve) => {
-        setTimeout(resolve, 34);
+        setTimeout(resolve, 50);
       });
     }
   }
