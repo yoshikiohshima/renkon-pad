@@ -331,6 +331,8 @@ class ${viewName} extends Croquet.View {
 }
 
 export function trimParenthesis(str) {
+  return str;
+  /*
   let start = 0;
   let end = str.length - 1;
   while (str[start] === "(") {
@@ -340,7 +342,7 @@ export function trimParenthesis(str) {
     end--;
   }
   if (start === 0 && end === str.length - 1) {return str;}
-  return str.slice(start, end + 1);
+  return str.slice(start, end + 1);*/
 }
 
 export function toFunction(code, name) {
@@ -401,7 +403,7 @@ export function extract(codeArray, data1) {
 }
 
 export function parseCroquet(croquet) {
-  const trimmed = trimParenthesis(croquet);
+  const trimmed = trimParenthesis(croquet.trim());
   return eval("(" + trimmed + ")");
 }
 
