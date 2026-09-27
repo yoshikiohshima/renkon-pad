@@ -56,10 +56,10 @@
 "id":"29",
 "width":875.0511284201408,
 "x":-7510.723863242151,
-"y":2046.4175268827316}],["88",{"height":1499.6102374170123,
+"y":2046.4175268827316}],["88",{"height":1547.1694741245992,
 "id":"88",
-"width":734.0176315252023,
-"x":5918.502262171636,
+"width":734.31144471265,
+"x":5918.208448984188,
 "y":6323.902213918862}],["89",{"height":1518.5754211377098,
 "id":"89",
 "width":984.3021362793764,
@@ -1506,7 +1506,7 @@ const newEditor = (id, docModel) => {
       apiKey: "234567_Paste_Your_Own_API_Key_Here_7654321",
       box: "http://localhost:8888",
       eventRateLimit: 60,
-*/
+      */
     },
     realm: {model: [
       "windows", "windowTypes", "positions", "titles", "windowEnabled",
@@ -1834,8 +1834,8 @@ const windowContents = Behaviors.select(
   }
 );
 
-const initialHome = (() => Events.send(homeUponLoad, "home"))(windowContents, loadHandler);
- 
+const initialHome = (() => Events.send(homeUponLoad, "home"))(windowContents, loadInfo);
+
 const runHandler = ((runRequest, windowContents, windowEnabled, titles) => {
   const id = runRequest.id;
   const iframe = windowContents.map.get(id);
@@ -3586,6 +3586,8 @@ const loadFromFile = ((loadReceiver) => {
 })(Events.change(loadReceiver));
 
 const loadHandler = Events.or(loadFromFile, loadFromProgram);
+const loadInfo = Behaviors.collect(null, loadHandler, (_prev, loadHandler) => loadHandler);
+
 const loadFromProgram = Events.receiver();`],
 [`89`, `const newDocPane = (id, docModel) => {
   const mirror = window.CodeMirror;
