@@ -16,9 +16,9 @@
 "id":"8",
 "width":758.0139347683956,
 "x":-3768.8549944407373,
-"y":86.48064337967597}],["10",{"height":2964.836543029842,
+"y":86.48064337967597}],["10",{"height":3019.271418836007,
 "id":"10",
-"width":1038.071952788944,
+"width":1041.196179921597,
 "x":-7447.084203312636,
 "y":-3234.3328587226706}],["14",{"height":4032.7086527663005,
 "id":"14",
@@ -60,10 +60,10 @@
 "id":"88",
 "width":734.0176315252023,
 "x":5918.502262171636,
-"y":6323.902213918862}],["89",{"height":1518.5754211377098,
+"y":6323.902213918862}],["89",{"height":1855.0027319013225,
 "id":"89",
-"width":984.3021362793764,
-"x":7833.259328890456,
+"width":1022.8634130169003,
+"x":7794.698052152932,
 "y":3635.918331149146}],["90",{"height":395.11443821079865,
 "id":"90",
 "width":785.0824912605583,
@@ -249,7 +249,7 @@
 "windows":["0","2","4","8","10","14","16","18","24","25","26","27","28","29","88","89","90","91","92","93","94","95","96","97","98","99","100","101","102","103","104","105","113","186"],
 "zIndex":{"map":{"__map":true,
 "values":[["0",131],["2",137],["4",115],["8",133],["10",106],["14",135],["16",112],["18",114],["24",120],["25",140],["26",125],["27",127],["28",129],["29",110],["88",123],["89",118],["90",109],["91",138],["92",139],["93",136],["94",134],["95",111],["96",132],["97",130],["98",128],["99",113],["100",126],["101",121],["102",122],["103",124],["104",119],["105",116],["113",117],["186",141]]},
-"sorted":null}}
+"sorted":[["10",106],["90",109],["29",110],["95",111],["16",112],["99",113],["18",114],["4",115],["105",116],["113",117],["89",118],["104",119],["24",120],["101",121],["102",122],["88",123],["103",124],["26",125],["100",126],["27",127],["98",128],["28",129],["97",130],["0",131],["96",132],["8",133],["94",134],["14",135],["93",136],["2",137],["91",138],["92",139],["25",140],["186",141]]}}
 {__codeMap: true, value: [[`0`, `const viewExit = Events.receiver({queued: true});
 const viewJoin = Events.receiver({queued: true});
 
@@ -1232,6 +1232,8 @@ html, body {
 
 .markdown {
   height: 100%;
+  margin: 0px;
+  font-family: "OpenSans-Regular", sans-serif;
 }
 
 .doc-separator {
@@ -3604,12 +3606,26 @@ const loadFromProgram = Events.receiver();`],
       Events.send(docUpdate, {id, doc: str});
     }
   };
+
+  const fontTheme = mirror.EditorView.theme({
+    "&": {
+      fontSize: "13px"
+    },
+    ".cm-content": {
+      fontFamily: \`"Noto Sans Mono", monospace\`
+    },
+    ".cm-tooltip": {
+      fontFamily: \`"Noto Sans Mono", monospace\`
+    }
+  });
+
   const extensions = [
     mirror.basicSetup,
     mirror.EditorView.lineWrapping,
     mirror.EditorView.updateListener.of((viewUpdate) => callback(id, viewUpdate)),
     mirror.EditorView.editorAttributes.of({"class": "doc-editor"}),
-    mirror.view.keymap.of([mirror.commands.indentWithTab])
+    mirror.view.keymap.of([mirror.commands.indentWithTab]),
+    fontTheme
   ];
   const editorView = window.CodeMirrorView.create(Renkon, docModel, extensions);
   const editor = editorView.editor;
@@ -3898,7 +3914,7 @@ function cursorSVG(initialsColor, outlineColor, fillColor, initials) {
             <use fill="\${outlineColor}" fill-rule="evenodd" xlink:href="#path-1"></use>
         </g>
         <path d="M17,2 L17.0008661,2.0352252 C24.2657313,2.54839185 30,8.60454082 30,16 C30,23.7319865 23.7319865,30 16,30 C8.94734804,30 3.11271995,24.7850199 2.14189822,18.0008423 L2,18 L2,2 L17,2 Z" id="Combined-Shape" fill="\${fillColor}"></path>
-        <text id="TD" font-family="Poppins-Medium, Poppins, sans-serif" font-size="13" font-weight="500" fill="\${initialsColor}">
+        <text id="TD" font-family="OpenSans-Regular, sans-serif" font-size="13" font-weight="500" fill="\${initialsColor}">
             <tspan x="7.0" y="20">\${initials}</tspan>
         </text>
     </g>
