@@ -112,9 +112,9 @@
 "id":"101",
 "width":800,
 "x":4932.4961544394955,
-"y":106.1994508681548}],["102",{"height":400,
+"y":106.1994508681548}],["102",{"height":509.9352852202919,
 "id":"102",
-"width":800,
+"width":902.201851123853,
 "x":4935.268991331218,
 "y":2957.05209447737}],["103",{"height":400,
 "id":"103",
@@ -2481,11 +2481,6 @@ const loadData = async (data, maybeImageInput) => {
     let buf = array.slice(ind, ind + 2880);
     Events.send(loadEvent, {key, type: "loadOne", array: buf});
     ind += 2880;
-    // Yield a frame between chunks. loadEvent is a queued receiver, so every send
-    // within one frame is batched into a single value, published as one Croquet
-    // message; the reflector silently drops those over 16384 bytes. Without this
-    // await the chunking splits the array but not the message, and any document
-    // over ~11.7kB fails to load.
     await new Promise((resolve) => {
       setTimeout(resolve, 34);
     });
@@ -3775,6 +3770,9 @@ The \`analyzed\` result is then fed to the \`graph\` node, which creates a list 
 [`102`, `# Save and Load
 
 The file format has two parts. The first part is a JSON string that stores windows, positions, zIndex, titles, windowTypes, padTitle and windowEnabled. The second part is still JSON like, but the contents of text boxes and docs are stored with line breaks kept so that line oriented diff works better.
+
+The Croquet reflector has some limitations on the rate of messages and total message size. 
+The while loop in loadData yields a frame between chunks. loadEvent is a queued receiver, so every send within one frame is batched into a single value, published as one Croquet message; the reflector silently drops those over 16384 bytes. Without this await the chunking splits the array but not the message, and any document over ~11.7kB fails to load.
 `],
 [`103`, `# Load Model
 
