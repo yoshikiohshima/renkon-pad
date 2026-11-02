@@ -892,6 +892,12 @@ html, body {
   z-index: 10000;
 }
 
+#cursorOverlay > div {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+
 .window {
   position: absolute;
   transform-origin: 0px 0px;
