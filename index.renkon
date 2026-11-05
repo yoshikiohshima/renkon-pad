@@ -733,6 +733,15 @@ const docSeparators = Behaviors.select(
 )
 
 const runRequest = Behaviors.keep(runRequestFromView);
+
+const runFingerprints = Behaviors.select(
+  {map: new Map()},
+  runRequestFromView, (prev, request) => {
+    prev.map.set(request.id, request.fingerprint);
+    return {map: prev.map};
+  },
+  loadHandler, (_prev, _data) => ({map: new Map()})
+);
 // this is a workaround to make the view to see the value
 const resetRequest = Behaviors.receiver();
 // const xxx = console.log("runRequest", runRequest);
@@ -1514,7 +1523,7 @@ const newEditor = (id, docModel) => {
       "windows", "windowTypes", "positions", "titles", "windowEnabled",
       "zIndex", "windowContentsModel", "padTitle", "docSeparators", "initialData",
       "newId", "padViews", "padExtent", "cursorPositions", "newWindowRequest", "padTitle", "viewJoin",
-      "viewExit", "xxx", "loadReceiver", "loadHandler", "loadFromFile", "loadFromProgram", "runRequest", "resetRequest",
+      "viewExit", "xxx", "loadReceiver", "loadHandler", "loadFromFile", "loadFromProgram", "runRequest", "runFingerprints", "resetRequest",
       "interactionStatus", "interactionLockTimer", "gatedMoveOrResize", "gatedSeparatorMove"]},
     persistentNodes: [["windows", 60000]],
     name: "pad"
@@ -1838,9 +1847,7 @@ const windowContents = Behaviors.select(
 
 const initialHome = (() => Events.send(homeUponLoad, "home"))(windowContents, loadHandler);
  
-const runHandler = ((runRequest, windowContents, windowEnabled, titles) => {
-  const id = runRequest.id;
-  const iframe = windowContents.map.get(id);
+function runnerProgram(windowContents, windowEnabled, titles) {
   const enabled = [...windowContents.map]
     .filter(([id, obj]) => obj.state && windowEnabled.map.get(id)?.enabled !== false);
   const code = enabled
@@ -1848,12 +1855,56 @@ const runHandler = ((runRequest, windowContents, windowEnabled, titles) => {
     .map(([_id, editor]) => editor.state.doc.toString());
   const croquet = enabled.find(([id, obj]) => {
     return titles.map.get(id).title === "Croquet"})?.[1].state.doc.toString();
+  return {code, croquet};
+}
+
+function programFingerprint({code, croquet}) {
+  const str = JSON.stringify([code, croquet ?? null]);
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) {
+    h = ((h * 33) ^ str.charCodeAt(i)) >>> 0;
+  }
+  return h.toString(36) + "-" + str.length.toString(36);
+}
+
+const runHandler = ((runRequest, windowContents, windowEnabled, titles) => {
+  const id = runRequest.id;
+  const iframe = windowContents.map.get(id);
+  const {code, croquet} = runnerProgram(windowContents, windowEnabled, titles);
   if (!croquet && !isLocal) {
     console.log("No Croquet spec found");
   }
   if (!iframe?.dom?.contentWindow) {/* console.log("iframe is not there yet"); */ return}
   iframe.dom.contentWindow.postMessage({code: code, croquet, path: id});
 })(Events.or(runRequest, doReset), windowContents, windowEnabled, titles);
+
+const autoRunOnJoin = ((readyMessages, runFingerprints, pendingResets, windowContents, windowEnabled, titles) => {
+  for (const evt of readyMessages) {
+    const id = evt.data.id;
+    const fingerprint = runFingerprints.map.get(id);
+    if (!fingerprint || pendingResets.ids.has(id)) {continue;}
+    const iframe = windowContents.map.get(id);
+    if (!iframe?.dom?.contentWindow) {continue;}
+    const program = runnerProgram(windowContents, windowEnabled, titles);
+    if (programFingerprint(program) !== fingerprint) {
+      console.log("runner " + id + " was run with different code; not starting it");
+      continue;
+    }
+    iframe.dom.contentWindow.postMessage({code: program.code, croquet: program.croquet, path: id});
+  }
+})(readyMessages, runFingerprints, pendingResets, windowContents, windowEnabled, titles);
+
+const pendingResets = Behaviors.select(
+  {ids: new Set()},
+  resetRequest, (prev, reset) => {
+    prev.ids.add(reset.id);
+    return {ids: prev.ids};
+  },
+  doReset, (prev, reset) => {
+    prev.ids.delete(reset.id);
+    return {ids: prev.ids};
+  }
+);
 
 const windowResize = Events.listener(window, "resize", evt => evt);
 
@@ -2587,7 +2638,10 @@ const playClickHandler = (evt, delayed) => {
   if (delayed) {
     return;
   }
-  Events.send(runRequestFromView, {id: \`\${Number.parseInt(evt.target.id)}\`});
+  const [windowContents, windowEnabled, titles] =
+    ["windowContents", "windowEnabled", "titles"].map((name) => Renkon.resolved.get(name)?.value);
+  const fingerprint = programFingerprint(runnerProgram(windowContents, windowEnabled, titles));
+  Events.send(runRequestFromView, {id: \`\${Number.parseInt(evt.target.id)}\`, fingerprint});
 }
 
 const playDownHandler = (evt) => {
@@ -3692,7 +3746,11 @@ The libraries (Preact and Markdown-it) are loaded. Also the DOM elements that ar
 
 The \`newRunner\` node specifies the srcdoc for the runner. The runner receives DOM a message from the parent Renkon-pad to run it. It also has the inspector on/off.
 
-The code is received for the first time, two ProgramStates (for the Croquet model and the Croquet view) are created. When a new set of code is received, the receiving iframe keeps them, but update code in the Croquet view.`],
+The code is received for the first time, two ProgramStates (for the Croquet model and the Croquet view) are created. When a new set of code is received, the receiving iframe keeps them, but update code in the Croquet view.
+
+A press of the run button sends \`runRequestFromView\` with the runner's id and a \`fingerprint\` of the program it is about to run: \`programFingerprint\` hashes what \`runnerProgram\` collects (the code of the enabled text boxes plus the Croquet box). \`runFingerprints\` keeps, in the model, the fingerprint of the last run of each runner, so that a peer that joins later knows which runners have been started. Loading a document replaces all runners, so \`loadHandler\` clears it.
+
+A late joiner's runner iframes don't exist yet when it joins, so it can't be handed the code then. \`autoRunOnJoin\` waits for each runner's ready message and runs it then, but only if the joiner's own program has the same fingerprint as the one that runner was last run with. If the code has been edited since, the runner is left blank (with a console message), as a sign that the running copies are out of date. A runner with a reset under way (\`pendingResets\`, from \`resetRequest\` until \`doReset\`) is left to the reset logic.`],
 [`93`, `# View
 
 This text box contains the nodes that might be in th needed to support multiplayer.
